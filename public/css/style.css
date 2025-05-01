@@ -1,0 +1,45 @@
+/* public/css/style.css */
+body {
+  margin: 0;
+  font-family: 'Pretendard', sans-serif;
+  background-color: #f0fff0;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #a8e6cf;
+  padding: 10px 20px;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 15px;
+}
+
+.nav-links li a {
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+}
+
+.nav-links li a:hover {
+  color: #007a5e;
+}
+
+.hero {
+  padding: 50px;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 2.5rem;
+  color: #4caf50;
+}
+
+.hero p {
+  font-size: 1.2rem;
+  color: #555;
+}
