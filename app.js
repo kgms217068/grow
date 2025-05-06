@@ -6,11 +6,14 @@ const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 const morgan = require('morgan');
 
+
+
+
 // Load environment variables
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // DB 연결 설정 (예: db.js 참고)
 const db = require('./db/db'); // db.js에서 mysql2/promise로 connection 풀 만들었을 경우
@@ -22,6 +25,13 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 // 미들웨어
+
+
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true
+}));
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -30,7 +40,7 @@ app.use(session({
   key: 'user_sid',
   secret: process.env.SESSION_SECRET || 'secret-key',
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
   store: sessionStore
 }));
 
@@ -42,6 +52,21 @@ const collectionRouter = require('./routes/collection');
 const communityRouter = require('./routes/community');
 const marketRouter = require('./routes/market');
 const mypageRouter = require('./routes/mypage');
+
+
+
+app.use(session({
+  secret: 'your-dev-secret', // 진짜 배포 시엔 환경변수로
+  resave: false,
+  saveUninitialized: false
+}));
+
+// 💡 테스트용 가짜 로그인 (임시로 모든 요청에 유저ID를 넣어줌)
+app.use((req, res, next) => {
+  req.session.userId = 1;  // user_id 1번 강제 사용
+  next();
+});
+
 
 app.use('/', authRouter);
 app.use('/dashboard', dashboardRouter);

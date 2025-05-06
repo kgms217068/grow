@@ -12,8 +12,6 @@ router.get('/login', (req, res) => {
 router.get('/register', (req, res) => {
   res.send('<h1>회원가입 페이지</h1>');
 });
-
-module.exports = router;
-
+// 예: routes/auth.js 내부
 
 module.exports = router

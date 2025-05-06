@@ -12,3 +12,4 @@ const promisePool = mysql.createPool({
 });
 
 module.exports = { promisePool };
+
