@@ -4,7 +4,80 @@
   <title>미션 진행</title>
   <link rel="stylesheet" href="/css/style.css" />
   <style>
-    .mission-container { margin: 30px; padding: 20px; border: 1px solid #ccc; border-radius: 10px; background: #f9fff3; }
+    body {
+      margin: 0;
+      padding-bottom: 80px;
+      font-family: sans-serif;
+      background-color: #f9fff3;
+    }
+
+    .mission-container {
+      max-width: 400px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+
+    .mission-title {
+      background-color: #eee;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    .upload-box {
+      border: 2px dashed #83b3dd;
+      border-radius: 10px;
+      padding: 30px;
+      background-color: #f0f7fc;
+      margin-bottom: 15px;
+    }
+
+    .upload-box img {
+      width: 80px;
+      margin-bottom: 10px;
+    }
+
+    .file-label {
+      background-color: #ccc;
+      padding: 6px 12px;
+      border-radius: 5px;
+      display: inline-block;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    #memo-box {
+      margin-top: 10px;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    .submit-button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      margin-top: 15px;
+      cursor: pointer;
+    }
+
+    /* 하단 네비게이션 */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -16,12 +89,14 @@
       align-items: center;
       box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
     }
+
     .bottom-nav a {
       text-align: center;
       color: #333;
       text-decoration: none;
       font-size: 14px;
     }
+
     .bottom-nav i {
       font-size: 20px;
       display: block;
@@ -33,8 +108,7 @@
 
 <div class="mission-container">
   <% if (mission) { %>
-    <h2><%= mission.level %>단계 미션</h2>
-    <p><strong><%= mission.description %></strong></p>
+    <div class="mission-title"><%= mission.description %></div>
 
     <% if (result) { %>
       <p style="color: green;">✅ 완료한 미션입니다</p>
@@ -49,32 +123,25 @@
       <form action="/dashboard/submit" method="POST" enctype="multipart/form-data">
         <input type="hidden" name="missionId" value="<%= mission.mission_id %>">
 
-        <p><input type="file" name="photo" required></p>
+        <div class="upload-box">
+          <img src="/img/cloud.png" alt="upload" />
+          <label for="file" class="file-label">파일 선택</label>
+          <input type="file" name="photo" id="file" required />
+        </div>
 
-        <label>
-          <input type="checkbox" name="success" onchange="toggleMemo(this)"> 미션 성공했어요!
-        </label>
-
+       
         <div id="memo-box" style="display:none">
           <textarea name="memo" placeholder="소감 작성 (선택)" rows="3"></textarea>
         </div>
 
-        <button type="submit">제출</button>
+        <button type="submit" class="submit-button">완료하기</button>
       </form>
     <% } %>
-
   <% } else { %>
     <h2>🎉 모든 미션을 완료했습니다!</h2>
   <% } %>
 </div>
 
-<!-- ✅ 하단 네비게이션바 -->
-<div class="bottom-nav">
-  <a href="/market"><i>🎁</i>그로우마켓</a>
-  <a href="/dashboard"><i>🏠</i>홈</a>
-  <a href="/community"><i>👥</i>커뮤니티</a>
-  <a href="/mypage"><i>👤</i>마이페이지</a>
-</div>
 
 <script>
   function toggleMemo(checkbox) {

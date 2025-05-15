@@ -1,25 +1,31 @@
 const { promisePool } = require('../db/db');
 
-exports.saveCertification = async (data) => {
+exports.saveCertification = async ({ mission_execution_id, user_id, image_source }) => {
   const sql = `
-    INSERT INTO certification (mission_id, user_id, photo, memo, is_success)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO certification (mission_execution_id, certification_date, user_id, image_source, checked)
+    VALUES (?, now(),?, ?, false)
   `;
-  const [result] = await promisePool.query(sql, [
-    data.mission_id,
-    data.user_id,
-    data.photo,
-    data.memo,
-    data.is_success
-  ]);
-  return result;
+  await promisePool.query(sql, [mission_execution_id, user_id, image_source]);
 };
 
 exports.getCertificationsByUser = async (userId) => {
-    const [rows] = await promisePool.query(
-      'SELECT * FROM certification WHERE user_id = ?',
-      [userId]
-    );
-    return rows;
-  };
-  
+  const [rows] = await promisePool.query(`
+    SELECT c.certification_id, c.mission_execution_id, c.user_id, me.mission_id, c.checked
+    FROM certification c
+    JOIN mission_execution me ON c.mission_execution_id = me.mission_execution_id
+    WHERE c.user_id = ?
+  `, [userId]);
+  return rows;
+};
+
+exports.saveDiary = async ({ mission_execution_id, user_id, title, content, emotions }) => {
+  const diarySql = `INSERT INTO diary (mission_execution_id, user_id, title, content) VALUES (?, ?, ?, ?)`;
+  const [result] = await promisePool.query(diarySql, [mission_execution_id, user_id, title, content]);
+
+  const diaryId = result.insertId;
+
+  const emotionSql = `INSERT INTO emotion_tag (diary_id, emotion) VALUES ?`;
+  const emotionData = emotions.map(e => [diaryId, e]);
+
+  await promisePool.query(emotionSql, [emotionData]);
+};

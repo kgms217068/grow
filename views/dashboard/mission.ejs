@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>미션 목록</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    .mission-box {
+      margin: 10px auto;
+      padding: 15px;
+      width: 90%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: #f4f8f2;
+    }
+    .status-btn {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 5px;
+    }
+    .cert-btn {
+      background-color: transparent;
+      border: 1px solid #4CAF50;
+      color: #4CAF50;
+    }
+    .waiting-btn {
+      background-color: #fbc02d;
+      color: black;
+    }
+    .done-btn {
+      background-color: #9e9e9e;
+      color: white;
+    }
+    .modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
+.write-diary-btn {
+  background: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  margin-top: 15px;
+  border: none;
+  border-radius: 8px;
+}
+
+  </style>
+</head>
+<body>
+
+<!-- 사용자 정보 -->
+<div style="text-align: center; margin-top: 20px;">
+  <div style="background-color: #4CAF50; color: white; padding: 10px 20px; border-radius: 8px;">
+    <%= nickname %> 님의 현재 단계<br><strong><%= currentLevel %></strong>
+  </div>
+</div>
+
+<!-- ✅ 미완료 미션 -->
+<h3 style="text-align: center; margin-top: 30px;">미완료 미션</h3>
+<% missions.filter(m => certStatus[m.mission_id] !== true).forEach(m => {
+     const status = certStatus[m.mission_id]; // undefined / true / false
+%>
+  <div class="mission-box">
+    <p><strong><%= m.description %></strong></p>
+
+    <% if (status === false) { %>
+      <button class="status-btn waiting-btn" disabled>확인 중</button>
+    <% } else { %>
+      <form action="/dashboard?missionId=<%= m.mission_id %>" method="get">
+        <button class="status-btn cert-btn">인증</button>
+      </form>
+    <% } %>
+  </div>
+<% }) %>
+
+<!-- ✅ 완료 미션 -->
+<h3 style="text-align: center; margin-top: 40px;">완료 미션</h3>
+<% missions.filter(m => certStatus[m.mission_id] === true).forEach(m => { %>
+  <div class="mission-box">
+    <p><strong><%= m.description %></strong></p>
+    <button class="status-btn done-btn" disabled>완료</button>
+  </div>
+<% }) %>
+
+<% if (showFertilizerModal) { %>
+  <div class="modal">
+    <div class="modal-content">
+      <p><strong>미션 인증이 완료되었어요!<br>비료를 획득하셨습니다! 🪴</strong></p>
+      <img src="/img/fertilizer.png" alt="fertilizer" width="80" />
+      <p>비료를 통해<br>자신만의 나무를 성장시켜 보세요!</p>
+      <a href="/dashboard/diary/<%= recentMissionId %>">
+        <button class="write-diary-btn">일기 작성</button>
+      </a>
+    </div>
+  </div>
+<% } %>
+
+
+</body>
+</html>
