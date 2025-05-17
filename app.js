@@ -5,6 +5,8 @@ const dotenv = require('dotenv');
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 const morgan = require('morgan');
+const passport = require('./config/passport');
+const flash = require('connect-flash');
 
 // Load environment variables
 dotenv.config();
@@ -33,6 +35,15 @@ app.use(session({
   saveUninitialized: false,
   store: sessionStore
 }));
+
+app.use(flash());
+app.use((req, res, next) => {
+    res.locals.error = req.flash('error');
+    next();
+});
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 // 라우터 등록
 const authRouter = require('./routes/auth');
