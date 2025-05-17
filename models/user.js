@@ -1,21 +1,21 @@
 const conn = require('./db');
 
-
 const User = {
-    create: async (userData) => {
-        // Validate required fields
-        if (!userData.nickname || !userData.email || !userData.password) {
-            throw new Error('Missing required fields: nickname, email, or password');
-        }
-
-        // Insert into the database
-        const [result] = await conn.promise().query(
-            'INSERT INTO users (nickname, email, password) VALUES (?, ?, ?)',
-            [userData.nickname, userData.email, userData.password]
+    create: async (userData) => async ({ email, password, nickname }) => {
+        // Check for existing email or nickname
+        const [exists] = await conn.promisePool.query(
+            'SELECT user_id, email, nickname FROM users WHERE email = ? OR nickname = ?',
+            [email, nickname]
         );
-
-        // Return the inserted ID
-        return result.insertId;
+        if (exists.length) {
+            if (exists[0].email === email) throw new Error('Email already in use');
+            if (exists[0].nickname === nickname) throw new Error('Nickname already in use');
+        }
+        const [result] = await conn.promisePool.query(
+            'INSERT INTO users (email, password, nickname) VALUES (?, ?, ?)',
+            [email, password, nickname]
+        );
+        return { user_id: result.insertId, email, nickname };
     },
 
     findByEmail: async (email) => {
@@ -25,7 +25,7 @@ const User = {
         }
 
         // Query the database for a user with the given email
-        const [rows] = await conn.promise().query(
+        const [rows] = await conn.promisePool.query(
             'SELECT * FROM users WHERE email = ?',
             [email]
         );
@@ -41,7 +41,7 @@ const User = {
         }
 
         // Query the database for a user with the given nickname
-        const [rows] = await conn.promise().query(
+        const [rows] = await conn.promisePool.query(
             'SELECT * FROM users WHERE nickname = ?',
             [nickname]
         );
@@ -57,7 +57,7 @@ const User = {
         }
 
         // Query the database for a user with the given ID
-        const [rows] = await conn.promise().query(
+        const [rows] = await conn.promisePool.query(
             'SELECT * FROM users WHERE id = ?',
             [id]
         );
@@ -67,7 +67,7 @@ const User = {
     },
 
     updatePasswordByEmail: async (email, hashedPassword) => {
-        const [result] = await conn.promise().query(
+        const [result] = await conn.promisePool.query(
             'UPDATE users SET password = ? WHERE email = ?',
             [hashedPassword, email]
         );
@@ -75,13 +75,12 @@ const User = {
     },
 
     updatePasswordById: async (id, hashedPassword) => {
-        const [result] = await conn.promise().query(
+        const [result] = await conn.promisePool.query(
             'UPDATE users SET password = ? WHERE id = ?',
             [hashedPassword, id]
         );
         return result.affectedRows > 0;
     }
-
 };
 
 module.exports = User;

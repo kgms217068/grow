@@ -5,7 +5,9 @@
     <span style="font-size:2.5rem; font-weight:800;">GROW</span>
   </div>
   <form class="login-form" action="/login" method="POST">
+    <label for="email">Email</label>
     <input type="email" name="email" placeholder="이메일 주소" value="<%= form && form.email ? form.email : '' %>" required />
+    <label for="password">Password</label>
     <input type="password" name="password" placeholder="비밀번호" required />
     <% if (error && error.length) { %>
       <div class="error-message"><%= error[0] %></div>
@@ -14,3 +16,4 @@
     <a href="/register" class="register-btn">회원가입</a>
   </form>
 </div>
+

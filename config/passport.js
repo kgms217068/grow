@@ -23,13 +23,13 @@ passport.use(new LocalStrategy(
 
 // Serialize user to session
 passport.serializeUser((user, done) => {
-    done(null, user.id);
+    done(null, user.user_id); // use user_id as primary key
 });
 
 // Deserialize user from session
-passport.deserializeUser(async (id, done) => {
+passport.deserializeUser(async (user_id, done) => {
     try {
-        const user = await User.findById(id);
+        const user = await User.findById(user_id);
         done(null, user);
     } catch (err) {
         done(err);

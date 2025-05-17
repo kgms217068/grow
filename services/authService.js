@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const validator = require('validator');
 const User = require('../models/user');
 
 const userService = {
@@ -6,6 +7,16 @@ const userService = {
         // Validate required fields
         if (!userData.nickname || !userData.email || !userData.password) {
             throw new Error('Missing required fields: nickname, email, or password');
+        }
+
+        // Validate email format
+        if (!validator.isEmail(userData.email)) {
+            throw new Error('Invalid email');
+        }
+
+        // Validate password length
+        if (!validator.isLength(userData.password, { min: 8 })) {
+            throw new Error('Password too short');
         }
 
         // Check if nickname already exists

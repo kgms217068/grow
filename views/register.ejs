@@ -1,12 +1,15 @@
 <% layout('layout') %>
 <div class="register-container">
   <div class="register-title">당신의 정원을 가꿔 보세요.</div>
-  <% if (typeof error !== 'undefined') { %>
-    <div class="error-message"><%= error %></div>
+  <% if (error && error.length) { %>
+    <div class="error"><%= error %></div>
   <% } %>
   <form class="register-form" action="/register" method="POST">
+    <label for="nickname">Nickname</label>
     <input type="text" name="nickname" placeholder="닉네임" value="<%= form && form.nickname ? form.nickname : '' %>" required />
+    <label for="email">Email</label>
     <input type="email" name="email" placeholder="이메일 주소" value="<%= form && form.email ? form.email : '' %>" required />
+    <label for="password">Password</label>
     <input type="password" name="password" placeholder="비밀번호" required />
     <input type="password" name="passwordConfirm" placeholder="비밀번호 확인" required />
     <div class="checkbox-row">
