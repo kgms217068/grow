@@ -12,7 +12,7 @@ const flash = require('connect-flash');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // DB 연결 설정 (예: db.js 참고)
 const db = require('./db/db'); // db.js에서 mysql2/promise로 connection 풀 만들었을 경우
@@ -79,3 +79,5 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`🚀 서버 실행 중: http://localhost:${PORT}`);
 });
+
+module.exports = app;

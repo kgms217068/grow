@@ -20,7 +20,7 @@ router.get('/register', (req, res) => res.render('register'));
 // Handle registration submission
 router.post('/register', authController.register);
 
-router.get('/registerSuccess', (req, res) => res.render('registerSuccess'););
+router.get('/registerSuccess', (req, res) => res.render('registerSuccess'));
 
 // Logout
 router.get('/logout', (req, res) => {
