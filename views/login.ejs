@@ -1,6 +1,16 @@
 <% layout('layout') %>
-<h2>로그인</h2>
-<form action="/login" method="POST">
-  <input type="text" name="username" placeholder="이름을 입력하세요" required />
-  <button type="submit">시작하기</button>
-</form>
+<div class="login-container">
+  <div class="login-title">
+    나의 일상이 자라는 정원,<br>
+    <span style="font-size:2.5rem; font-weight:800;">GROW</span>
+  </div>
+  <form class="login-form" action="/login" method="POST">
+    <input type="email" name="email" placeholder="이메일 주소" value="<%= form && form.email ? form.email : '' %>" required />
+    <input type="password" name="password" placeholder="비밀번호" required />
+    <% if (error && error.length) { %>
+      <div class="error-message"><%= error[0] %></div>
+    <% } %>
+    <button type="submit" class="login-btn">로그인</button>
+    <a href="/register" class="register-btn">회원가입</a>
+  </form>
+</div>

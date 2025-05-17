@@ -1,0 +1,21 @@
+<% layout('layout') %>
+<div class="register-container">
+  <div class="register-title">당신의 정원을 가꿔 보세요.</div>
+  <% if (typeof error !== 'undefined') { %>
+    <div class="error-message"><%= error %></div>
+  <% } %>
+  <form class="register-form" action="/register" method="POST">
+    <input type="text" name="nickname" placeholder="닉네임" value="<%= form && form.nickname ? form.nickname : '' %>" required />
+    <input type="email" name="email" placeholder="이메일 주소" value="<%= form && form.email ? form.email : '' %>" required />
+    <input type="password" name="password" placeholder="비밀번호" required />
+    <input type="password" name="passwordConfirm" placeholder="비밀번호 확인" required />
+    <div class="checkbox-row">
+      <input type="checkbox" name="agree" id="agree" required />
+      <label for="agree">이용약관에 동의합니다.</label>
+    </div>
+    <button type="submit" class="register-btn">가입하기</button>
+  </form>
+  <div style="text-align:center; margin-top:18px;">
+    <a href="/login">로그인</a>
+  </div>
+</div>
