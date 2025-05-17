@@ -1,0 +1,222 @@
+/* auth.css - Authentication pages styling based on provided design */
+
+/* General container for all auth pages */
+.auth-container,
+.login-container,
+.register-container,
+.success-container {
+    max-width: 400px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 10px;
+    padding: 48px 32px 40px 32px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    text-align: left;
+    font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', Arial, sans-serif;
+}
+
+/* Centered for success page */
+.success-container {
+    text-align: center;
+}
+
+/* Headings */
+.login-title,
+.register-title,
+.success-title {
+    color: #267C13;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 32px;
+    margin-top: 0;
+}
+
+.login-title {
+    font-size: 2rem;
+    line-height: 1.2;
+}
+
+    .login-title .grow {
+        font-size: 2.5rem;
+        font-weight: 800;
+        display: block;
+    }
+
+.register-title {
+    font-size: 1.3rem;
+}
+
+.success-title {
+    font-size: 2rem;
+    margin-bottom: 16px;
+}
+
+.success-check {
+    font-size: 56px;
+    color: #267C13;
+    margin-bottom: 24px;
+    display: inline-block;
+    line-height: 1;
+}
+
+.success-welcome {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.success-desc {
+    color: #444;
+    font-size: 1rem;
+    margin-bottom: 32px;
+}
+
+/* Form fields */
+.auth-form input[type="text"],
+.auth-form input[type="email"],
+.auth-form input[type="password"],
+.register-form input[type="text"],
+.register-form input[type="email"],
+.register-form input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 18px;
+    border: 1.5px solid #bbb;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    background: #fff;
+    transition: border 0.2s;
+}
+
+.auth-form input:focus,
+.register-form input:focus {
+    border: 1.5px solid #267C13;
+    outline: none;
+}
+
+/* Verification row (for register, if needed) */
+.register-form .verification-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+    .register-form .verification-row input {
+        flex: 1;
+        margin-bottom: 0;
+    }
+
+.register-form .verify-btn {
+    background: #267C13;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 0 18px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    height: 44px;
+}
+
+    .register-form .verify-btn:hover {
+        background: #1b570e;
+    }
+
+/* Checkbox row */
+.register-form .checkbox-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+    .register-form .checkbox-row input[type="checkbox"] {
+        margin-right: 8px;
+    }
+
+/* Buttons */
+.login-form .login-btn,
+.success-btn,
+.login-form .register-btn:not(.register-form .register-btn),
+.register-form .verify-btn {
+    background: #267C13;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 14px 0;
+    width: 100%;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-bottom: 12px;
+    text-decoration: none;
+    display: inline-block;
+}
+
+    .login-form .login-btn:hover,
+    .success-btn:hover,
+    .login-form .register-btn:not(.register-form .register-btn):hover,
+    .register-form .verify-btn:hover {
+        background: #1b570e;
+    }
+
+/* Register button (distinct color) */
+.register-form .register-btn {
+    background: #71A304;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 14px 0;
+    width: 100%;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-bottom: 0;
+    text-decoration: none;
+    display: inline-block;
+}
+
+    .register-form .register-btn:hover {
+        background: #5a8503;
+    }
+
+/* Error and success messages */
+.error-message {
+    color: #D32F2F;
+    margin-bottom: 18px;
+    text-align: center;
+    font-size: 0.98rem;
+}
+
+.success-message {
+    color: #267C13;
+    margin-bottom: 18px;
+    text-align: center;
+    font-size: 0.98rem;
+}
+
+/* Links */
+a {
+    color: #267C13;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+/* Responsive */
+@media (max-width: 500px) {
+    .auth-container,
+    .login-container,
+    .register-container,
+    .success-container {
+        padding: 24px 8px 24px 8px;
+        max-width: 98vw;
+    }
+}
+
