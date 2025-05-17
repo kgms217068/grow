@@ -1,6 +1,7 @@
 // app.js
 const express = require('express');
 const path = require('path');
+
 const dotenv = require('dotenv');
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
