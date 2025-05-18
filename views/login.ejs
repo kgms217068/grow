@@ -1,19 +1,115 @@
-<% layout('layout') %>
-<div class="login-container">
-  <div class="login-title">
-    나의 일상이 자라는 정원,<br>
-    <span style="font-size:2.5rem; font-weight:800;">GROW</span>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f8f8f8;
+      font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', Arial, sans-serif;
+    }
+
+    .login-container {
+      max-width: 400px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 10px;
+      padding: 48px 32px 40px 32px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      text-align: left;
+    }
+
+    .login-title {
+      color: #267C13;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 32px;
+      font-size: 2rem;
+      line-height: 1.2;
+    }
+
+    .login-title span {
+      font-size: 2.5rem;
+      font-weight: 800;
+      display: block;
+    }
+
+    .login-form input[type="email"],
+    .login-form input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 18px;
+      border: 1.5px solid #bbb;
+      border-radius: 4px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      background: #fff;
+      transition: border 0.2s;
+    }
+
+    .login-form input:focus {
+      border: 1.5px solid #267C13;
+      outline: none;
+    }
+
+    .login-form .login-btn,
+    .login-form .register-btn {
+      background: #267C13;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 14px 0;
+      width: 100%;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-bottom: 12px;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+    }
+
+    .login-form .login-btn:hover,
+    .login-form .register-btn:hover {
+      background: #1b570e;
+    }
+
+    .error-message {
+      color: #D32F2F;
+      margin-bottom: 18px;
+      text-align: center;
+      font-size: 0.98rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-title">
+      나의 일상이 자라는 정원,<br>
+      <span>GROW</span>
+    </div>
+    <form class="login-form" action="/login" method="POST">
+      <label for="email">Email</label>
+      <input type="email" name="email" placeholder="이메일 주소" value="<%= form && form.email ? form.email : '' %>" required />
+      <label for="password">Password</label>
+      <input type="password" name="password" placeholder="비밀번호" required />
+      <% if (error && error.length) { %>
+        <div class="error-message"><%= error[0] %></div>
+      <% } %>
+      <button type="submit" class="login-btn">로그인</button>
+      <a href="/register" class="register-btn">회원가입</a>
+    </form>
   </div>
-  <form class="login-form" action="/login" method="POST">
-    <label for="email">Email</label>
-    <input type="email" name="email" placeholder="이메일 주소" value="<%= form && form.email ? form.email : '' %>" required />
-    <label for="password">Password</label>
-    <input type="password" name="password" placeholder="비밀번호" required />
-    <% if (error && error.length) { %>
-      <div class="error-message"><%= error[0] %></div>
-    <% } %>
-    <button type="submit" class="login-btn">로그인</button>
-    <a href="/register" class="register-btn">회원가입</a>
-  </form>
-</div>
+</body>
+</html>
 
