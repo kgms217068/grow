@@ -1,82 +1,79 @@
-const conn = require('../db/db');
+const { promisePool } = require('../db/db');
 
 const User = {
-    create: async (userData) => async ({ email, password, nickname }) => {
-        // Check for existing email or nickname
-        const [exists] = await conn.promisePool.query(
-            'SELECT user_id, email, nickname FROM users WHERE email = ? OR nickname = ?',
-            [email, nickname]
-        );
-        if (exists.length) {
-            if (exists[0].email === email) throw new Error('Email already in use');
-            if (exists[0].nickname === nickname) throw new Error('Nickname already in use');
+    create: async ({ email, password, nickname }) => {
+    const [exists] = await promisePool.query(
+        'SELECT user_id, email, nickname FROM `user` WHERE email = ? OR nickname = ?',
+        [email, nickname]
+    );
+
+    for (const user of exists) {
+        if (user.email === email) {
+            throw new Error('이미 사용 중인 이메일입니다.');
         }
-        const [result] = await conn.promisePool.query(
-            'INSERT INTO users (email, password, nickname) VALUES (?, ?, ?)',
-            [email, password, nickname]
-        );
-        return { user_id: result.insertId, email, nickname };
+        if (user.nickname === nickname) {
+            throw new Error('이미 사용 중인 닉네임입니다.');
+        }
+    }
+
+    const [result] = await promisePool.query(
+        'INSERT INTO `user` (email, password, nickname) VALUES (?, ?, ?)',
+        [email, password, nickname]
+    );
+
+    return { user_id: result.insertId, email, nickname };
     },
 
     findByEmail: async (email) => {
-        // Validate email input
         if (!email) {
-            throw new Error('Email is required');
+            throw new Error('이메일을 입력해 주세요.');
         }
 
-        // Query the database for a user with the given email
-        const [rows] = await conn.promisePool.query(
-            'SELECT * FROM users WHERE email = ?',
+        const [rows] = await promisePool.query(
+            'SELECT * FROM `user` WHERE email = ?',
             [email]
         );
 
-        // Return the user if found, otherwise return null
         return rows.length > 0 ? rows[0] : null;
     },
 
     findByNickname: async (nickname) => {
-        // Validate nickname input
         if (!nickname) {
-            throw new Error('Nickname is required');
+            throw new Error('닉네임을 입력해 주세요.');
         }
 
-        // Query the database for a user with the given nickname
-        const [rows] = await conn.promisePool.query(
-            'SELECT * FROM users WHERE nickname = ?',
+        const [rows] = await promisePool.query(
+            'SELECT * FROM `user` WHERE nickname = ?',
             [nickname]
         );
 
-        // Return the user if found, otherwise return null
         return rows.length > 0 ? rows[0] : null;
     },
 
     findById: async (user_id) => {
-        // Validate ID input
         if (!user_id) {
-            throw new Error('ID is required');
+            throw new Error('사용자ID가 필요합니다.');
         }
 
-        // Query the database for a user with the given ID
-        const [rows] = await conn.promisePool.query(
-            'SELECT * FROM users WHERE user_id = ?',
-            [id]
+        const [rows] = await promisePool.query(
+            'SELECT * FROM `user` WHERE user_id = ?',
+            [user_id]
         );
 
-        // Return the user if found, otherwise return null
         return rows.length > 0 ? rows[0] : null;
     },
 
     updatePasswordByEmail: async (email, hashedPassword) => {
-        const [result] = await conn.promisePool.query(
-            'UPDATE users SET password = ? WHERE email = ?',
+        const [result] = await promisePool.query(
+            'UPDATE `user` SET password = ? WHERE email = ?',
             [hashedPassword, email]
         );
         return result.affectedRows > 0;
     },
 
     updatePasswordById: async (user_id, hashedPassword) => {
-        const [result] = await conn.promisePool.query(
-            'UPDATE users SET password = ? WHERE user_id = ?',
+        const [result] = await promisePool.query(
+            'UPDATE `user` SET password = ? WHERE user_id = ?',
             [hashedPassword, user_id]
         );
         return result.affectedRows > 0;

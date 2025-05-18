@@ -77,6 +77,26 @@
       background: #5a8503;
     }
 
+    .password-wrapper {
+      position: relative;
+    }
+
+    .password-wrapper input {
+      width: 100%;
+      padding-right: 40px;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+
     .error {
       color: #D32F2F;
       margin-bottom: 18px;
@@ -112,17 +132,18 @@
 <body>
   <div class="register-container">
     <div class="register-title">당신의 정원을 가꿔 보세요.</div>
-    <% if (error && error.length) { %>
-      <div class="error"><%= error %></div>
-    <% } %>
     <form class="register-form" action="/register" method="POST">
-      <label for="nickname">Nickname</label>
+      <label for="nickname">닉네임</label>
       <input type="text" name="nickname" placeholder="닉네임" value="<%= form && form.nickname ? form.nickname : '' %>" required />
-      <label for="email">Email</label>
+      <label for="email">이메일</label>
       <input type="email" name="email" placeholder="이메일 주소" value="<%= form && form.email ? form.email : '' %>" required />
-      <label for="password">Password</label>
-      <input type="password" name="password" placeholder="비밀번호" required />
+      <label for="password">비밀번호</label>
+      <input type="password" name="password" placeholder="비밀번호 (8자 이상)" required />
+      <label for="password">비밀번호 확인</label>
       <input type="password" name="passwordConfirm" placeholder="비밀번호 확인" required />
+      <% if (error && error.length) { %>
+        <div class="error"><%= error[0] %></div>
+      <% } %>
       <div class="checkbox-row">
         <input type="checkbox" name="agree" id="agree" required />
         <label for="agree">이용약관에 동의합니다.</label>
