@@ -153,6 +153,8 @@ const { promisePool } = require('../db/db');
 
 // 커뮤니티 메인 페이지 - 게시글 목록
 router.get('/', async (req, res) => {
+  const keyword = req.query.search || '';
+
   try {
     const [posts] = await promisePool.query(`
       SELECT 
@@ -166,14 +168,17 @@ router.get('/', async (req, res) => {
         u.nickname
       FROM post p
       JOIN user u ON p.user_id = u.user_id
+      WHERE p.post_title LIKE ?
       ORDER BY p.creation_date DESC
-    `);
-    res.render('community/community', { posts }); 
+    `, [`%${keyword}%`]);
+
+    res.render('community/community', { posts, keyword });
   } catch (err) {
     console.error(err);
     res.status(500).send('게시글을 불러오는 중 오류 발생');
   }
 });
+
 
 // 글 작성 화면
 router.get('/post', (req, res) => {
@@ -202,7 +207,7 @@ router.post('/post', async (req, res) => {
   }
 });
 
-// 게시글 상세 보기
+// 게시글 상세 보기(comment_num -> comment_id 수정)
 router.get('/detail/:postId', async (req, res) => {
   const { postId } = req.params;
 
@@ -219,12 +224,13 @@ router.get('/detail/:postId', async (req, res) => {
     `, [postId]);
 
     const [comments] = await promisePool.query(`
-      SELECT c.comment_id, c.comment_content, c.created_at, u.nickname, c.user_id
+      SELECT c.comment_id AS comment_id, c.content AS comment_content, c.creation_date AS created_at, u.nickname, c.user_id
       FROM comment c
       JOIN user u ON c.user_id = u.user_id
       WHERE c.post_id = ?
-      ORDER BY c.created_at ASC
-    `, [postId]);
+      ORDER BY c.creation_date ASC
+`   , [postId]);
+
 
     res.render('community/community_detail', { post, comments, userId: req.session.user?.user_id });
   } catch (err) {
@@ -233,13 +239,14 @@ router.get('/detail/:postId', async (req, res) => {
   }
 });
 
-// 댓글 작성 (AJAX)
+/*
+// 댓글 작성 (AJAX) (컬럼 이름 수정 전, 임시 사용자)
 router.post('/detail/:postId/comment', async (req, res) => {
   const { postId } = req.params;
   const { content } = req.body;
-  const userId = req.session.user?.user_id;
+  const userId = 1; //req.session.user?.user_id;
 
-  if (!userId) return res.status(401).json({ error: '로그인이 필요합니다.' });
+  //if (!userId) return res.status(401).json({ error: '로그인이 필요합니다.' });
 
   try {
     await promisePool.query(`
@@ -253,6 +260,39 @@ router.post('/detail/:postId/comment', async (req, res) => {
 
     const [[comment]] = await promisePool.query(`
       SELECT c.comment_id, c.comment_content, c.created_at, u.nickname
+      FROM comment c
+      JOIN user u ON c.user_id = u.user_id
+      WHERE c.post_id = ? AND c.user_id = ?
+      ORDER BY c.comment_id DESC LIMIT 1
+    `, [postId, userId]);
+
+    res.json(comment);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: '댓글 작성 중 오류 발생' });
+  }
+});
+*/
+
+// 댓글 작성 (AJAX)
+router.post('/detail/:postId/comment', async (req, res) => {
+  const { postId } = req.params;
+  const { content } = req.body;
+  const userId = 1; // 임시 사용자 ID
+  const commentNum = Math.floor(Math.random() * 1000000);
+
+  try {
+    await promisePool.query(`
+      INSERT INTO comment (comment_id, post_id, user_id, content, creation_date)
+      VALUES (?, ?, ?, ?, CURDATE())
+    `, [commentNum, postId, userId, content]);
+
+    await promisePool.query(`
+      UPDATE post SET comment_id = comment_id + 1 WHERE post_id = ?
+    `, [postId]);
+
+    const [[comment]] = await promisePool.query(`
+      SELECT c.comment_id, c.content AS comment_content, c.creation_date AS created_at, u.nickname
       FROM comment c
       JOIN user u ON c.user_id = u.user_id
       WHERE c.post_id = ? AND c.user_id = ?

@@ -1,17 +1,4 @@
-<!--게시글 상세 보기 페이지-->
 <!--
-<div class="container">
-  <h2>게시글 작성 화면</h2>
-  <form action="/community" method="POST">
-    <input type="text" name="title" placeholder="제목을 입력해주세요">
-    <textarea name="content" placeholder="내용을 입력해주세요"></textarea>
-    <button type="submit">작성</button>
-  </form>
-</div>
--->
-
-<!-- community_detail.ejs -->
-
 <div class="container">
   <input type="hidden" id="post-id" value="<%= post.post_id %>">
   <h3><%= post.title %></h3>
@@ -83,5 +70,124 @@ document.querySelector('#comment-form').addEventListener('submit', function(e) {
     });
 });
 </script>
+-->
 
-<!--고쳐야 하는 부분: 이모티콘 두 번 눌렀을 때 취소되도록 하기-->
+<!-- community/detail.ejs 수정 -->
+<div class="container" style="padding: 20px; max-width: 600px; margin: 0 auto;">
+  <input type="hidden" id="post-id" value="<%= post.post_id %>">
+
+  <div class="post-header" style="border: 1px solid #ccc; border-radius: 15px; padding: 15px; margin-bottom: 20px;">
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center;">
+        <div style="width: 40px; height: 40px; background-color: #eee; border-radius: 50%; margin-right: 10px;"></div>
+        <div style="text-align: left;">
+          <strong>닉네임0</strong><br>
+          <small>3시간 전</small>
+        </div>
+      </div>
+    </div>
+    <h3 style="margin-top: 10px;"><%= post.title %></h3>
+    <p><%= post.content %></p>
+    <div class="reaction-bar" style="text-align: right;">
+      <span id="like-icon" class="icon">☀</span>
+      <span id="like-count"><%= post.likeCount %></span>
+      <span id="scrap-icon" class="icon">☆</span>
+      <span id="scrap-count"><%= post.scrapCount %></span>
+      <span class="icon">💬</span>
+      <span><%= comments.length %></span>
+    </div>
+  </div>
+
+  <ul class="comments" id="comment-list" style="padding: 0; list-style-type: none;">
+    <% comments.forEach((comment, index) => { %>
+      <li id="comment-<%= index %>" style="border: 1px solid #ccc; border-radius: 15px; padding: 10px; margin-bottom: 10px;">
+        <div style="display: flex; justify-content: space-between;">
+          <div style="display: flex; align-items: center;">
+            <div style="width: 30px; height: 30px; background-color: #eee; border-radius: 50%; margin-right: 10px;"></div>
+            <strong><%= comment.nickname %></strong>
+          </div>
+          <small>20분 전</small>
+        </div>
+        <p style="margin: 5px 0 0 40px;"><%= comment.comment_content %></p>
+        <div style="text-align: right;">☀3</div>
+      </li>
+    <% }) %>
+  </ul>
+
+  <form id="comment-form" style="position: fixed; bottom: 60px; left: 0; right: 0; padding: 10px; background: #fff; display: flex; justify-content: center;">
+    <input type="text" id="comment-content" placeholder="댓글을 작성하세요" style="width: 80%; border-radius: 20px; padding: 10px; border: 1px solid #ccc;">
+    <button type="submit" style="margin-left: 10px; border: none; background: none; font-size: 24px;">✏️</button>
+  </form>
+</div>
+
+<script>
+let liked = false;
+let scrapped = false;
+
+const postId = document.querySelector('#post-id').value;
+
+const likeIcon = document.querySelector('#like-icon');
+const likeCount = document.querySelector('#like-count');
+likeIcon.addEventListener('click', () => {
+  fetch(`/community/like/${postId}`, { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        liked = !liked;
+        likeCount.textContent = parseInt(likeCount.textContent) + (liked ? 1 : -1);
+      }
+    });
+});
+
+const scrapIcon = document.querySelector('#scrap-icon');
+const scrapCount = document.querySelector('#scrap-count');
+scrapIcon.addEventListener('click', () => {
+  fetch(`/community/scrap/${postId}`, { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        scrapped = !scrapped;
+        scrapCount.textContent = parseInt(scrapCount.textContent) + (scrapped ? 1 : -1);
+      }
+    });
+});
+
+document.querySelector('#comment-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const content = document.querySelector('#comment-content').value;
+
+  fetch(`/community/detail/${postId}/comment`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content })
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.comment_content && data.nickname) {
+        const commentList = document.querySelector('#comment-list');
+        const newComment = document.createElement('li');
+        newComment.style = 'border: 1px solid #ccc; border-radius: 15px; padding: 10px; margin-bottom: 10px;';
+        newComment.innerHTML = `
+          <div style="display: flex; justify-content: space-between;">
+            <div style="display: flex; align-items: center;">
+              <div style="width: 30px; height: 30px; background-color: #eee; border-radius: 50%; margin-right: 10px;"></div>
+              <strong>${data.nickname}</strong>
+            </div>
+            <small>방금 전</small>
+          </div>
+          <p style="margin: 5px 0 0 40px;">${data.comment_content}</p>
+          <div style="text-align: right;">☀0</div>
+        `;
+        commentList.appendChild(newComment);
+        document.querySelector('#comment-content').value = '';
+      } else {
+        alert('댓글 등록에 실패했습니다.');
+      }
+    })
+    .catch(err => {
+      console.error('댓글 등록 오류:', err);
+      alert('댓글 등록 중 문제가 발생했습니다.');
+    });
+});
+
+</script>
