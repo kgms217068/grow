@@ -1,0 +1,87 @@
+<!--게시글 상세 보기 페이지-->
+<!--
+<div class="container">
+  <h2>게시글 작성 화면</h2>
+  <form action="/community" method="POST">
+    <input type="text" name="title" placeholder="제목을 입력해주세요">
+    <textarea name="content" placeholder="내용을 입력해주세요"></textarea>
+    <button type="submit">작성</button>
+  </form>
+</div>
+-->
+
+<!-- community_detail.ejs -->
+
+<div class="container">
+  <input type="hidden" id="post-id" value="<%= post.post_id %>">
+  <h3><%= post.title %></h3>
+  <p><%= post.content %></p>
+  <p>
+    ❤️ <span id="like-count"><%= post.likeCount %></span>
+    <button id="like-button">좋아요</button>
+    📎 <span id="scrap-count"><%= post.scrapCount %></span>
+    <button id="scrap-button">스크랩</button>
+  </p>
+  <hr>
+  <ul class="comments" id="comment-list">
+    <% comments.forEach((comment, index) => { %>
+      <li id="comment-<%= index %>">
+        <strong><%= comment.nickname %>:</strong> <%= comment.comment_content %>
+      </li>
+    <% }) %>
+  </ul>
+  <form id="comment-form">
+    <input type="text" id="comment-content" placeholder="댓글을 입력하세요">
+    <button type="submit">작성</button>
+  </form>
+</div>
+
+<script>
+document.querySelector('#like-button').addEventListener('click', () => {
+  const postId = document.querySelector('#post-id').value;
+  fetch(`/community/like/${postId}`, { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        const count = document.querySelector('#like-count');
+        count.textContent = parseInt(count.textContent) + 1;
+      }
+    });
+});
+
+document.querySelector('#scrap-button').addEventListener('click', () => {
+  const postId = document.querySelector('#post-id').value;
+  fetch(`/community/scrap/${postId}`, { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        const count = document.querySelector('#scrap-count');
+        count.textContent = parseInt(count.textContent) + 1;
+      }
+    });
+});
+
+document.querySelector('#comment-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const postId = document.querySelector('#post-id').value;
+  const content = document.querySelector('#comment-content').value;
+
+  fetch(`/community/detail/${postId}/comment`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content })
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        const commentList = document.querySelector('#comment-list');
+        const newComment = document.createElement('li');
+        newComment.innerHTML = `<strong>${data.nickname}:</strong> ${data.content}`;
+        commentList.appendChild(newComment);
+        document.querySelector('#comment-content').value = '';
+      }
+    });
+});
+</script>
+
+<!--고쳐야 하는 부분: 이모티콘 두 번 눌렀을 때 취소되도록 하기-->

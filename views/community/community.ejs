@@ -1,0 +1,24 @@
+<!--커뮤니티 메인 페이지-->
+<div class="community-wrapper">
+  <h2>커뮤니티</h2>
+  <input type="text" placeholder="검색" class="search-box">
+
+  <ul class="post-list">
+    <% posts.forEach(post => { %>
+      <li class="post-item">
+        <a href="/community/detail/<%= post.post_id %>">
+          <h3><strong><%= post.title %></strong></h3>
+          <p><%= post.content %></p>
+          <div class="post-meta">
+            ☀ <%= post.likeCount %> 
+            ☆ <%= post.scrapCount %> 
+            ❋ <%= post.commentCount %> 
+          </div>
+          <small><%= new Date(post.createdAt).toLocaleString('ko-KR') %></small>
+        </a>
+      </li>
+    <% }) %>
+  </ul>
+
+  <a href="/community/post" class="write-button">✏️</a>
+</div>

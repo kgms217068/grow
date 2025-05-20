@@ -1,0 +1,22 @@
+//그로우마켓 페이지
+<div class="container">
+  <h2>그로우마켓</h2>
+  <form action="/market" method="POST">
+    <select name="fruitType">
+      <option value="orange">오렌지</option>
+      <option value="peach">복숭아</option>
+    </select>
+    <input type="text" name="fruitName" placeholder="과일 이름">
+    <button type="submit">등록</button>
+  </form>
+  <ul class="fruit-list">
+    <% fruits.forEach(fruit => { %>
+      <li>
+        <span><%= fruit.name %></span>
+        <span>D-<%= fruit.daysLeft %></span>
+        <span><%= fruit.quantity %>개</span>
+        <span><%= fruit.owner %></span>
+      </li>
+    <% }) %>
+  </ul>
+</div>

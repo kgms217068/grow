@@ -65,3 +65,74 @@ body {
   font-weight: bold;
   color: #333;
 }
+
+/* community 전용 스타일 - style.css 가장 아래에 추가 */
+.community-wrapper {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: left;
+}
+
+.community-wrapper .search-box {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+
+.community-wrapper .post-list {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+}
+
+.community-wrapper .post-item {
+  margin-bottom: 2rem;
+}
+
+/* ✏️ 글쓰기 버튼 - 오른쪽 아래 플로팅 */
+.write-button {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  font-size: 30px;
+  background-color: #a4c639;
+  border-radius: 50%;
+  padding: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  text-decoration: none;
+  color: white;
+  z-index: 1000;
+}
+
+/* 게시글 작성 페이지 중앙 정렬 */
+.write-form-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 40px;
+}
+
+.write-form-wrapper form {
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+  max-width: 400px;
+  gap: 10px;
+}
+
+.write-form-wrapper input,
+.write-form-wrapper textarea {
+  padding: 10px;
+  font-size: 16px;
+}
+
+.write-form-wrapper button {
+  padding: 10px;
+  font-size: 16px;
+  background-color: #a4c639;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}

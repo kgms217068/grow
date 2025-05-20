@@ -1,0 +1,10 @@
+<!--게시글 작성 페이지-->
+<!-- community_post.ejs -->
+<div class="container" style="display: flex; flex-direction: column; align-items: center; margin-top: 40px;">
+  <h2>게시글 작성</h2>
+  <form action="/community/post" method="POST" style="display: flex; flex-direction: column; width: 90%; max-width: 400px; gap: 10px;">
+    <input type="text" name="title" placeholder="제목을 입력해주세요" required style="padding: 10px; font-size: 16px;">
+    <textarea name="content" placeholder="내용을 입력해주세요" required style="padding: 10px; height: 150px; font-size: 16px;"></textarea>
+    <button type="submit" style="padding: 10px; font-size: 16px; background-color: #a4c639; color: white; border: none; border-radius: 5px;">작성</button>
+  </form>
+</div>
