@@ -5,14 +5,16 @@
   <link rel="stylesheet" href="/css/style.css" />
   <style>
 
-    @font-face {
+  @font-face 
+  {
     font-family: 'neon';
-    src: url('../../NanumSquareNeo-bRg.ttf') format('truetype');
-}
-body {
+    src: url('../../NanumSquareNeo-bRg.ttf') format('ttf');
+  }
+  body {
   font-family: 'neon';
-}
-    .mission-box {
+  }
+  .mission-box 
+  {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -25,14 +27,13 @@ body {
   padding: 0 14px;
 }
 .mission-done-box{
-  background: #d9d9d9;
+  background: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin: 10px auto;
   width: 340px;
-height: 50px;
- 
+  height: 50px;
   border-radius: 8px;
   padding: 0 14px;
 }
@@ -44,9 +45,9 @@ height: 50px;
     .cert-btn {
       background-color: #71a304;
       color: white;
-      font-weight: bold;
       width: 75px;
       height: 34px;
+      font-weight: bold;
     }
     .waiting-btn {
       background-color: #71a304;
@@ -102,33 +103,34 @@ height: 50px;
 
 <!-- ✅ 미완료 미션 -->
 <h3 style="text-align: center; margin-top: 30px;">미완료 미션</h3>
-<% missions.filter(m => certStatus[m.mission_id] !== true).forEach(m => {
-     const status = certStatus[m.mission_id]; // undefined / true / false
+<% missions.filter(m => !certStatus[m.mission_id]?.status).forEach(m => {
+     const statusObj = certStatus[m.mission_id];
 %>
- <div class="mission-box">
-  <p style="margin: 0;" class="font"><%= m.description %></p>
-  
-  <% if (status === false) { %>
-    <button class="status-btn waiting-btn font" disabled>확인 중</button>
-  <% } else { %>
-    <form action="/dashboard?missionId=<%= m.mission_id %>" method="get" style="margin: 0;">
-      <button class="status-btn cert-btn font">인증</button>
-    </form>
-  <% } %>
-</div>
+  <div class="mission-box">
+    <p style="margin: 0;" class="font"><%= m.description %></p>
 
+    <% if (statusObj && statusObj.status === false) { %>
+      <button class="status-btn waiting-btn font" disabled>확인 중</button>
+    <% } else { %>
+      <form action="/dashboard?missionId=<%= m.mission_id %>" method="get" style="margin: 0;">
+        <button class="status-btn cert-btn font">인증</button>
+      </form>
+    <% } %>
+  </div>
 <% }) %>
 
 <!-- ✅ 완료 미션 -->
 <h3 style="text-align: center; margin-top: 40px;">완료 미션</h3>
-<% missions.filter(m => certStatus[m.mission_id]?.status === true).forEach(m => { %>
+<% missions.filter(m => certStatus[m.mission_id]?.status === true).forEach(m => {
+     const date = certStatus[m.mission_id]?.date;
+     const formattedDate = date ? new Date(date).toISOString().split('T')[0] : 'N/A';
+%>
   <div class="mission-done-box">
     <p style="margin-left: 20px;"><%= m.description %></p>
-    <p class="status-btn done-btn">
-      완료일자<br><%= certStatus[m.mission_id].date.toISOString().slice(0, 10) %>
-    </p>
+    <p class="status-btn done-btn">완료일자<br><%= formattedDate %></p>
   </div>
 <% }) %>
+
 
 
 

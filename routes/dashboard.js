@@ -5,6 +5,8 @@ const path = require('path');
 const { promisePool } = require('../db/db');
 const certModel = require('../models/certificationModel');
 const missionModel = require('../models/missionModel');
+const userModel = require('../models/userModel');
+
 
 // 파일 업로드 설정
 const storage = multer.diskStorage({
@@ -21,6 +23,9 @@ const upload = multer({ storage });
 // ✅ GET /dashboard
 router.get('/', async (req, res) => {
   const userId = req.session.userId || 1;
+  
+
+const user = await userModel.getUserById(userId); // ✅ 유저 정보 가져오기
 
   const allMissions = await missionModel.getAllMissions();
   const certifications = await certModel.getCertificationsByUser(userId);
@@ -116,22 +121,31 @@ router.get('/mission', async (req, res) => {
   // 현재 완료된 목록을 세션에 저장 (다음 렌더링 때 비교)
   req.session.prevCompleted = certifications.filter(c => c.checked).map(c => c.mission_id);
 
-  res.render('dashboard/mission', {
-    missions: allMissions,
-    certStatus,
-    nickname: '가연이',           // 실제 서비스에선 req.session.nickname
-    currentLevel: '3단계',        // 사용자 단계는 추후 로직 적용
-    showFertilizerModal: newlyChecked,
-    latestMissionExecutionId
-  });
+
+
+const [userInfoRows] = await promisePool.query(
+  'SELECT nickname, level FROM user WHERE user_id = ?',
+  [userId]
+);
+
+const userInfo = userInfoRows[0]; // 첫 번째 행
+
+res.render('dashboard/mission', {
+  missions: allMissions,
+  certStatus,
+  nickname: userInfo.nickname,
+  currentLevel: `${userInfo.level}단계`, // 🔥 실제 단계 출력
+  showFertilizerModal: newlyChecked,
+  latestMissionExecutionId
+});
 });
 
 
 // ✅ GET /dashboard/completed (사용 안함 - 현재 모달로 대체)
 router.get('/completed', (req, res) => {
   res.render('dashboard/completed', {
-    nickname: '가연이',
-    currentLevel: '3단계',
+    nickname: userInfo.nickname,
+  currentLevel: `${userInfo.level}단계`, // 🔥 실제 단계 출력
     missionId: req.query.missionId
   });
 });

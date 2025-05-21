@@ -70,6 +70,7 @@ const communityRouter = require('./routes/community');
 const marketRouter = require('./routes/market');
 const mypageRouter = require('./routes/mypage');
 const adminRouter = require('./routes/admin');
+const inventoryRouter = require('./routes/inventory');
 
 
 
@@ -95,6 +96,7 @@ app.use('/community', communityRouter);
 app.use('/market', marketRouter);
 app.use('/mypage', mypageRouter);
 app.use('/admin', adminRouter);
+app.use('/inventory', inventoryRouter);
 
 // 기본 라우트
 app.get('/', (req, res) => {
