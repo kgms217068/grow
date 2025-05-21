@@ -25,44 +25,70 @@
 -->
 <!-- views/community.ejs -->
 <!-- community.ejs 수정 -->
-<div class="community-wrapper" style="text-align: center;">
-
-  <!-- 검색창 수정 -->
-  <form action="/community" method="get" style="display: flex; justify-content: center; align-items: center; margin-bottom: 20px;">
-    <div style="position: relative; width: 90%; max-width: 540px;">
+<div class="community-wrapper"
+     style="width: 430px; height: 932px; margin: 0 auto; background: #fff; padding: 20px; box-sizing: border-box; position: relative;">
+  <!-- 검색창 -->
+  <form action="/community" method="get" style="display: flex; justify-content: center; margin-bottom: 20px;">
+    <div style="position: relative; width: 100%;">
       <input type="text" name="search" placeholder="검색"
-             style="width: 100%; height: 44px; padding: 10px 44px 10px 15px; border-radius: 20px; border: none; font-size: 16px; outline: none; box-shadow: 0 0 0 1px #000000 inset; overflow: hidden; text-overflow: ellipsis;">
+             style="width: 100%; height: 44px; padding: 0 44px 0 15px; border-radius: 22px; border: 1px solid #000; font-size: 16px; outline: none;">
       <button type="submit"
-              style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; display: flex; justify-content: center; align-items: center; background: none; border: none; font-size: 20px; color: #000000; cursor: pointer;">
-        🔍
-      </button>
+              style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 18px; cursor: pointer;">🔍</button>
     </div>
   </form>
 
-  <ul class="post-list" style="list-style-type: none; padding: 0;">
+  <!-- 게시글 목록 -->
+  <ul class="post-list" style="list-style: none; padding: 0; margin: 0;">
     <% posts.forEach(post => { %>
-      <li class="post-item" style="text-align: left; margin: 15px auto; width: 90%; padding: 10px; border-radius: 5px;">
-        <h3><a href="/community/detail/<%= post.post_id %>" style="color: #333; text-decoration: none;"><%= post.title %></a></h3>
-        <p><%= post.content %></p>
-        <div class="post-meta">
-          ☀ <%= post.likeCount %> &nbsp;
-          ☆ <%= post.scrapCount %> &nbsp;
-          💬 <%= post.commentCount %>
+      <li style="position: relative; width: 90%; margin: 20px auto; padding: 15px 10px; border-bottom: 1px solid #ccc;">
+        <!-- 우측 상단 시간 -->
+        <div style="position: absolute; top: 15px; right: 10px; font-size: 12px; color: #666;">
+          <%= post.timeAgo %>
         </div>
-        <small><%= new Date(post.createdAt).toLocaleString('ko-KR') %></small>
+
+        <!-- 게시글 제목 및 내용 -->
+        <a href="/community/detail/<%= post.post_id %>" style="text-decoration: none; color: black;">
+          <div style="display: flex; align-items: center; margin-bottom: 5px;">
+            <div style="font-size: 20px; margin-right: 5px;">👤</div>
+            <div>
+              <div style="font-weight: bold;"> <%= post.title %> </div>
+              <div style="font-size: 14px; color: #444;"> <%= post.content %> </div>
+            </div>
+          </div>
+        </a>
+
+        <!-- 아이콘 정보 -->
+        <div style="margin-top: 10px; font-size: 16px;">
+          ☀ <%= post.likeCount %> &nbsp;&nbsp;
+          💬 <%= post.commentCount %> &nbsp;&nbsp;
+          <% if (post.scrapCount > 0) { %>
+            ⭐ <%= post.scrapCount %>
+          <% } else { %>
+            ☆ <%= post.scrapCount %>
+          <% } %>
+        </div>
       </li>
     <% }) %>
   </ul>
 
-  <div style="position: fixed; bottom: 80px; left: 0; right: 0; text-align: center;">
-    <a href="/community/post" class="write-button" style="font-size: 28px;">✏️</a>
+  <!-- 작성 버튼 -->
+  <div style="position: fixed; bottom: 90px; right: 20px;">
+    <!-- 글쓰기 버튼 (✏️) -->
+  <a href="/community/post"
+     style="position: absolute; bottom: 20px; right: 20px; display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 60px; border-radius: 50%; background: white; border: 2px solid black; font-size: 28px; text-decoration: none;">
+    ✏️
+  </a>
   </div>
 </div>
 
-<style>
-.icon {
-  cursor: pointer;
-  font-size: 24px;
-  margin: 0 10px;
-}
-</style>
+<script>
+  function timeAgo(dateStr) {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000 / 60); // minutes
+    if (diff < 60) return `${diff}분 전`;
+    const hour = Math.floor(diff / 60);
+    if (hour < 24) return `${hour}시간 전`;
+    return dateStr.slice(0, 10);
+  }
+</script>

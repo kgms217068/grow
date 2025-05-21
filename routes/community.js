@@ -1,4 +1,4 @@
-const express = require('express');
+/*const express = require('express');
 const router = express.Router();
 const { promisePool } = require('../db/db');
 
@@ -82,14 +82,14 @@ router.get('/detail/:postId', async (req, res) => {
       ORDER BY c.creation_date ASC
 `   , [postId]);
 
-      /*  like 테이블 생성한 경우. 해당 사용자가 좋아요를 눌렀었는지의 여부를 불러오고 표시함
+     // like 테이블 생성한 경우. 해당 사용자가 좋아요를 눌렀었는지의 여부를 불러오고 표시함
       const [[likeStatus]] = await promisePool.query(`
       SELECT 1 AS liked FROM post_like WHERE post_id = ? AND user_id = ?
       `, [postId, userId]);
 
       const liked = !!likeStatus; //!!는 값을 boolean형태로 강제로 변환.
       res.render('community/community_detail', { post, comments, liked });
-      */
+     //
 
     res.render('community/community_detail', { post, comments, userId: req.session.user?.user_id });
   } catch (err) {
@@ -131,7 +131,7 @@ router.post('/detail/:postId/comment', async (req, res) => {
     res.status(500).json({ error: '댓글 작성 중 오류 발생' });
   }
 });
-*/
+//
 
 // 댓글 작성 (AJAX)
 router.post('/detail/:postId/comment', async (req, res) => {
@@ -248,7 +248,7 @@ router.post('/like/:postId', async (req, res) => {
     res.status(500).json({ success: false, error: '좋아요 처리 중 오류' });
   }
 });
-*/
+//
 
 // 스크랩 토글
 router.post('/scrap/:postId', async (req, res) => {
@@ -307,7 +307,7 @@ router.post('/scrap/:postId', async (req, res) => {
     res.status(500).json({ success: false });
   }
 });
-*/
+//
 
 // 게시글 삭제
 router.delete('/post/:postId', async (req, res) => {
@@ -337,6 +337,119 @@ router.delete('/post/:postId', async (req, res) => {
     // 게시글 삭제
     await promisePool.query(`DELETE FROM post WHERE post_id = ?`, [postId]);
 
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: '게시글 삭제 중 오류 발생' });
+  }
+});
+
+module.exports = router;*/
+
+
+// ✅ routes/community.js (Controller)
+const express = require('express');
+const router = express.Router();
+const service = require('../services/communityService');
+
+// 커뮤니티 메인 페이지 - 게시글 목록
+router.get('/', async (req, res) => {
+  const keyword = req.query.search || '';
+  try {
+    const posts = await service.fetchPosts(keyword);
+    res.render('community/community', { posts, keyword });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('게시글을 불러오는 중 오류 발생');
+  }
+});
+
+// 글 작성 화면
+router.get('/post', (req, res) => {
+  res.render('community/community_post');
+});
+
+// 글 작성 처리
+router.post('/post', async (req, res) => {
+  const { title, content } = req.body;
+  const userId = 1; // 실제로는 req.session.user?.user_id
+
+  try {
+    await service.createPost(title, content, userId);
+    res.redirect('/community');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('게시글 작성 중 오류 발생');
+  }
+});
+
+// 게시글 상세 보기
+router.get('/detail/:postId', async (req, res) => {
+  const { postId } = req.params;
+  const userId = req.session.user?.user_id || 1;
+
+  try {
+    const { post, comments } = await service.fetchPostDetail(postId);
+    res.render('community/community_detail', { post, comments, userId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('게시글 상세보기 중 오류 발생');
+  }
+});
+
+// 댓글 작성
+router.post('/detail/:postId/comment', async (req, res) => {
+  const { postId } = req.params;
+  const { content } = req.body;
+  const userId = 1; // 실제 로그인 사용자로 대체
+
+  try {
+    const comment = await service.addComment(postId, userId, content);
+    res.json(comment);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: '댓글 작성 중 오류 발생' });
+  }
+});
+
+// 댓글 삭제
+router.delete('/detail/:postId/comment/:commentId', async (req, res) => {
+  const { postId, commentId } = req.params;
+  const userId = req.session.user?.user_id || 1;
+
+  try {
+    const success = await service.removeComment(postId, commentId, userId);
+    if (!success) return res.status(403).json({ error: '삭제 권한이 없습니다.' });
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: '댓글 삭제 중 오류 발생' });
+  }
+});
+
+// 스크랩 토글
+router.post('/scrap/:postId', async (req, res) => {
+  const { postId } = req.params;
+  const userId = req.session.user?.user_id || 1;
+
+  try {
+    const result = await service.toggleScrapPost(postId, userId);
+    res.json({ success: true, ...result });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, error: '스크랩 처리 중 오류' });
+  }
+});
+
+// 게시글 삭제
+router.delete('/post/:postId', async (req, res) => {
+  const { postId } = req.params;
+  const userId = req.session.user?.user_id || 1;
+
+  try {
+    const result = await service.deletePostByUser(postId, userId);
+    if (result.status === 404) return res.status(404).json({ error: '게시글이 존재하지 않습니다.' });
+    if (result.status === 403) return res.status(403).json({ error: '게시글 삭제 권한이 없습니다.' });
     res.json({ success: true });
   } catch (err) {
     console.error(err);
