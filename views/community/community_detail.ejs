@@ -73,6 +73,7 @@ document.querySelector('#comment-form').addEventListener('submit', function(e) {
 -->
 
 <!-- community/detail.ejs 수정 -->
+<!--
 <div class="container" style="padding: 20px; max-width: 600px; margin: 0 auto;">
   <input type="hidden" id="post-id" value="<%= post.post_id %>">
 
@@ -114,6 +115,67 @@ document.querySelector('#comment-form').addEventListener('submit', function(e) {
     <% }) %>
   </ul>
 
+  <form id="comment-form" style="position: fixed; bottom: 60px; left: 0; right: 0; padding: 10px; background: #fff; display: flex; justify-content: center;">
+    <input type="text" id="comment-content" placeholder="댓글을 작성하세요" style="width: 80%; border-radius: 20px; padding: 10px; border: 1px solid #ccc;">
+    <button type="submit" style="margin-left: 10px; border: none; background: none; font-size: 24px;">✏️</button>
+  </form>
+</div>
+-->
+
+<div class="container" style="padding: 20px; max-width: 600px; margin: 0 auto;">
+  <input type="hidden" id="post-id" value="<%= post.post_id %>">
+
+  <!-- 게시글 상단 정보 -->
+  <div class="post-header" style="border: 1px solid #ccc; border-radius: 15px; padding: 15px; margin-bottom: 20px;">
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center;">
+        <div style="width: 40px; height: 40px; background-color: #eee; border-radius: 50%; margin-right: 10px;"></div>
+        <div style="text-align: left;">
+          <strong><%= post.nickname %></strong><br>
+          <small><%= new Date(post.createdAt).toLocaleString('ko-KR') %></small>
+        </div>
+      </div>
+
+      <% if (userId === post.user_id) { %>
+        <small id="delete-post" style="color: gray; cursor: pointer;">게시글 삭제</small>
+      <% } %>
+    </div>
+
+    <h3 style="margin-top: 10px;"><%= post.title %></h3>
+    <p><%= post.content %></p>
+
+    <div class="reaction-bar" style="text-align: right;">
+      <span id="like-icon" class="icon">☀</span>
+      <span id="like-count"><%= post.likeCount %></span>
+      <span id="scrap-icon" class="icon">☆</span>
+      <span id="scrap-count"><%= post.scrapCount %></span>
+      <span class="icon">💬</span>
+      <span><%= comments.length %></span>
+    </div>
+  </div>
+
+  <!-- 댓글 목록 -->
+  <ul class="comments" id="comment-list" style="padding: 0; list-style-type: none;">
+    <% comments.forEach(comment => { %>
+      <li id="comment-<%= comment.comment_id %>" style="border: 1px solid #ccc; border-radius: 15px; padding: 10px; margin-bottom: 10px;">
+        <div style="display: flex; justify-content: space-between;">
+          <div style="display: flex; align-items: center;">
+            <div style="width: 30px; height: 30px; background-color: #eee; border-radius: 50%; margin-right: 10px;"></div>
+            <strong><%= comment.nickname %></strong>
+          </div>
+          <% if (comment.user_id === userId) { %>
+            <small class="comment-delete" data-comment-id="<%= comment.comment_id %>" style="color: gray; cursor: pointer;">댓글삭제</small>
+          <% } else { %>
+            <small><%= new Date(comment.created_at).toLocaleString('ko-KR') %></small>
+          <% } %>
+        </div>
+        <p style="margin: 5px 0 0 40px;"><%= comment.comment_content %></p>
+        <div style="text-align: right;">☀0</div>
+      </li>
+    <% }) %>
+  </ul>
+
+  <!-- 댓글 입력창 -->
   <form id="comment-form" style="position: fixed; bottom: 60px; left: 0; right: 0; padding: 10px; background: #fff; display: flex; justify-content: center;">
     <input type="text" id="comment-content" placeholder="댓글을 작성하세요" style="width: 80%; border-radius: 20px; padding: 10px; border: 1px solid #ccc;">
     <button type="submit" style="margin-left: 10px; border: none; background: none; font-size: 24px;">✏️</button>
@@ -164,27 +226,28 @@ document.querySelector('#comment-form').addEventListener('submit', function(e) {
     .then(res => res.json())
     .then(data => {
       if (data.comment_content && data.nickname) {
-        const commentList = document.querySelector('#comment-list');
-        const newComment = document.createElement('li');
-        newComment.style = 'border: 1px solid #ccc; border-radius: 15px; padding: 10px; margin-bottom: 10px;';
-        newComment.innerHTML = `
-          <div style="display: flex; justify-content: space-between;">
-            <div style="display: flex; align-items: center;">
-              <div style="width: 30px; height: 30px; background-color: #eee; border-radius: 50%; margin-right: 10px;"></div>
-              <strong>${data.nickname}</strong>
+          const commentList = document.querySelector('#comment-list');
+          const newComment = document.createElement('li');
+          newComment.id = `comment-${data.comment_id}`;
+          newComment.style = 'border: 1px solid #ccc; border-radius: 15px; padding: 10px; margin-bottom: 10px;';
+          newComment.innerHTML = `
+            <div style="display: flex; justify-content: space-between;">
+              <div style="display: flex; align-items: center;">
+                <div style="width: 30px; height: 30px; background-color: #eee; border-radius: 50%; margin-right: 10px;"></div>
+                <strong>${data.nickname}</strong>
+              </div>
+              ${data.isMine ? `<small class="comment-delete" data-comment-id="${data.comment_id}" style="color: gray; cursor: pointer;">댓글삭제</small>` : `<small>${new Date(data.created_at).toLocaleString('ko-KR')}</small>`}
             </div>
-            <small>방금 전</small>
-          </div>
-          <p style="margin: 5px 0 0 40px;">${data.comment_content}</p>
-          <div style="text-align: right;">☀0</div>
-        `;
-        commentList.appendChild(newComment);
-        document.querySelector('#comment-content').value = '';
-      } else {
-        alert('댓글 등록에 실패했습니다.');
-      }
-    })
-    .catch(err => {
+            <p style="margin: 5px 0 0 40px;">${data.comment_content}</p>
+            <div style="text-align: right;">☀0</div>
+          `;
+          commentList.appendChild(newComment);
+          document.querySelector('#comment-content').value = '';
+        } else {
+          alert('댓글 등록에 실패했습니다.');
+        }
+      })
+   .catch(err => {
       console.error('댓글 등록 오류:', err);
       alert('댓글 등록 중 문제가 발생했습니다.');
     });
