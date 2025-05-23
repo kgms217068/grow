@@ -1,9 +1,30 @@
-<!--게시글 작성 페이지-->
 <!-- community_post.ejs -->
-<div class="container" style="display: flex; flex-direction: column; align-items: center; margin-top: 40px;">
-  <form action="/community/post" method="POST" style="display: flex; flex-direction: column; width: 90%; max-width: 400px; gap: 10px;">
-    <input type="text" name="title" placeholder="제목을 입력해주세요" required style="padding: 10px; font-size: 16px;">
-    <textarea name="content" placeholder="내용을 입력해주세요" required style="padding: 10px; height: 150px; font-size: 16px;"></textarea>
-    <button type="submit" style="padding: 10px; font-size: 16px; background-color: #a4c639; color: white; border: none; border-radius: 5px;">작성</button>
-  </form>
-</div>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>게시글 작성</title>
+  <link rel="stylesheet" href="/css/community.css">
+</head>
+<body>
+  <div class="post-write-wrapper">
+    <form action="/community/post" method="POST" class="post-write-form">
+      <input type="text" name="title" placeholder="제목을 입력해주세요" required class="post-input">
+      <textarea name="content" placeholder="내용을 입력해주세요" required class="post-textarea"></textarea>
+      <button type="submit" class="post-submit-button">작성</button>
+    </form>
+  </div>
+
+  <!-- 하단 네비게이션 바 -->
+  <nav class="bottom-nav">
+    <ul>
+      <li><a href="/market">🎁<br>그로우마켓</a></li>
+      <li><a href="/home">🏠<br>홈</a></li>
+      <li><a href="/community">👥<br>커뮤니티</a></li>
+      <li><a href="/mypage">👤<br>마이페이지</a></li>
+    </ul>
+  </nav>
+</body>
+</html>
+

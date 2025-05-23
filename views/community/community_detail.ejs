@@ -1,256 +1,122 @@
-<!--
-<div class="container">
-  <input type="hidden" id="post-id" value="<%= post.post_id %>">
-  <h3><%= post.title %></h3>
-  <p><%= post.content %></p>
-  <p>
-    ❤️ <span id="like-count"><%= post.likeCount %></span>
-    <button id="like-button">좋아요</button>
-    📎 <span id="scrap-count"><%= post.scrapCount %></span>
-    <button id="scrap-button">스크랩</button>
-  </p>
-  <hr>
-  <ul class="comments" id="comment-list">
-    <% comments.forEach((comment, index) => { %>
-      <li id="comment-<%= index %>">
-        <strong><%= comment.nickname %>:</strong> <%= comment.comment_content %>
-      </li>
-    <% }) %>
-  </ul>
-  <form id="comment-form">
-    <input type="text" id="comment-content" placeholder="댓글을 입력하세요">
-    <button type="submit">작성</button>
-  </form>
-</div>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>게시글 상세</title>
 
-<script>
-document.querySelector('#like-button').addEventListener('click', () => {
-  const postId = document.querySelector('#post-id').value;
-  fetch(`/community/like/${postId}`, { method: 'POST' })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        const count = document.querySelector('#like-count');
-        count.textContent = parseInt(count.textContent) + 1;
-      }
-    });
-});
+  <!-- Font Awesome CDN -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
 
-document.querySelector('#scrap-button').addEventListener('click', () => {
-  const postId = document.querySelector('#post-id').value;
-  fetch(`/community/scrap/${postId}`, { method: 'POST' })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        const count = document.querySelector('#scrap-count');
-        count.textContent = parseInt(count.textContent) + 1;
-      }
-    });
-});
+ <!-- ✅ 외부 스타일시트 연결 -->
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/community.css">
+</head>
+<body>
+  <div class="container">
+    <input type="hidden" id="post-id" value="<%= post.post_id %>">
 
-document.querySelector('#comment-form').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const postId = document.querySelector('#post-id').value;
-  const content = document.querySelector('#comment-content').value;
-
-  fetch(`/community/detail/${postId}/comment`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content })
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        const commentList = document.querySelector('#comment-list');
-        const newComment = document.createElement('li');
-        newComment.innerHTML = `<strong>${data.nickname}:</strong> ${data.content}`;
-        commentList.appendChild(newComment);
-        document.querySelector('#comment-content').value = '';
-      }
-    });
-});
-</script>
--->
-
-<!-- community/detail.ejs 수정 -->
-<!--
-<div class="container" style="padding: 20px; max-width: 600px; margin: 0 auto;">
-  <input type="hidden" id="post-id" value="<%= post.post_id %>">
-
-  <div class="post-header" style="border: 1px solid #ccc; border-radius: 15px; padding: 15px; margin-bottom: 20px;">
-    <div style="display: flex; align-items: center; justify-content: space-between;">
-      <div style="display: flex; align-items: center;">
-        <div style="width: 40px; height: 40px; background-color: #eee; border-radius: 50%; margin-right: 10px;"></div>
-        <div style="text-align: left;">
-          <strong>닉네임0</strong><br>
-          <small>3시간 전</small>
-        </div>
-      </div>
-    </div>
-    <h3 style="margin-top: 10px;"><%= post.title %></h3>
-    <p><%= post.content %></p>
-    <div class="reaction-bar" style="text-align: right;">
-      <span id="like-icon" class="icon">☀</span>
-      <span id="like-count"><%= post.likeCount %></span>
-      <span id="scrap-icon" class="icon">☆</span>
-      <span id="scrap-count"><%= post.scrapCount %></span>
-      <span class="icon">💬</span>
-      <span><%= comments.length %></span>
-    </div>
-  </div>
-
-  <ul class="comments" id="comment-list" style="padding: 0; list-style-type: none;">
-    <% comments.forEach((comment, index) => { %>
-      <li id="comment-<%= index %>" style="border: 1px solid #ccc; border-radius: 15px; padding: 10px; margin-bottom: 10px;">
-        <div style="display: flex; justify-content: space-between;">
-          <div style="display: flex; align-items: center;">
-            <div style="width: 30px; height: 30px; background-color: #eee; border-radius: 50%; margin-right: 10px;"></div>
-            <strong><%= comment.nickname %></strong>
+    <!-- 게시글 카드 -->
+    <div class="post-card">
+      <div class="post-header">
+        <div class="post-user-info">
+          <div class="user-avatar"></div>
+          <div>
+            <strong><%= post.nickname %></strong><br>
+            <small><%= new Date(post.createdAt).toLocaleString('ko-KR') %></small>
           </div>
-          <small>20분 전</small>
         </div>
-        <p style="margin: 5px 0 0 40px;"><%= comment.comment_content %></p>
-        <div style="text-align: right;">☀3</div>
-      </li>
-    <% }) %>
-  </ul>
-
-  <form id="comment-form" style="position: fixed; bottom: 60px; left: 0; right: 0; padding: 10px; background: #fff; display: flex; justify-content: center;">
-    <input type="text" id="comment-content" placeholder="댓글을 작성하세요" style="width: 80%; border-radius: 20px; padding: 10px; border: 1px solid #ccc;">
-    <button type="submit" style="margin-left: 10px; border: none; background: none; font-size: 24px;">✏️</button>
-  </form>
-</div>
--->
-
-<div class="container" style="padding: 20px; max-width: 600px; margin: 0 auto;">
-  <input type="hidden" id="post-id" value="<%= post.post_id %>">
-
-  <!-- 게시글 상단 정보 -->
-  <div class="post-header" style="border: 1px solid #ccc; border-radius: 15px; padding: 15px; margin-bottom: 20px;">
-    <div style="display: flex; align-items: center; justify-content: space-between;">
-      <div style="display: flex; align-items: center;">
-        <div style="width: 40px; height: 40px; background-color: #eee; border-radius: 50%; margin-right: 10px;"></div>
-        <div style="text-align: left;">
-          <strong><%= post.nickname %></strong><br>
-          <small><%= new Date(post.createdAt).toLocaleString('ko-KR') %></small>
-        </div>
+        <% if (userId === post.user_id) { %>
+          <small class="post-delete" id="delete-post">게시글 삭제</small> 
+        <% } %>
       </div>
 
-      <% if (userId === post.user_id) { %>
-        <small id="delete-post" style="color: gray; cursor: pointer;">게시글 삭제</small>
-      <% } %>
-    </div>
+      <h3 class="post-title"><%= post.title %></h3>
+      <p class="post-content"><%= post.content %></p>
 
-    <h3 style="margin-top: 10px;"><%= post.title %></h3>
-    <p><%= post.content %></p>
-
-    <div class="reaction-bar" style="text-align: right;">
-      <span id="like-icon" class="icon">☀</span>
-      <span id="like-count"><%= post.likeCount %></span>
-      <span id="scrap-icon" class="icon">☆</span>
-      <span id="scrap-count"><%= post.scrapCount %></span>
-      <span class="icon">💬</span>
-      <span><%= comments.length %></span>
-    </div>
-  </div>
-
-  <!-- 댓글 목록 -->
-  <ul class="comments" id="comment-list" style="padding: 0; list-style-type: none;">
-    <% comments.forEach(comment => { %>
-      <li id="comment-<%= comment.comment_id %>" style="border: 1px solid #ccc; border-radius: 15px; padding: 10px; margin-bottom: 10px;">
-        <div style="display: flex; justify-content: space-between;">
-          <div style="display: flex; align-items: center;">
-            <div style="width: 30px; height: 30px; background-color: #eee; border-radius: 50%; margin-right: 10px;"></div>
-            <strong><%= comment.nickname %></strong>
-          </div>
-          <% if (comment.user_id === userId) { %>
-            <small class="comment-delete" data-comment-id="<%= comment.comment_id %>" style="color: gray; cursor: pointer;">댓글삭제</small>
+      <!-- 반응 바 -->
+      <div class="reaction-bar">
+        <!-- 좋아요 -->
+        <span id="like-icon" style="cursor:pointer;">
+          <% if (likedByUser) { %>
+            <i class="fa-solid fa-heart" style="color:red;"></i>
           <% } else { %>
-            <small><%= new Date(comment.created_at).toLocaleString('ko-KR') %></small>
+            <i class="fa-regular fa-heart"></i>
           <% } %>
+        </span>
+        <span id="like-count"><%= post.likeCount %></span>
+
+        <!-- 댓글 -->
+        <i class="fa-regular fa-comment"></i><span id="comment-count"><%= comments.length %></span>
+
+        <!-- 스크랩 -->
+        <span id="scrap-icon" style="cursor:pointer;">
+          <% if (scrappedByUser) { %>
+            <i class="fa-solid fa-star" style="color: #FFEE00;"></i>
+          <% } else { %>
+            <i class="fa-regular fa-star"></i>
+          <% } %>
+        </span>
+        <span id="scrap-count"><%= post.scrapCount %></span>
+      </div>
+    </div>
+
+<!-- 댓글 목록 -->
+<ul class="comments" id="comment-list">
+  <% comments.forEach(comment => { %>
+    <li class="comment-item" id="comment-<%= comment.comment_id %>">
+      <div class="comment-header">
+        <div class="comment-user-info">
+          <div class="user-avatar small"></div>
+          <strong><%= comment.nickname %></strong>
         </div>
-        <p style="margin: 5px 0 0 40px;"><%= comment.comment_content %></p>
-        <div style="text-align: right;">☀0</div>
-      </li>
-    <% }) %>
-  </ul>
+        <% if (comment.user_id === userId) { %>
+          <small class="comment-delete" data-comment-id="<%= comment.comment_id %>">댓글삭제</small>
+        <% } else { %>
+          <small><%= new Date(comment.created_at).toLocaleString('ko-KR') %></small>
+        <% } %>
+      </div>
 
-  <!-- 댓글 입력창 -->
-  <form id="comment-form" style="position: fixed; bottom: 60px; left: 0; right: 0; padding: 10px; background: #fff; display: flex; justify-content: center;">
-    <input type="text" id="comment-content" placeholder="댓글을 작성하세요" style="width: 80%; border-radius: 20px; padding: 10px; border: 1px solid #ccc;">
-    <button type="submit" style="margin-left: 10px; border: none; background: none; font-size: 24px;">✏️</button>
-  </form>
-</div>
+      <p class="comment-content"><%= comment.comment_content %></p>
 
+      <!-- ✅ 댓글 좋아요 기능 추가 -->
+      <div class="reaction-bar right" data-comment-id="<%= comment.comment_id %>">
+        <span class="comment-like-icon" style="cursor:pointer;">
+          <% if (comment.is_liked) { %>
+            <i class="fa-solid fa-heart" style="color:red;"></i>
+          <% } else { %>
+            <i class="fa-regular fa-heart"></i>
+          <% } %>
+        </span>
+        <span class="comment-like-count"><%= comment.like_count %></span>
+      </div>
+    </li>
+  <% }) %>
+</ul>
+
+    <!-- 댓글 입력창 -->
+    <form id="comment-form" style="display: flex; margin-top: 20px;">
+      <input type="text" id="comment-content" placeholder="댓글을 작성하세요" style="flex: 1; padding: 8px; font-size: 14px;" />
+      <button type="submit" style="background: none; border: none; font-size: 18px; cursor: pointer; padding: 0 10px;">
+        <i class="fa-solid fa-pen"></i>
+      </button>
+    </form>
+  </div>
+
+<!-- 상태 전달 -->
 <script>
-let liked = false;
-let scrapped = false;
-
-const postId = document.querySelector('#post-id').value;
-
-const likeIcon = document.querySelector('#like-icon');
-const likeCount = document.querySelector('#like-count');
-likeIcon.addEventListener('click', () => {
-  fetch(`/community/like/${postId}`, { method: 'POST' })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        liked = !liked;
-        likeCount.textContent = parseInt(likeCount.textContent) + (liked ? 1 : -1);
-      }
-    });
-});
-
-const scrapIcon = document.querySelector('#scrap-icon');
-const scrapCount = document.querySelector('#scrap-count');
-scrapIcon.addEventListener('click', () => {
-  fetch(`/community/scrap/${postId}`, { method: 'POST' })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        scrapped = !scrapped;
-        scrapCount.textContent = parseInt(scrapCount.textContent) + (scrapped ? 1 : -1);
-      }
-    });
-});
-
-document.querySelector('#comment-form').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const content = document.querySelector('#comment-content').value;
-
-  fetch(`/community/detail/${postId}/comment`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content })
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (data.comment_content && data.nickname) {
-          const commentList = document.querySelector('#comment-list');
-          const newComment = document.createElement('li');
-          newComment.id = `comment-${data.comment_id}`;
-          newComment.style = 'border: 1px solid #ccc; border-radius: 15px; padding: 10px; margin-bottom: 10px;';
-          newComment.innerHTML = `
-            <div style="display: flex; justify-content: space-between;">
-              <div style="display: flex; align-items: center;">
-                <div style="width: 30px; height: 30px; background-color: #eee; border-radius: 50%; margin-right: 10px;"></div>
-                <strong>${data.nickname}</strong>
-              </div>
-              ${data.isMine ? `<small class="comment-delete" data-comment-id="${data.comment_id}" style="color: gray; cursor: pointer;">댓글삭제</small>` : `<small>${new Date(data.created_at).toLocaleString('ko-KR')}</small>`}
-            </div>
-            <p style="margin: 5px 0 0 40px;">${data.comment_content}</p>
-            <div style="text-align: right;">☀0</div>
-          `;
-          commentList.appendChild(newComment);
-          document.querySelector('#comment-content').value = '';
-        } else {
-          alert('댓글 등록에 실패했습니다.');
-        }
-      })
-   .catch(err => {
-      console.error('댓글 등록 오류:', err);
-      alert('댓글 등록 중 문제가 발생했습니다.');
-    });
-});
-
+  window.initialPostState = {
+    postId: "<%= post.post_id %>",
+    liked: <%- JSON.stringify(likedByUser || false) %>,
+    scrapped: <%- JSON.stringify(scrappedByUser || false) %>
+  };
 </script>
+
+<!-- 연결된 프론트 JS 파일 -->
+<script src="/js/community_detail.js"></script>
+</body>
+</html>

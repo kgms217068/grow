@@ -1,94 +1,129 @@
-<!--커뮤니티 메인 페이지
-<div class="community-wrapper">
-  <h2>커뮤니티</h2>
-  <input type="text" placeholder="검색" class="search-box">
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>커뮤니티</title>
 
-  <ul class="post-list">
-    <% posts.forEach(post => { %>
-      <li class="post-item">
-        <a href="/community/detail/<%= post.post_id %>">
-          <h3><strong><%= post.title %></strong></h3>
-          <p><%= post.content %></p>
-          <div class="post-meta">
-            ☀ <%= post.likeCount %> 
-            ☆ <%= post.scrapCount %> 
-            ❋ <%= post.commentCount %> 
+   <!-- ✅ Font Awesome CDN 활성화 -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+
+   <!-- ✅ 외부 스타일시트 연결 -->
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/community.css">
+
+  <style>
+    /* 여기에서 간단한 CSS 바로 삽입해도 OK */
+    body {
+      margin: 0;
+      font-family: 'Pretendard', sans-serif;
+      background-color: #f8f8f8;
+    }
+  </style>
+</head>
+<body>
+  <div class="community-wrapper"
+       style="width: 430px; height: 932px; margin: 0 auto; background: #fff; padding: 20px; box-sizing: border-box; position: relative;">
+    
+    <!-- 검색창 -->
+    <form action="/community" method="get" style="display: flex; justify-content: center; margin-bottom: 20px;">
+      <div style="position: relative; width: 100%;">
+        <input type="text" name="search" placeholder="검색"
+               style="width: 100%; height: 44px; padding: 0 44px 0 15px; border-radius: 22px; border: 1px solid #000; font-size: 16px; outline: none;">
+        <button type="submit"
+                style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 18px; cursor: pointer;">
+              <!-- ✅ 검색 아이콘 Font Awesome으로 변경 -->
+              <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+      </div>
+    </form>
+
+    <!-- 게시글 목록 -->
+    <ul class="post-list" style="list-style: none; padding: 0; margin: 0;">
+      <% posts.forEach(post => { %>
+        <li style="position: relative; width: 90%; margin: 20px auto; padding: 15px 10px; border-bottom: 1px solid #ccc;">
+          <!-- 우측 상단 시간 -->
+          <div style="position: absolute; top: 15px; right: 10px; font-size: 12px; color: #666;">
+            <%= post.timeAgo %>
           </div>
-          <small><%= new Date(post.createdAt).toLocaleString('ko-KR') %></small>
-        </a>
-      </li>
-    <% }) %>
-  </ul>
 
-  <a href="/community/post" class="write-button">✏️</a>
-</div>
--->
-<!-- views/community.ejs -->
-<!-- community.ejs 수정 -->
-<div class="community-wrapper"
-     style="width: 430px; height: 932px; margin: 0 auto; background: #fff; padding: 20px; box-sizing: border-box; position: relative;">
-  <!-- 검색창 -->
-  <form action="/community" method="get" style="display: flex; justify-content: center; margin-bottom: 20px;">
-    <div style="position: relative; width: 100%;">
-      <input type="text" name="search" placeholder="검색"
-             style="width: 100%; height: 44px; padding: 0 44px 0 15px; border-radius: 22px; border: 1px solid #000; font-size: 16px; outline: none;">
-      <button type="submit"
-              style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 18px; cursor: pointer;">🔍</button>
-    </div>
-  </form>
+          <!-- 게시글 제목 및 내용 -->
+          <a href="/community/detail/<%= post.post_id %>" style="text-decoration: none; color: black;">
+            <div style="display: flex; align-items: flex-start; gap: 10px;">
+              <!-- 프로필 아이콘 -->
+                <div style="font-size: 20px; flex-shrink: 0;">
+                  <i class="fa-solid fa-user-circle"></i>
+                </div>
 
-  <!-- 게시글 목록 -->
-  <ul class="post-list" style="list-style: none; padding: 0; margin: 0;">
-    <% posts.forEach(post => { %>
-      <li style="position: relative; width: 90%; margin: 20px auto; padding: 15px 10px; border-bottom: 1px solid #ccc;">
-        <!-- 우측 상단 시간 -->
-        <div style="position: absolute; top: 15px; right: 10px; font-size: 12px; color: #666;">
-          <%= post.timeAgo %>
-        </div>
-
-        <!-- 게시글 제목 및 내용 -->
-        <a href="/community/detail/<%= post.post_id %>" style="text-decoration: none; color: black;">
-          <div style="display: flex; align-items: center; margin-bottom: 5px;">
-            <div style="font-size: 20px; margin-right: 5px;">👤</div>
-            <div>
-              <div style="font-weight: bold;"> <%= post.title %> </div>
-              <div style="font-size: 14px; color: #444;"> <%= post.content %> </div>
+              <!-- 제목 + 내용 묶음 -->
+              <div style="flex-grow: 1;">
+                <div style="font-weight: bold;"> <%= post.title %> </div>
+                <div style="font-size: 14px; color: #444;"> <%= post.content %> </div>
+              </div>
             </div>
-          </div>
-        </a>
+          </a>
 
-        <!-- 아이콘 정보 -->
-        <div style="margin-top: 10px; font-size: 16px;">
-          ☀ <%= post.likeCount %> &nbsp;&nbsp;
-          💬 <%= post.commentCount %> &nbsp;&nbsp;
-          <% if (post.scrapCount > 0) { %>
-            ⭐ <%= post.scrapCount %>
-          <% } else { %>
-            ☆ <%= post.scrapCount %>
-          <% } %>
+          <!-- 아이콘 정보 -->
+          <div style="margin-top: 10px; font-size: 16px;">
+ <!-- 좋아요 -->
+<i class="<%= post.likedByUser ? 'fa-solid' : 'fa-regular' %> fa-heart"></i> <%= post.likeCount %> &nbsp;&nbsp;
+
+<!-- 댓글 -->
+<i class="fa-regular fa-comment"></i> <%= post.commentCount %> &nbsp;&nbsp;
+
+<!-- 스크랩 -->
+<% if (post.scrappedByUser) { %>
+  <i class="fa-solid fa-star" style="color: #ffee00;"></i> <%= post.scrapCount %>
+<% } else { %>
+  <i class="fa-regular fa-star"></i> <%= post.scrapCount %>
+<% } %>
+
         </div>
       </li>
     <% }) %>
-  </ul>
+    </ul>
 
-  <!-- 작성 버튼 -->
-  <div style="position: fixed; bottom: 90px; right: 20px;">
-    <!-- 글쓰기 버튼 (✏️) -->
-  <a href="/community/post"
-     style="position: absolute; bottom: 20px; right: 20px; display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 60px; border-radius: 50%; background: white; border: 2px solid black; font-size: 28px; text-decoration: none;">
-    ✏️
-  </a>
+    <!-- 작성 버튼 -->
+    <div style="position: fixed; bottom: 90px; right: 20px;">
+      <a href="/community/post" class="write-button">
+        <!-- ✅ 글쓰기 아이콘 Font Awesome으로 변경 -->
+        <i class="fa-solid fa-pen"></i>
+      </a>
+    </div>
   </div>
-</div>
+</body>
+</html>
 
 <script>
-  function timeAgo(dateStr) {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diff = Math.floor((now - date) / 1000 / 60); // minutes
-    if (diff < 60) return `${diff}분 전`;
-    const hour = Math.floor(diff / 60);
-    if (hour < 24) return `${hour}시간 전`;
-    return dateStr.slice(0, 10);
-  }
+function timeAgo(dateInput) {
+  const createdAt = new Date(dateInput); // DB에서 온 값 (KST 기준)
+  const utcNow = new Date(); // Node.js는 UTC
+  const now = new Date(utcNow.getTime() + 9 * 60 * 60 * 1000); // ✅ KST로 보정
+
+  const diffMin = Math.floor((now - createdAt) / 1000 / 60);
+
+  if (diffMin < 1) return '방금 전';
+  if (diffMin < 60) return `${diffMin}분 전`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}시간 전`;
+  const diffDay = Math.floor(diffHr / 24);
+  if (diffDay < 7) return `${diffDay}일 전`;
+
+  return `${createdAt.getFullYear()}-${String(createdAt.getMonth() + 1).padStart(2, '0')}-${String(createdAt.getDate()).padStart(2, '0')}`;
+}
+
 </script>
+
+<script>
+  window.addEventListener('pageshow', function (event) {
+    if (event.persisted) {
+      // 뒤로가기로 왔을 때 캐시된 페이지라면 새로고침
+      window.location.reload();
+    }
+  });
+</script>
+

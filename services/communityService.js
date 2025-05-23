@@ -13,13 +13,27 @@ function timeAgo(dateInput) {
 }
 
 // 게시글 목록
-exports.fetchPosts = async (keyword) => {
+exports.fetchPosts = async (keyword, userId) => {
   const [posts] = await model.getPosts(keyword);
-  return posts.map(post => ({
-    ...post,
-    timeAgo: timeAgo(post.createdAt)
-  }));
+
+  // 각 게시글별 좋아요/스크랩 여부 동기화
+  const enrichedPosts = await Promise.all(
+    posts.map(async post => {
+      const likedByUser = await model.hasUserLikedPost(post.post_id, userId);
+      const scrappedByUser = await model.hasUserScrappedPost(post.post_id, userId);
+
+      return {
+        ...post,
+        likedByUser,
+        scrappedByUser,
+        timeAgo: timeAgo(post.createdAt)
+      };
+    })
+  );
+
+  return enrichedPosts;
 };
+
 
 //게시글 작성
 exports.createPost = async (title, content, userId) => {
@@ -27,9 +41,9 @@ exports.createPost = async (title, content, userId) => {
 };
 
 //게시글 상세화면
-exports.fetchPostDetail = async (postId) => {
+exports.fetchPostDetail = async (postId, userId) => {
   const [[post]] = await model.getPostById(postId);
-  const [comments] = await model.getCommentsByPostId(postId);
+  const [comments] = await model.getCommentsByPostId(postId, userId); // ✅ userId 넘김
   return { post, comments };
 };
 
@@ -43,7 +57,7 @@ exports.addComment = async (postId, userId, content) => {
     comment_id: comment.comment_id,
     comment_content: comment.comment_content,
     nickname: comment.nickname,
-    created_at: comment.created_at,
+    timeAgo: timeAgo(comment.created_at), // 상대 시간 추가
     isMine: comment.user_id === userId
   };
 };
@@ -59,6 +73,26 @@ exports.removeComment = async (postId, commentId, userId) => {
 //스크랩토글
 exports.toggleScrapPost = async (postId, userId) => {
   return await model.toggleScrap(postId, userId);
+};
+
+// 좋아요 토글
+exports.togglePostLike = async (postId, userId) => {
+  return await model.togglePostLike(postId, userId);
+};
+
+// 댓글 좋아요 토글
+exports.toggleCommentLike = async (commentId, userId) => {
+  return await model.toggleCommentLike(commentId, userId);
+};
+
+// 사용자가 해당 게시글을 좋아요 했는지 확인
+exports.checkUserLikedPost = async (postId, userId) => {
+  return await model.hasUserLikedPost(postId, userId);
+};
+
+// 사용자가 해당 게시글을 스크랩했는지 확인
+exports.checkUserScrappedPost = async (postId, userId) => {
+  return await model.hasUserScrappedPost(postId, userId);
 };
 
 //게시글 삭제

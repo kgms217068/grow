@@ -16,7 +16,7 @@ exports.getPosts = (keyword) => {
 exports.insertPost = (title, content, userId) => {
   return promisePool.query(`
     INSERT INTO post (post_id, post_num, post_title, post_content, creation_date, user_id)
-    VALUES (NULL, FLOOR(RAND()*1000000), ?, ?, NOW(), ?)
+    VALUES (NULL, FLOOR(RAND()*1000000), ?, ?, CONVERT_TZ(NOW(), '+00:00', '+09:00'), ?)
   `, [title, content, userId]);
 };
 
@@ -32,15 +32,21 @@ exports.getPostById = (postId) => {
   `, [postId]);
 };
 
-exports.getCommentsByPostId = (postId) => {
+exports.getCommentsByPostId = (postId, userId) => {
   return promisePool.query(`
     SELECT c.comment_id, c.content AS comment_content, c.creation_date AS created_at,
-           u.nickname, c.user_id
+           u.nickname, c.user_id,
+           (SELECT COUNT(*) FROM like_item
+            WHERE target_type = 'comment' AND target_id = c.comment_id) AS like_count,
+           EXISTS (
+             SELECT 1 FROM like_item
+             WHERE user_id = ? AND target_type = 'comment' AND target_id = c.comment_id
+           ) AS is_liked
     FROM comment c
     JOIN user u ON c.user_id = u.user_id
     WHERE c.post_id = ?
     ORDER BY c.creation_date ASC
-  `, [postId]);
+  `, [userId, postId]);
 };
 
 exports.getNextCommentId = (postId) => {
@@ -91,7 +97,7 @@ exports.toggleScrap = async (postId, userId) => {
     await promisePool.query(`
       UPDATE post SET scrap_num = scrap_num - 1 WHERE post_id = ?
     `, [postId]);
-    return { scrapped: false };
+    return { scrapped: false }; //프론트에서 사용하기 위해 객체 리턴
   } else {
     await promisePool.query(`
       INSERT INTO scrap (user_id, post_id, scrap_date) VALUES (?, ?, CURDATE())
@@ -103,18 +109,99 @@ exports.toggleScrap = async (postId, userId) => {
   }
 };
 
+exports.togglePostLike = async (postId, userId) => {
+  const [[exists]] = await promisePool.query(`
+    SELECT 1 FROM like_item
+    WHERE user_id = ? AND target_type = 'post' AND target_id = ?
+  `, [userId, postId]);
+
+  if (exists) {
+    await promisePool.query(`
+      DELETE FROM like_item
+      WHERE user_id = ? AND target_type = 'post' AND target_id = ?
+    `, [userId, postId]);
+
+    await promisePool.query(`
+      UPDATE post SET likes_num = likes_num - 1 WHERE post_id = ?
+    `, [postId]);
+
+    return { liked: false };
+  } else {
+    await promisePool.query(`
+      INSERT INTO like_item (user_id, target_type, target_id)
+      VALUES (?, 'post', ?)
+    `, [userId, postId]);
+
+    await promisePool.query(`
+      UPDATE post SET likes_num = likes_num + 1 WHERE post_id = ?
+    `, [postId]);
+
+    return { liked: true };
+  }
+};
+
+// 댓글 좋아요 토글
+exports.toggleCommentLike = async (commentId, userId) => {
+  const [[exists]] = await promisePool.query(`
+    SELECT 1 FROM like_item
+    WHERE user_id = ? AND target_type = 'comment' AND target_id = ?
+  `, [userId, commentId]);
+
+  if (exists) {
+    await promisePool.query(`
+      DELETE FROM like_item
+      WHERE user_id = ? AND target_type = 'comment' AND target_id = ?
+    `, [userId, commentId]);
+
+    return { liked: false };
+  } else {
+    await promisePool.query(`
+      INSERT INTO like_item (user_id, target_type, target_id)
+      VALUES (?, 'comment', ?)
+    `, [userId, commentId]);
+
+    return { liked: true };
+  }
+};
+
+// 게시글 좋아요 여부(렌더링 시 필요)
+exports.hasUserLikedPost = async (postId, userId) => {
+  const [[row]] = await promisePool.query(`
+    SELECT 1 FROM like_item
+    WHERE user_id = ? AND target_type = 'post' AND target_id = ?
+    LIMIT 1
+  `, [userId, postId]);
+
+  return !!row;
+};
+
+// 게시글 스크랩 여부(렌더링 시 필요)
+exports.hasUserScrappedPost = async (postId, userId) => {
+  const [[row]] = await promisePool.query(`
+    SELECT 1 FROM scrap
+    WHERE user_id = ? AND post_id = ?
+    LIMIT 1
+  `, [userId, postId]);
+
+  return !!row;
+};
+
+
+// 게시글 삭제
 exports.deletePost = (postId) => {
   return promisePool.query(`DELETE FROM post WHERE post_id = ?`, [postId]);
 };
 
+// 게시글 작성자
 exports.getPostAuthor = (postId) => {
   return promisePool.query(`SELECT user_id FROM post WHERE post_id = ?`, [postId]);
 };
+
 
 exports.deleteRelatedPostData = (postId) => {
   return Promise.all([
     promisePool.query(`DELETE FROM comment WHERE post_id = ?`, [postId]),
     promisePool.query(`DELETE FROM scrap WHERE post_id = ?`, [postId]),
-    // promisePool.query(`DELETE FROM post_like WHERE post_id = ?`, [postId])
+    promisePool.query(`DELETE FROM like_item WHERE target_type = 'post' AND target_id = ?`, [postId])
   ]);
 };

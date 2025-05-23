@@ -1,149 +1,8 @@
-/* public/css/style.css */
-/*
-body {
+body { 
   margin: 0;
   font-family: 'Pretendard', sans-serif;
   background-color: #f0fff0;
-}
-
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #a8e6cf;
-  padding: 10px 20px;
-}
-
-.nav-links {
-  list-style: none;
-  display: flex;
-  gap: 15px;
-}
-
-.nav-links li a {
-  text-decoration: none;
-  color: #333;
-  font-weight: bold;
-}
-
-.nav-links li a:hover {
-  color: #007a5e;
-}
-
-.hero {
-  padding: 50px;
-  text-align: center;
-}
-
-.hero h1 {
-  font-size: 2.5rem;
-  color: #4caf50;
-}
-
-.hero p {
-  font-size: 1.2rem;
-  color: #555;
-}
-
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  background-color: #a8e6cf;
-  border-top: 1px solid #ccc;
-}
-
-.bottom-nav ul {
-  list-style: none;
-  margin: 0;
-  padding: 10px 0;
-  display: flex;
-  justify-content: space-around;
-}
-
-.bottom-nav a {
-  text-decoration: none;
-  font-weight: bold;
-  color: #333;
-}
-
-/* community 전용 스타일 - style.css 가장 아래에 추가 
-.community-wrapper {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: left;
-}
-
-.community-wrapper .search-box {
-  display: block;
-  width: 100%;
-  padding: 0.5rem;
-  margin-bottom: 1.5rem;
-  font-size: 1rem;
-}
-
-.community-wrapper .post-list {
-  list-style-type: disc;
-  padding-left: 1.5rem;
-}
-
-.community-wrapper .post-item {
-  margin-bottom: 2rem;
-}
-
-/* ✏️ 글쓰기 버튼 - 오른쪽 아래 플로팅 
-.write-button {
-  position: fixed;
-  bottom: 80px;
-  right: 20px;
-  font-size: 30px;
-  background-color: #a4c639;
-  border-radius: 50%;
-  padding: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  text-decoration: none;
-  color: white;
-  z-index: 1000;
-}
-
-/* 게시글 작성 페이지 중앙 정렬 
-.write-form-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 40px;
-}
-
-.write-form-wrapper form {
-  display: flex;
-  flex-direction: column;
-  width: 90%;
-  max-width: 400px;
-  gap: 10px;
-}
-
-.write-form-wrapper input,
-.write-form-wrapper textarea {
-  padding: 10px;
-  font-size: 16px;
-}
-
-.write-form-wrapper button {
-  padding: 10px;
-  font-size: 16px;
-  background-color: #a4c639;
-  color: white;
-  border: none;
-  border-radius: 5px;
-}
-*/
-/* 기본 설정 */
-body {
-  margin: 0;
-  font-family: 'Pretendard', sans-serif;
-  background-color: #f0fff0;
-  overflow-y: auto; /* 스크롤 허용 */
+  overflow-y: auto;
 }
 
 a {
@@ -200,7 +59,10 @@ ul {
 .bottom-nav {
   position: fixed;
   bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
   width: 100%;
+  max-width: 393px;
   background-color: #a8e6cf;
   border-top: 1px solid #ccc;
   z-index: 999;
@@ -210,107 +72,10 @@ ul {
   display: flex;
   justify-content: space-around;
   padding: 10px 0;
+  margin: 0;
 }
 
 .bottom-nav a {
   font-weight: bold;
   color: #333;
-}
-
-/* ===============================
-   커뮤니티 화면 스타일
-   =============================== */
-
-/* 전체 커뮤니티 영역 */
-.community-wrapper {
-  max-width: 600px;
-  height: 932px;
-  margin: 0 auto;
-  padding: 2rem;
-  position: relative;  /* 💡 중요 */
-  background-color: white;
-  box-sizing: border-box;
-}
-
-
-/* 검색창 */
-.community-wrapper .search-box {
-  display: block;
-  width: 100%;
-  padding: 0.5rem;
-  font-size: 1rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-}
-
-/* 게시글 리스트 */
-.community-wrapper .post-list {
-  list-style-type: disc;
-  padding-left: 1.5rem;
-}
-
-.community-wrapper .post-item {
-  margin-bottom: 2rem;
-}
-
-/* ✏️ 글쓰기 버튼 - 오른쪽 아래 고정 */
-.write-button {
-  position: absolute;           /* fixed → absolute */
-  bottom: 20px;
-  right: 20px;
-  font-size: 2rem;
-  background-color: #a4c639;
-  color: white;
-  border-radius: 50%;
-  padding: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  z-index: 9999;                /* 아주 높게 설정 */
-}
-
-/* ===============================
-   게시글 작성 화면
-   =============================== */
-.write-form-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 40px;
-}
-
-.write-form-wrapper form {
-  display: flex;
-  flex-direction: column;
-  width: 90%;
-  max-width: 400px;
-  gap: 10px;
-}
-
-.write-form-wrapper input,
-.write-form-wrapper textarea {
-  padding: 10px;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.write-form-wrapper button {
-  padding: 10px;
-  font-size: 1rem;
-  background-color: #a4c639;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-/* ===============================
-   게시글 상세 화면 스크롤 해결
-   =============================== */
-.container {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px 20px 120px; /* 하단 입력창 가림 방지 */
-  box-sizing: border-box;
-  overflow-x: hidden;
 }
