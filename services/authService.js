@@ -107,6 +107,21 @@ const userService = {
             throw new Error('비밀번호 변경에 실패했습니다.');
         }
         return true;
+    },
+
+    changeEmail: async (userId, newEmail) => {
+        if (!userId || !newEmail) throw new Error('새 이메일을 입력해주세요.');
+        const existingUser = await User.findByEmail(newEmail);
+        if (existingUser) throw new Error('이미 사용 중인 이메일입니다.');
+        const updated = await User.updateEmailById(userId, newEmail);
+        if (!updated) throw new Error('이메일 변경에 실패했습니다.');
+        return true;
+    },
+
+    deleteAccount: async (userId) => {
+        const deleted = await User.deleteById(userId);
+        if (!deleted) throw new Error('회원탈퇴에 실패했습니다.');
+        return true;
     }
 };
 

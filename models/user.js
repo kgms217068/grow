@@ -77,7 +77,24 @@ const User = {
             [hashedPassword, user_id]
         );
         return result.affectedRows > 0;
+    },
+
+    updateEmailById: async (user_id, newEmail) => {
+        const [result] = await promisePool.query(
+            'UPDATE `user` SET email = ? WHERE user_id = ?',
+            [newEmail, user_id]
+        );
+        return result.affectedRows > 0;
+    },
+
+    deleteById: async (user_id) => {
+        const [result] = await promisePool.query(
+            'DELETE FROM `user` WHERE user_id = ?',
+            [user_id]
+        );
+        return result.affectedRows > 0;
     }
+
 };
 
 module.exports = User;

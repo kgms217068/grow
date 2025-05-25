@@ -3,7 +3,6 @@ const passport = require('passport');
 const router = express.Router();
 const authController = require('../controllers/authController');
 
-// 🔹 로그인 폼
 router.get('/login', (req, res) => {
   res.render('login', {
     message: req.flash('success'),
@@ -12,10 +11,8 @@ router.get('/login', (req, res) => {
   });
 });
 
-// 🔹 로그인 처리
 router.post('/login', authController.login);
 
-// 🔹 회원가입 폼
 router.get('/register', (req, res) => {
   res.render('register', {
     form: {},
@@ -23,13 +20,16 @@ router.get('/register', (req, res) => {
   });
 });
 
-// 🔹 회원가입 처리
 router.post('/register', authController.register);
 
-// 🔹 회원가입 성공 화면
 router.get('/registerSuccess', (req, res) => res.render('registerSuccess'));
 
-// 🔹 로그아웃
+router.post('/change-email', authController.changeEmail);
+
+router.post('/change-password', authController.changePassword);
+
+router.post('/delete-account', authController.deleteAccount);
+
 router.post('/logout', authController.logout);
 
 module.exports = router;

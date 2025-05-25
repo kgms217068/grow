@@ -1,7 +1,6 @@
 const passport = require('../config/passport');
 const authService = require('../services/authService');
 
-// 🔹 Registration
 exports.register = async (req, res) => {
   try {
     const userId = await authService.register(req.body);
@@ -16,7 +15,6 @@ exports.register = async (req, res) => {
   }
 };
 
-// 🔹 Login (Passport.js 사용)
 exports.login = (req, res, next) => {
   passport.authenticate('local', (err, user, info) => {
     if (err) return next(err);
@@ -37,14 +35,12 @@ exports.login = (req, res, next) => {
   })(req, res, next);
 };
 
-// 🔹 Logout
 exports.logout = (req, res) => {
     req.flash('success', '로그아웃되었습니다.');
     res.redirect('/login');
   });
 };
 
-// 🔹 Password reset
 exports.resetPassword = async (req, res) => {
   try {
     await authService.resetPassword(req.body.email, req.body.newPassword);
@@ -60,7 +56,6 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
-// 🔹 Password change
 exports.changePassword = async (req, res) => {
   try {
     await authService.changePassword(
@@ -80,3 +75,31 @@ exports.changePassword = async (req, res) => {
   }
 };
 
+exports.changeEmail = async (req, res) => {
+    try {
+        await authService.changeEmail(req.user.user_id, req.body.newEmail);
+        res.render('changeEmail', {
+            message: '이메일이 성공적으로 변경되었습니다.',
+            form: {}
+        });
+    } catch (err) {
+        res.status(400).render('changeEmail', {
+            error: [err.message],
+            form: req.body
+        });
+    }
+};
+
+exports.deleteAccount = async (req, res) => {
+    try {
+        await authService.deleteAccount(req.user.user_id);
+        req.logout(() => {
+            req.flash('success', '회원탈퇴가 완료되었습니다.');
+            res.redirect('/login');
+        });
+    } catch (err) {
+        res.status(400).render('myPage', {
+            error: [err.message]
+        });
+    }
+};
