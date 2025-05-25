@@ -48,6 +48,11 @@ app.use((req, res, next) => {
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use((req, res, next) => {
+  res.locals.currentPath = req.path;
+  next();
+});
+
 // 라우터 등록
 const authRouter = require('./routes/auth');
 const dashboardRouter = require('./routes/dashboard');

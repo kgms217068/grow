@@ -1,0 +1,124 @@
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f8f8f8;
+      font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', Arial, sans-serif;
+    }
+
+    .register-container {
+      max-width: 400px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 10px;
+      padding: 48px 32px 40px 32px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      text-align: left;
+    }
+
+    .register-title {
+      color: #267C13;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 32px;
+      font-size: 1.3rem;
+    }
+
+    .register-form input[type="text"],
+    .register-form input[type="email"],
+    .register-form input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 18px;
+      border: 1.5px solid #bbb;
+      border-radius: 4px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      background: #fff;
+      transition: border 0.2s;
+    }
+
+    .register-form input:focus {
+      border: 1.5px solid #267C13;
+      outline: none;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .checkbox-row input[type="checkbox"] {
+      margin-right: 8px;
+    }
+
+    .register-btn {
+      background: #71A304;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 14px 0;
+      width: 100%;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .register-btn:hover {
+      background: #5a8503;
+    }
+
+    .password-wrapper {
+      position: relative;
+    }
+
+    .password-wrapper input {
+      width: 100%;
+      padding-right: 40px;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+
+    .error {
+      color: #D32F2F;
+      margin-bottom: 18px;
+      text-align: center;
+      font-size: 0.98rem;
+    }
+
+    a {
+      color: #267C13;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 500px) {
+      .register-container {
+        padding: 24px 8px;
+        max-width: 98vw;
+      }
+    }
+

@@ -2,6 +2,7 @@ const express = require('express');
 const passport = require('passport');
 const router = express.Router();
 const authController = require('../controllers/authController');
+const { ensureAuthenticated } = require('../middlewares/auth');
 
 router.get('/login', (req, res) => {
   res.render('login', {
@@ -28,13 +29,11 @@ router.get('/registerSuccess', (req, res) =>
 	res.render('registerSuccess', { title: '회원가입 완료'})
 );
 
-router.post('/change-email', authController.changeEmail);
+router.post('/change-email', ensureAuthenticated, authController.changeEmail);
+router.post('/change-password', ensureAuthenticated, authController.changePassword);
+router.post('/delete-account', ensureAuthenticated, authController.deleteAccount);
+router.post('/logout', ensureAuthenticated, authController.logout);
 
-router.post('/change-password', authController.changePassword);
-
-router.post('/delete-account', authController.deleteAccount);
-
-router.post('/logout', authController.logout);
 
 module.exports = router;
 
