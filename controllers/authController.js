@@ -9,6 +9,7 @@ exports.register = async (req, res) => {
   } catch (err) {
     // 실패 시 폼 정보와 오류 메시지를 배열로 전달
     res.status(400).render('register', {
+      title: '회원가입',
       error: [err.message],
       form: req.body
     });
@@ -22,6 +23,7 @@ exports.login = (req, res, next) => {
     if (!user) {
       // 로그인 실패 시 에러 메시지와 입력된 이메일 유지
       return res.status(401).render('login', {
+	title: '로그인',
         form: { email: req.body.email },
         error: [info?.message || '이메일 또는 비밀번호가 올바르지 않습니다']
       });
@@ -38,7 +40,6 @@ exports.login = (req, res, next) => {
 exports.logout = (req, res) => {
     req.flash('success', '로그아웃되었습니다.');
     res.redirect('/login');
-  });
 };
 
 exports.resetPassword = async (req, res) => {
@@ -64,11 +65,13 @@ exports.changePassword = async (req, res) => {
       req.body.newPassword
     );
     res.render('changePassword', {
+      title: '비밀번호 변경',
       message: '비밀번호가 성공적으로 변경되었습니다.',
       form: {}
     });
   } catch (err) {
     res.status(400).render('changePassword', {
+      title: '비밀번호 변경',
       error: [err.message],
       form: req.body
     });
@@ -79,11 +82,13 @@ exports.changeEmail = async (req, res) => {
     try {
         await authService.changeEmail(req.user.user_id, req.body.newEmail);
         res.render('changeEmail', {
+	    title: '이메일 변경',
             message: '이메일이 성공적으로 변경되었습니다.',
             form: {}
         });
     } catch (err) {
         res.status(400).render('changeEmail', {
+	    title: '이메일 변경',
             error: [err.message],
             form: req.body
         });
