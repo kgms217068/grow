@@ -1,87 +1,56 @@
-<!--
-<div class="container">
-  <h2>그로우마켓</h2>
-  <form action="/market" method="POST">
-    <select name="fruitType">
-      <option value="orange">오렌지</option>
-      <option value="peach">복숭아</option>
-    </select>
-    <input type="text" name="fruitName" placeholder="과일 이름">
-    <button type="submit">등록</button>
-  </form>
-  <ul class="fruit-list">
-    <% fruits.forEach(fruit => { %>
-      <li>
-        <span><%= fruit.name %></span>
-        <span>D-<%= fruit.daysLeft %></span>
-        <span><%= fruit.quantity %>개</span>
-        <span><%= fruit.owner %></span>
-      </li>
-    <% }) %>
-  </ul>
-</div>
--->
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <title>그로우마켓</title>
-  <link rel="stylesheet" href="/css/style.css">
-  <style>
-    .container { max-width: 480px; margin: auto; background: #fff; padding: 20px; }
-    .form-group { margin-bottom: 15px; }
-    .dropdown, .input { width: 100%; padding: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc; }
-    .register-btn { width: 100%; background-color: #39A043; color: white; padding: 12px; border: none; border-radius: 8px; font-size: 18px; }
-    .notice { font-size: 13px; color: #555; margin-top: 10px; }
-    .item-list { margin-top: 20px; }
-    .item { display: flex; justify-content: space-between; align-items: center; border: 1px solid #ccc; border-radius: 10px; padding: 12px; margin-bottom: 10px; background-color: white; }
-    .item img { width: 30px; margin-right: 10px; }
-    .item-info { display: flex; align-items: center; }
-    .nickname { font-weight: bold; }
-    .subtext { font-size: 13px; color: gray; }
-    .d-day { font-weight: bold; color: #6FB542; }
-    .exchange-btn, .cancel-btn { font-size: 12px; background: #E8F5E9; color: #39A043; padding: 5px 10px; border-radius: 6px; border: none; cursor: pointer; }
-  </style>
+  <link rel="stylesheet" href="/css/market.css">
 </head>
 <body>
 <div class="container">
-  <h2>그로우마켓</h2>
-
+  
   <!-- 등록 폼 -->
-  <form action="/market/register" method="POST">
-    <div class="form-group">
-      <select name="itemTypeId" class="dropdown" required>
-        <option disabled selected>과일을 선택하세요</option>
-        <!--<% inventory.forEach(item => { %>
-          <option value="<%= item.item_type_id %>"><%= item.item_name %></option>
-        <% }) %> 이미지 렌더링 임시로 뺌-->
-      </select>
+  <form action="/market/register" method="POST" class="form">
+    <div class="custom-select-wrapper">
+      <div class="custom-select-trigger">등록할 과일종류를 선택하세요</div>
+      <div class="custom-options">
+        <% inventory.forEach(item => { %>
+          <span class="custom-option" data-value="<%= item.item_type_id %>"><%= item.item_name %></span>
+        <% }) %>
+      </div>
+      <input type="hidden" name="itemTypeId" id="selectedFruitType">
     </div>
-    <div class="form-group">
-      <input type="number" name="quantity" placeholder="수량 입력" class="input" min="1" required>
-    </div>
+
+    <input type="number" name="quantity" placeholder="등록할 과일 수량을 입력해주세요" class="input" min="1" required>
     <button type="submit" class="register-btn">등록</button>
-    <div class="notice">등록 후 30일이 지나면 과일이 자동으로 삭제됩니다</div>
+    <div class="notice">
+      등록 후 30일이 지나면 과일이 자동으로 삭제됩니다<br>
+      <% if (typeof remainingExchanges !== 'undefined') { %>
+        오늘의 남은 교환 횟수는 <strong><%= remainingExchanges %></strong>번입니다
+      <% } %>
+    </div>
   </form>
 
-  <!-- 마켓 등록 목록 -->
+  <!-- 과일 목록 -->
   <div class="item-list">
     <% fruits.forEach(fruit => { %>
+      <% 
+        const registeredAt = new Date(fruit.registered_date);
+        const kstDate = new Date(registeredAt.getTime() + 9 * 60 * 60 * 1000);
+        const yyyyMmDd = kstDate.toISOString().slice(0, 10);
+      %>
       <div class="item">
-        <div class="item-info">
-          <img src="/images/default-fruit.png" alt="과일">
-          <div>
+        <div class="item-left">
+          <img src="<%= fruit.image_path ? '/img/' + fruit.image_path : '/img/default-fruit.png' %>" alt="<%= fruit.item_name %>">
+          <div class="info">
             <div class="nickname"><%= fruit.nickname %></div>
-            <div class="subtext">
-              <%= fruit.registered_date.toISOString().slice(0, 10) %> · 과일 1개
-            </div>
+            <div class="subtext"><%= yyyyMmDd %></div>
           </div>
         </div>
-        <div>
+        <div class="item-right">
           <div class="d-day">D-<%= fruit.dday %></div>
+          <div class="fruit-detail"><%= fruit.item_name %> <%= fruit.count %>개</div>
           <% if (fruit.user_id === user.user_id) { %>
-            <form action="/market/cancel/<%= fruit.registration_id %>" method="POST">
+            <form action="/market/cancel/<%= fruit.registration_id %>" method="POST" onsubmit="return confirmCancel()">
               <button class="cancel-btn">등록 취소</button>
             </form>
           <% } else if (!fruit.is_sold) { %>
@@ -96,5 +65,7 @@
     <% }) %>
   </div>
 </div>
+
+<script src="/js/market.js"></script>
 </body>
 </html>
