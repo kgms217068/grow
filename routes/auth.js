@@ -6,8 +6,9 @@ const authController = require('../controllers/authController');
 // 🔹 로그인 폼
 router.get('/login', (req, res) => {
   res.render('login', {
-    form: {},
-    error: req.flash('error')
+    message: req.flash('success'),
+    error: req.flash('error'),
+    form: {}
   });
 });
 
@@ -29,11 +30,7 @@ router.post('/register', authController.register);
 router.get('/registerSuccess', (req, res) => res.render('registerSuccess'));
 
 // 🔹 로그아웃
-router.get('/logout', (req, res) => {
-  req.logout(() => {
-    res.redirect('/login');
-  });
-});
+router.post('/logout', authController.logout);
 
 module.exports = router;
 

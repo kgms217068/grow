@@ -39,12 +39,8 @@ exports.login = (req, res, next) => {
 
 // 🔹 Logout
 exports.logout = (req, res) => {
-  req.logout(() => {
-    res.render('login', {
-      message: '로그아웃되었습니다.',
-      form: {},
-      error: []
-    });
+    req.flash('success', '로그아웃되었습니다.');
+    res.redirect('/login');
   });
 };
 
