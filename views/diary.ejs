@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>내가 쓴 일기</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      background: #F9F9F9;
+      display: flex;
+      justify-content: center;
+    }
+
+    .main-wrapper {
+      width: 402px;
+      min-height: 100vh;
+      background-color: #ffffff;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .container {
+      padding: 20px;
+      padding-bottom: 90px; /* 하단 네비게이션 고려 */
+    }
+
+    .title {
+      text-align: center;
+      font-size: 22px;
+      font-weight: 700;
+      color: #267C13;
+      margin-bottom: 20px;
+    }
+
+    .diary-card {
+      background-color: #FAFAFA;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .diary-date {
+        font-weight: 700;
+        font-size: 16px;
+        margin-bottom: 4px; /* 날짜 → 메타 간격 */
+    }
+
+    .diary-meta {
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 6px; /* 메타 → 감정태그 */
+    }
+
+    .emotion-tag {
+        display: inline-block;
+        background-color: #D4E7C2;
+        color: #2A5B1C;
+        font-size: 13px;
+        font-weight: bold;
+        padding: 4px 8px;
+        border-radius: 8px;
+        margin-bottom: 2px; /* ✅ 감정태그 → 일기내용 간격 확 줄이기 */
+    }
+
+    .diary-content {
+        font-size: 16px;
+        color: #333;
+        line-height: 1.6;
+        white-space: pre-line;
+        word-break: break-word;
+    }
+
+
+    .diary-content.short {
+      max-height: 72px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+    }
+
+    .more-toggle {
+      display: inline-block;
+      font-size: 14px;
+      color: #267C13;
+      cursor: pointer;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 402px;
+      height: 85px;
+      background: rgba(113, 163, 4, 0.77);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      font-size: 14px;
+      z-index: 10;
+    }
+
+    .bottom-nav div {
+      text-align: center;
+      font-size: 14px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="main-wrapper">
+    <div class="container">
+      <div class="title">내가 쓴 일기</div>
+
+      <% if (diaries.length === 0) { %>
+        <p style="text-align:center; color:#999;">작성한 일기가 없습니다.</p>
+      <% } else { %>
+        <% diaries.forEach(d => { 
+             const isLong = d.content.length >= 70;
+        %>
+          <div class="diary-card">
+            <div class="diary-date"><%= d.diary_date.toISOString().split('T')[0] %></div>
+            <div class="diary-meta">단계: <%= d.level %>단계 / 미션: <%= d.mission_content %></div>
+
+            <% if (d.emotion_tag) { %>
+              <div class="emotion-tag"><%= d.emotion_tag %></div>
+            <% } %>
+
+            <div class="diary-content <%= isLong ? 'short' : '' %>" <%= isLong ? 'onclick="toggleContent(this)"' : '' %>>
+              <%= d.content %>
+            </div>
+
+            <% if (isLong) { %>
+              <span class="more-toggle" onclick="toggleContent(this.previousElementSibling)">더보기</span>
+            <% } %>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div onclick="location.href='/market'">🛖 그로우마켓</div>
+    <div onclick="location.href='/home'">🏡 홈</div>
+    <div onclick="location.href='/community'">👥 커뮤니티</div>
+    <div onclick="location.href='/mypage'">👤 마이페이지</div>
+  </div>
+
+  <script>
+    function toggleContent(el) {
+      el.classList.toggle("short");
+      const toggleText = el.nextElementSibling;
+      toggleText.innerText = el.classList.contains("short") ? "더보기" : "접기";
+    }
+  </script>
+</body>
+</html>
