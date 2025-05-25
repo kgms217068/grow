@@ -7,6 +7,7 @@ const MySQLStore = require('express-mysql-session')(session);
 const morgan = require('morgan');
 const passport = require('./config/passport');
 const flash = require('connect-flash');
+const expressLayouts = require('express-ejs-layouts');
 
 // Load environment variables
 dotenv.config();
@@ -22,6 +23,8 @@ const sessionStore = new MySQLStore({}, db.promisePool);
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+app.use(expressLayouts);
+app.set('layout', 'layout');
 
 // 미들웨어
 app.use(morgan('dev'));
