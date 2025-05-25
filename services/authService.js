@@ -72,21 +72,6 @@ const userService = {
         return userWithoutPassword;
     },
 
-    resetPassword: async (email, newPassword) => {
-        if (!email || !newPassword) {
-            throw new Error('이메일과 새 비밀번호를 입력해주세요.');
-        }
-        const user = await User.findByEmail(email);
-        if (!user) {
-            throw new Error('존재하지 않는 사용자입니다.');
-        }
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-        const updated = await User.updatePasswordByEmail(email, hashedPassword);
-        if (!updated) {
-            throw new Error('비밀번호 초기화에 실패했습니다.');
-        }
-        return true;
-    },
 
     // For password change (user knows old password)
     changePassword: async (userId, oldPassword, newPassword) => {

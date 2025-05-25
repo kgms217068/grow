@@ -102,3 +102,21 @@
     font-weight: 600;
     font-size: 0.95rem;
   }
+
+  .forgot-password-link {
+    text-align: right;
+    margin-bottom: 16px;
+  }
+
+  .forgot-password-link a {
+    font-size: 0.95rem;
+    color: #555;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .forgot-password-link a:hover {
+    color: #267C13;
+    text-decoration: underline;
+  }
+

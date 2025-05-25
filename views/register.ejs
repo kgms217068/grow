@@ -10,20 +10,40 @@
     <div class="register-title">당신의 정원을 가꿔 보세요.</div>
     <form class="register-form" action="/register" method="POST">
       <label for="nickname">닉네임</label>
-      <input type="text" name="nickname" placeholder="닉네임" value="<%= form && form.nickname ? form.nickname : '' %>" required />
+      <input type="text" name="nickname" placeholder="닉네임"
+        value="<%= form && form.nickname ? form.nickname : '' %>" required
+        oninvalid="this.setCustomValidity('닉네임을 입력해주세요.')"
+        oninput="this.setCustomValidity('')" />
+
       <label for="email">이메일</label>
-      <input type="email" name="email" placeholder="이메일 주소" value="<%= form && form.email ? form.email : '' %>" required />
+      <input type="email" name="email" placeholder="이메일 주소"
+        value="<%= form && form.email ? form.email : '' %>" required
+        oninvalid="this.setCustomValidity('올바른 이메일 주소를 입력해주세요.')"
+        oninput="this.setCustomValidity('')" />
+
       <label for="password">비밀번호</label>
-      <input type="password" name="password" placeholder="비밀번호 (8자 이상)" required />
-      <label for="password">비밀번호 확인</label>
-      <input type="password" name="passwordConfirm" placeholder="비밀번호 확인" required />
+      <input type="password" name="password" placeholder="비밀번호 (8자 이상)"
+        required minlength="8"
+        oninvalid="this.setCustomValidity('비밀번호를 8자 이상 입력해주세요.')"
+        oninput="this.setCustomValidity('')" />
+
+      <label for="passwordConfirm">비밀번호 확인</label>
+      <input type="password" name="passwordConfirm" placeholder="비밀번호 확인"
+        required
+        oninvalid="this.setCustomValidity('비밀번호 확인란을 입력해주세요.')"
+        oninput="this.setCustomValidity('')" />
+
       <% if (error && error.length) { %>
         <div class="error"><%= error[0] %></div>
       <% } %>
+
       <div class="checkbox-row">
-        <input type="checkbox" name="agree" id="agree" required />
+        <input type="checkbox" name="agree" id="agree" required
+          oninvalid="this.setCustomValidity('이용약관에 동의해야 합니다.')"
+          oninput="this.setCustomValidity('')" />
         <label for="agree">이용약관에 동의합니다.</label>
       </div>
+
       <button type="submit" class="register-btn">가입하기</button>
     </form>
     <div style="text-align:center; margin-top:18px;">
@@ -32,4 +52,3 @@
   </div>
 </body>
 </html>
-

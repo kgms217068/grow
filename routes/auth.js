@@ -29,6 +29,7 @@ router.get('/registerSuccess', (req, res) =>
 	res.render('registerSuccess', { title: '회원가입 완료'})
 );
 
+
 router.post('/change-email', ensureAuthenticated, authController.changeEmail);
 router.post('/change-password', ensureAuthenticated, authController.changePassword);
 router.post('/delete-account', ensureAuthenticated, authController.deleteAccount);

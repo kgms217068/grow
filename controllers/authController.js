@@ -42,20 +42,6 @@ exports.logout = (req, res) => {
     res.redirect('/login');
 };
 
-exports.resetPassword = async (req, res) => {
-  try {
-    await authService.resetPassword(req.body.email, req.body.newPassword);
-    res.render('resetPassword', {
-      message: '비밀번호가 성공적으로 초기화되었습니다.',
-      form: {}
-    });
-  } catch (err) {
-    res.status(400).render('resetPassword', {
-      error: [err.message],
-      form: req.body
-    });
-  }
-};
 
 exports.changePassword = async (req, res) => {
   try {
