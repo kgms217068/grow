@@ -1,20 +1,28 @@
-/* community.css */
+/* 공통 설정 */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
 
+body {
+  margin: 0;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* 기본 레이아웃 */
 .community-wrapper {
-  max-width: 393px;
+  max-width: 430px;
+  width: 100%;
   margin: 0 auto;
-  padding: 20px 16px 140px; /* 하단 여백 확보 */
+  padding: 20px 16px 140px;
   background-color: white;
   min-height: 100vh;
   box-sizing: border-box;
   position: relative;
 }
 
-
-/* 검색창 input 처리 */
+/* 검색창 */
 .community-wrapper input[type="text"] {
   width: 100%;
-  box-sizing: border-box; /* border 포함 width 정확히 유지 */
 }
 
 .community-wrapper .search-box {
@@ -36,11 +44,12 @@
   margin-bottom: 2rem;
 }
 
-/* 글쓰기 버튼 위치 보정 */
+/* 글쓰기 버튼 */
 .write-button {
   position: fixed;
-  bottom: 100px;
-  right: calc(50% - 393px / 2 + 20px); /* 화면 중앙 기준에서 20px 우측 여백 */
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(120px); /* ← ✅ 더 자연스러운 우측 끝 기준 위치 */
   width: 60px;
   height: 60px;
   border-radius: 50%;
@@ -50,15 +59,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1001;
+  z-index: 1500;
 }
 
 /* 게시글 상세 화면 */
 .container {
-  max-width: 393px;
+  max-width: 430px;
+  width: 100%;
   margin: 0 auto;
   padding: 20px;
-  box-sizing: border-box; 
   min-height: 100vh;
   position: relative;
   background-color: #ffffff;
@@ -85,12 +94,14 @@
 }
 
 .user-avatar {
-  position: relative;
+  flex: none;
   width: 36px;
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  align-self: flex-start; /* ✅ 수직 정렬 고정 */
 }
 
 .user-avatar.small {
@@ -99,21 +110,20 @@
 }
 
 .user-avatar .user-icon {
-  font-size: 26px; /* 게시글 작성자용 */
+  font-size: 26px;
   color: #aaa;
   z-index: 1;
   position: relative;
 }
 
 .user-avatar.small .user-icon {
-  font-size: 22px; /* 댓글 작성자용 */
+  font-size: 22px;
 }
 
 /* 게시글 삭제 버튼 */
 .post-delete {
   color: gray;
-  position: relative;
-  z-index: 1000; /* 댓글 폼 위에 배치되도록 */
+  z-index: 1000;
   cursor: pointer;
 }
 
@@ -135,7 +145,6 @@
 }
 
 .reaction-bar.right {
-  text-align: right;
   font-size: 0.9rem;
 }
 
@@ -174,14 +183,14 @@
   bottom: 60px;
   left: 50%;
   transform: translateX(-50%);
-  max-width: 393px;
+  max-width: 430px;
   width: 100%;
   background-color: white;
   padding: 10px;
   display: flex;
   justify-content: center;
   box-sizing: border-box;
-  z-index: 900; /* 기존 999 → 낮춰서 댓글 삭제 버튼보다 뒤에 위치 */
+  z-index: 900;
   border-top: 1px solid #ccc;
 }
 
@@ -204,16 +213,15 @@
 /* 댓글 삭제 버튼 */
 .comment-delete {
   color: gray;
-  position: relative;
-  z-index: 800; /* 댓글 입력창 위에 오도록 */
+  z-index: 800;
   cursor: pointer;
   font-size: 0.9rem;
 }
 
-/* 게시글 작성 화면 스타일 */
+/* 게시글 작성 화면 */
 .post-write-wrapper {
-  max-width: 393px;
-  height: 852px;
+  max-width: 430px;
+  width: 100%;
   margin: 0 auto;
   padding: 20px 16px 120px;
   background-color: white;
@@ -263,9 +271,9 @@
   cursor: pointer;
 }
 
-/* 하단 고정 영역에 가리지 않도록 여백 확보용 */
+/* 하단 고정 영역 여백 확보용 */
 .bottom-spacer {
-  height: 140px; /* 댓글 입력창 60px + 하단 nav 약 60~70px */
+  height: 140px;
   pointer-events: none;
 }
 
@@ -280,19 +288,18 @@
   pointer-events: none;
 }
 
-/* community.css */
+/* 하단 네비게이션 바 */
 .bottom-nav {
   position: fixed;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
-  max-width: 393px; /* 또는 393px, EJS에 맞게 */
+  max-width: 430px;
   background-color: #c4d65d;
   border-top: 1px solid #ccc;
   z-index: 1000;
 }
-
 
 .bottom-nav ul {
   display: flex;
@@ -314,4 +321,3 @@
   font-size: 20px;
   margin-bottom: 4px;
 }
-

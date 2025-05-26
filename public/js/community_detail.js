@@ -42,12 +42,20 @@ function timeAgo(dateInput) {
 }
 
 
-function createCommentElement({ comment_id, nickname, user_id, comment_content, createdAt, isMine, is_liked, like_count }) {
+function createCommentElement({ comment_id, nickname, user_id, comment_content, createdAt, isMine, is_liked, like_count, badge }) {
   const li = document.createElement('li');
   li.className = 'comment-item';
   li.id = `comment-${comment_id}`;
 
   const timeText = timeAgo(createdAt);
+
+    // 휘장 이미지 생성
+  let badgeImg = '';
+  if (badge === 'gold') {
+    badgeImg = '<img src="/img/gold.png" class="badge-img" />';
+  } else if (badge === 'silver') {
+    badgeImg = '<img src="/img/silver.png" class="badge-img" />';
+  }
 
   li.innerHTML = `
     <div class="comment-header">
@@ -127,6 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })
       .then(res => res.json())
 .then(data => {
+   console.log('댓글 작성 응답:', data); // ✅ 콘솔 찍어서 확인해보세요!
   if (data.error || !data.comment_id || !data.comment_content || !data.nickname) {
     throw new Error(data.error || '댓글 등록 실패');
   }
@@ -142,7 +151,8 @@ document.addEventListener('DOMContentLoaded', () => {
     createdAt: data.createdAt || new Date(), // 서버가 보낸 createdAt이 없을 경우 현재 시간
     isMine: true, // 내가 쓴 댓글이므로 true
     is_liked: false,
-    like_count: 0
+    like_count: 0,
+    badge: data.badge
   });
 
   commentList.prepend(newCommentEl);

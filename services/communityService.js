@@ -119,12 +119,17 @@ exports.addComment = async (postId, userId, content) => {
   await model.insertComment(nextId, postId, userId, content);
   await model.updateCommentCount(postId, true);
   const [[comment]] = await model.getInsertedComment(postId, nextId);
+  
+  const badge = await getUserBadge(userId);
+
   return {
     comment_id: comment.comment_id,
     comment_content: comment.comment_content,
     nickname: comment.nickname,
+    user_id: comment.user_id,
     createdAt: new Date(comment.created_at).toISOString(), // ✅ ISO 8601로 변환
-    isMine: comment.user_id === userId
+    isMine: comment.user_id === userId,
+    badge
   };
 };
 
