@@ -1,19 +1,76 @@
 function timeAgo(dateInput) {
   const date = new Date(dateInput);
-  const now = new Date(); // Node는 UTC
 
-  // ✅ 클라이언트는 KST기준, 브라우저 시간대 사용
-  const diffMs = now - date;
-  const diffMin = Math.floor(diffMs / 1000 / 60);
+  // ✅ UTC → KST 보정
+  const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+  const kstDate = new Date(utc + (9 * 60 * 60 * 1000));
 
-  if (diffMin < 1) return '방금 전';
+  // 🔧 작성시간, 현재시간 모두 초·밀리초 잘라낸 '분 단위 기준 시간'
+  const kstTimeStripped = new Date(
+    kstDate.getFullYear(),
+    kstDate.getMonth(),
+    kstDate.getDate(),
+    kstDate.getHours(),
+    kstDate.getMinutes()
+  );
+
+  const now = new Date();
+  const nowStripped = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    now.getHours(),
+    now.getMinutes()
+  );
+
+  const diffMin = Math.floor((nowStripped - kstTimeStripped) / (1000 * 60));
+
+  // 🕐 "방금 전"은 아예 '0분 전'일 때로 처리
+  if (diffMin === 0) return '방금 전';
+  if (diffMin === 1) return '1분 전';
   if (diffMin < 60) return `${diffMin}분 전`;
+
   const diffHr = Math.floor(diffMin / 60);
+  if (diffHr === 1) return '1시간 전';
   if (diffHr < 24) return `${diffHr}시간 전`;
+
   const diffDay = Math.floor(diffHr / 24);
+  if (diffDay === 1) return '1일 전';
   if (diffDay < 7) return `${diffDay}일 전`;
 
-  return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')}`;
+  return `${kstDate.getFullYear()}-${(kstDate.getMonth() + 1).toString().padStart(2, '0')}-${kstDate.getDate().toString().padStart(2, '0')}`;
+}
+
+
+function createCommentElement({ comment_id, nickname, user_id, comment_content, createdAt, isMine, is_liked, like_count }) {
+  const li = document.createElement('li');
+  li.className = 'comment-item';
+  li.id = `comment-${comment_id}`;
+
+  const timeText = timeAgo(createdAt);
+
+  li.innerHTML = `
+    <div class="comment-header">
+      <div class="comment-user-info">
+        <div class="user-avatar small">
+          <i class="fa-solid fa-user-circle user-icon"></i>
+        </div>
+        <div>
+          <strong>${nickname}</strong><br>
+          <small style="font-size: 12px; color: #888;">${timeText}</small>
+        </div>
+      </div>
+      ${isMine ? `<small class="comment-delete" data-comment-id="${comment_id}">댓글삭제</small>` : ''}
+    </div>
+    <p class="comment-content">${comment_content}</p>
+    <div class="reaction-bar right" data-comment-id="${comment_id}">
+      <span class="comment-like-icon" style="cursor:pointer;">
+        <i class="${is_liked ? 'fa-solid' : 'fa-regular'} fa-heart" style="${is_liked ? 'color:red;' : ''}"></i>
+      </span>
+      <span class="comment-like-count">${like_count || 0}</span>
+    </div>
+  `;
+  return li;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -55,50 +112,51 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // 댓글 작성
-  document.querySelector('#comment-form')?.addEventListener('submit', function(e) {
+  document.querySelector('#comment-form')?.addEventListener('submit', function (e) {
     e.preventDefault();
-    const content = document.querySelector('#comment-content').value;
+
+    // 입력된 댓글 내용 가져오기
+    const contentInput = document.querySelector('#comment-content');
+    const content = contentInput.value.trim();
+    if (!content) return;
 
     fetch(`/community/detail/${postId}/comment`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content })
     })
-        .then(res => res.json())
-        .then(data => {
-            if (data.comment_content && data.nickname) {
-                const commentList = document.querySelector('#comment-list');
-                const newComment = document.createElement('li');
-                newComment.id = `comment-${data.comment_id}`;
-                newComment.className = 'comment-item';
-                newComment.innerHTML = `
-                    <div class="comment-header">
-                        <div class="comment-user-info">
-                            <div class="user-avatar small"></div>
-                            <strong>${data.nickname}</strong>
-                        </div>
-                        ${data.isMine ? `<small class="comment-delete" data-comment-id="${data.comment_id}">댓글삭제</small>` : `<small>${data.timeAgo}</small>`}
-                    </div>
-                    <p class="comment-content">${data.comment_content}</p>
-                    <div class="reaction-bar right" data-comment-id="${data.comment_id}">
-                        <span class="comment-like-icon" style="cursor:pointer;">
-                            <i class="fa-regular fa-heart"></i>
-                        </span>
-                        <span class="comment-like-count">0</span>
-                    </div>
-                `;
-            commentList.appendChild(newComment);
-            document.querySelector('#comment-content').value = '';
+      .then(res => res.json())
+.then(data => {
+  if (data.error || !data.comment_id || !data.comment_content || !data.nickname) {
+    throw new Error(data.error || '댓글 등록 실패');
+  }
 
-            // ✅ 댓글 수 증가
-            const commentCount = document.querySelector('#comment-count');
-                if (commentCount) {
-                    commentCount.textContent = parseInt(commentCount.textContent) + 1;
-                }
-        } else {
-          alert('댓글 등록에 실패했습니다.');
-        }
-      })
+  const commentList = document.querySelector('#comment-list');
+
+  // 댓글 엘리먼트 생성 및 삽입
+  const newCommentEl = createCommentElement({
+    comment_id: data.comment_id,
+    nickname: data.nickname,
+    user_id: data.user_id,
+    comment_content: data.comment_content,
+    createdAt: data.createdAt || new Date(), // 서버가 보낸 createdAt이 없을 경우 현재 시간
+    isMine: true, // 내가 쓴 댓글이므로 true
+    is_liked: false,
+    like_count: 0
+  });
+
+  commentList.prepend(newCommentEl);
+
+  // 입력창 초기화
+  contentInput.value = '';
+
+  // 댓글 수 증가
+  const commentCount = document.querySelector('#comment-count');
+  if (commentCount) {
+    commentCount.textContent = parseInt(commentCount.textContent) + 1;
+  }
+})
+
       .catch(err => {
         console.error('댓글 등록 오류:', err);
         alert('댓글 등록 중 문제가 발생했습니다.');
@@ -141,10 +199,10 @@ document.addEventListener('DOMContentLoaded', () => {
           if (res.ok) {
             const commentElement = document.querySelector(`#comment-${commentId}`);
             if (commentElement) commentElement.remove();
-            // ✅ 댓글 수 감소
+
             const commentCount = document.querySelector('#comment-count');
             if (commentCount) {
-                commentCount.textContent = Math.max(parseInt(commentCount.textContent) - 1, 0);
+              commentCount.textContent = Math.max(parseInt(commentCount.textContent) - 1, 0);
             }
           } else {
             return res.json().then(data => {
@@ -160,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // 댓글 좋아요
-  document.querySelector('#comment-list')?.addEventListener('click', function(e) {
+  document.querySelector('#comment-list')?.addEventListener('click', function (e) {
     const iconWrapper = e.target.closest('.comment-like-icon');
     if (!iconWrapper) return;
 

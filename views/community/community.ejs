@@ -21,13 +21,12 @@
     body {
       margin: 0;
       font-family: 'Pretendard', sans-serif;
-      background-color: #f8f8f8;
     }
   </style>
 </head>
 <body>
   <div class="community-wrapper"
-       style="width: 430px; height: 932px; margin: 0 auto; background: #fff; padding: 20px; box-sizing: border-box; position: relative;">
+     style="width: 430px; min-height: 100vh; margin: 0 auto; background: #fff; padding: 20px; box-sizing: border-box; position: relative;">
     
     <!-- 검색창 -->
     <form action="/community" method="get" style="display: flex; justify-content: center; margin-bottom: 20px;">
@@ -36,7 +35,7 @@
                style="width: 100%; height: 44px; padding: 0 44px 0 15px; border-radius: 22px; border: 1px solid #000; font-size: 16px; outline: none;">
         <button type="submit"
                 style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 18px; cursor: pointer;">
-              <!-- ✅ 검색 아이콘 Font Awesome으로 변경 -->
+              <!-- 검색 아이콘 Font Awesome으로 변경 -->
               <i class="fa-solid fa-magnifying-glass"></i>
         </button>
       </div>
@@ -55,22 +54,52 @@
           <a href="/community/detail/<%= post.post_id %>" style="text-decoration: none; color: black;">
             <div style="display: flex; align-items: flex-start; gap: 10px;">
               <!-- 프로필 아이콘 -->
-                <div style="font-size: 20px; flex-shrink: 0;">
-                  <i class="fa-solid fa-user-circle"></i>
+                <div class="user-avatar" style="position: relative;">
+                  <i class="fa-solid fa-user-circle user-icon"></i>
+                  <% if (post.badge === 'gold') { %>
+                      <img src="/img/gold.png" class="badge-img" />
+                  <% } else if (post.badge === 'silver') { %>
+                      <img src="/img/silver.png" class="badge-img" />
+                  <% } %>
                 </div>
 
-              <!-- 제목 + 내용 묶음 -->
-              <div style="flex-grow: 1;">
-                <div style="font-weight: bold;"> <%= post.title %> </div>
-                <div style="font-size: 14px; color: #444;"> <%= post.content %> </div>
-              </div>
+<!-- 제목 + 내용 묶음 -->
+<div style="flex-grow: 1; overflow: hidden;">
+  <!-- 제목: 시간 영역 침범 방지 -->
+  <div style="
+    font-weight: bold;
+    font-size: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px; /* 추가: 시간 침범 방지 */
+  ">
+    <%= post.title %>
+  </div>
+
+  <!-- 내용은 줄바꿈 가능하게 두 줄 표시도 가능 -->
+  <div style="
+    font-size: 14px;
+    color: #444;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  ">
+    <%= post.content %>
+  </div>
+</div>
+
             </div>
           </a>
 
           <!-- 아이콘 정보 -->
           <div style="margin-top: 10px; font-size: 16px;">
  <!-- 좋아요 -->
-<i class="<%= post.likedByUser ? 'fa-solid' : 'fa-regular' %> fa-heart"></i> <%= post.likeCount %> &nbsp;&nbsp;
+<% if (post.likedByUser) { %>
+  <i class="fa-solid fa-heart" style="color: red;"></i> <%= post.likeCount %> &nbsp;&nbsp;
+<% } else { %>
+  <i class="fa-regular fa-heart"></i> <%= post.likeCount %> &nbsp;&nbsp;
+<% } %>
 
 <!-- 댓글 -->
 <i class="fa-regular fa-comment"></i> <%= post.commentCount %> &nbsp;&nbsp;
@@ -87,6 +116,9 @@
     <% }) %>
     </ul>
 
+<!-- ✅ 하단 네비게이션에 안 가리도록 공간 확보 -->
+<div class="bottom-spacer"></div>
+
     <!-- 작성 버튼 -->
     <div style="position: fixed; bottom: 90px; right: 20px;">
       <a href="/community/post" class="write-button">
@@ -95,28 +127,38 @@
       </a>
     </div>
   </div>
+  <!-- ✅ 하단 고정 네비게이션 -->
+<div class="bottom-nav">
+  <ul>
+    <li>
+      <a href="/market">
+        <i class="fa-solid fa-gift"></i>
+        <div>그로우마켓</div>
+      </a>
+    </li>
+    <li>
+      <a href="/home">
+        <i class="fa-solid fa-house"></i>
+        <div>홈</div>
+      </a>
+    </li>
+    <li>
+      <a href="/community">
+        <i class="fa-solid fa-users"></i>
+        <div>커뮤니티</div>
+      </a>
+    </li>
+    <li>
+      <a href="/mypage">
+        <i class="fa-solid fa-user"></i>
+        <div>마이페이지</div>
+      </a>
+    </li>
+  </ul>
+</div>
+
 </body>
 </html>
-
-<script>
-function timeAgo(dateInput) {
-  const createdAt = new Date(dateInput); // DB에서 온 값 (KST 기준)
-  const utcNow = new Date(); // Node.js는 UTC
-  const now = new Date(utcNow.getTime() + 9 * 60 * 60 * 1000); // ✅ KST로 보정
-
-  const diffMin = Math.floor((now - createdAt) / 1000 / 60);
-
-  if (diffMin < 1) return '방금 전';
-  if (diffMin < 60) return `${diffMin}분 전`;
-  const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `${diffHr}시간 전`;
-  const diffDay = Math.floor(diffHr / 24);
-  if (diffDay < 7) return `${diffDay}일 전`;
-
-  return `${createdAt.getFullYear()}-${String(createdAt.getMonth() + 1).padStart(2, '0')}-${String(createdAt.getDate()).padStart(2, '0')}`;
-}
-
-</script>
 
 <script>
   window.addEventListener('pageshow', function (event) {
@@ -126,4 +168,3 @@ function timeAgo(dateInput) {
     }
   });
 </script>
-

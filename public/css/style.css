@@ -65,7 +65,7 @@ ul {
   max-width: 393px;
   background-color: #a8e6cf;
   border-top: 1px solid #ccc;
-  z-index: 999;
+  z-index: 1000;
 }
 
 .bottom-nav ul {

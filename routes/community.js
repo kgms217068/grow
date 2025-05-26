@@ -45,17 +45,22 @@ router.get('/detail/:postId', async (req, res) => {
   const userId = req.session.user?.user_id || 1;
 
   try {
-    const { post, comments } = await service.fetchPostDetail(postId, userId); // ✅ userId 포함
-    // ✅ 좋아요/스크랩 여부 확인 후 전달
+    // 댓글은 service.fetchPostDetail에서 최신순 정렬되어 넘어옴
+    const { post, comments } = await service.fetchPostDetail(postId, userId);
+
+    // 좋아요/스크랩 여부 확인 후 전달
     const likedByUser = await service.checkUserLikedPost(postId, userId);
     const scrappedByUser = await service.checkUserScrappedPost(postId, userId);
 
-    res.render('community/community_detail', { post, comments, userId, likedByUser, scrappedByUser });
+    res.render('community/community_detail', {
+      post, comments, userId, likedByUser, scrappedByUser
+    });
   } catch (err) {
     console.error(err);
     res.status(500).send('게시글 상세보기 중 오류 발생');
   }
 });
+
 
 // 댓글 작성
 router.post('/detail/:postId/comment', async (req, res) => {

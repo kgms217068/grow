@@ -8,7 +8,6 @@
   min-height: 100vh;
   box-sizing: border-box;
   position: relative;
-  overflow: hidden; /* 글쓰기 버튼 영역 깨짐 방지 */
 }
 
 
@@ -57,11 +56,9 @@
 /* 게시글 상세 화면 */
 .container {
   max-width: 393px;
-  height: 852px;
   margin: 0 auto;
-  padding: 20px 20px 120px;
-  box-sizing: border-box;
-  overflow-y: auto;
+  padding: 20px;
+  box-sizing: border-box; 
   min-height: 100vh;
   position: relative;
   background-color: #ffffff;
@@ -88,16 +85,28 @@
 }
 
 .user-avatar {
-  width: 40px;
-  height: 40px;
-  background: #eee;
-  border-radius: 50%;
-  margin-right: 10px;
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .user-avatar.small {
   width: 30px;
   height: 30px;
+}
+
+.user-avatar .user-icon {
+  font-size: 26px; /* 게시글 작성자용 */
+  color: #aaa;
+  z-index: 1;
+  position: relative;
+}
+
+.user-avatar.small .user-icon {
+  font-size: 22px; /* 댓글 작성자용 */
 }
 
 /* 게시글 삭제 버튼 */
@@ -253,3 +262,56 @@
   border-radius: 20px;
   cursor: pointer;
 }
+
+/* 하단 고정 영역에 가리지 않도록 여백 확보용 */
+.bottom-spacer {
+  height: 140px; /* 댓글 입력창 60px + 하단 nav 약 60~70px */
+  pointer-events: none;
+}
+
+/* 휘장 이미지 */
+.badge-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* community.css */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 393px; /* 또는 393px, EJS에 맞게 */
+  background-color: #c4d65d;
+  border-top: 1px solid #ccc;
+  z-index: 1000;
+}
+
+
+.bottom-nav ul {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px 0;
+  margin: 0;
+}
+
+.bottom-nav a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 13px;
+  color: #000;
+}
+
+.bottom-nav i {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+

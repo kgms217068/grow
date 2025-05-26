@@ -4,12 +4,14 @@ const { promisePool } = require('../db/db');
 exports.getPosts = (keyword) => {
   return promisePool.query(`
     SELECT p.post_id, p.post_title AS title, p.post_content AS content,
-           p.creation_date AS createdAt, p.comment_num AS commentCount,
-           p.likes_num AS likeCount, p.scrap_num AS scrapCount, u.nickname
-    FROM post p
-    JOIN user u ON p.user_id = u.user_id
-    WHERE p.post_title LIKE ?
-    ORDER BY p.creation_date DESC
+       p.creation_date AS createdAt, p.comment_num AS commentCount,
+       p.likes_num AS likeCount, p.scrap_num AS scrapCount,
+       u.nickname, p.user_id
+FROM post p
+JOIN user u ON p.user_id = u.user_id
+WHERE p.post_title LIKE ?
+ORDER BY p.creation_date DESC
+
   `, [`%${keyword}%`]);
 };
 
@@ -45,7 +47,7 @@ exports.getCommentsByPostId = (postId, userId) => {
     FROM comment c
     JOIN user u ON c.user_id = u.user_id
     WHERE c.post_id = ?
-    ORDER BY c.creation_date ASC
+    ORDER BY c.creation_date DESC
   `, [userId, postId]);
 };
 
@@ -58,7 +60,7 @@ exports.getNextCommentId = (postId) => {
 exports.insertComment = (commentId, postId, userId, content) => {
   return promisePool.query(`
     INSERT INTO comment (comment_id, post_id, user_id, content, creation_date)
-    VALUES (?, ?, ?, ?, NOW())
+    VALUES (?, ?, ?, ?, CONVERT_TZ(NOW(), '+00:00', '+09:00'))
   `, [commentId, postId, userId, content]);
 };
 
@@ -204,4 +206,13 @@ exports.deleteRelatedPostData = (postId) => {
     promisePool.query(`DELETE FROM scrap WHERE post_id = ?`, [postId]),
     promisePool.query(`DELETE FROM like_item WHERE target_type = 'post' AND target_id = ?`, [postId])
   ]);
+};
+
+// 유저의 도감 상태를 기반으로 휘장 반환: 'gold' | 'silver' | null
+exports.getUserBadgeStatus = async (userId) => {
+  return await promisePool.query(`
+    SELECT collection_completion_status
+    FROM collection
+    WHERE user_id = ?
+  `, [userId]);
 };
