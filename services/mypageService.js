@@ -53,7 +53,7 @@ exports.getMyPageData = (userId, callback) => {
         if (err3) return callback(err3);
         const { total, completed } = statusResults[0];
 
-        getBadgeType(userId, (err4, badgeType) => {
+        updateAndGetBadgeType(userId, (err4, badgeType) => {
           if (err4) return callback(err4);
 
           callback(null, {
@@ -70,44 +70,49 @@ exports.getMyPageData = (userId, callback) => {
   });
 };
 
-// 도감 기반 휘장 계산
-function getBadgeType(userId, callback) {
-  const collectionSql = `SELECT collection_id FROM collection WHERE user_id = ?`;
+// ✅ 도감 기반 휘장 계산 및 DB 상태 업데이트
+function updateAndGetBadgeType(userId, callback) {
+  const getCollectionSql = `SELECT collection_id FROM collection WHERE user_id = ?`;
 
-  db.query(collectionSql, [userId], (err, result) => {
+  db.query(getCollectionSql, [userId], (err, result) => {
     if (err) return callback(err);
     if (result.length === 0) return callback(null, null);
 
     const collectionId = result[0].collection_id;
 
-    const userFruitSql = `
+    const userFruitCountSql = `
       SELECT f.category, COUNT(DISTINCT f.fruit_name) AS count
       FROM fruit f
-      JOIN collection c ON f.collection_id = c.collection_id
-      WHERE c.user_id = ? AND f.registered = 1
+      WHERE f.collection_id = ?
+        AND f.registered = 1
+        AND f.harvested_date IS NOT NULL
+        AND f.growth_status_id IN (
+          SELECT growth_status_id FROM growth_status WHERE growth_rate = 100
+        )
       GROUP BY f.category
     `;
 
-    const totalFruitSql = `
-      SELECT category, COUNT(DISTINCT fruit_name) AS total
-      FROM fruit
-      WHERE registered = 1
-      GROUP BY category
-    `;
-
-    db.query(userFruitSql, [userId], (err2, userCounts) => {
+    db.query(userFruitCountSql, [collectionId], (err2, userFruitResults) => {
       if (err2) return callback(err2);
 
-      db.query(totalFruitSql, (err3, totalCounts) => {
+      const userFruitMap = Object.fromEntries(userFruitResults.map(row => [row.category, row.count]));
+      const hasSilver = (userFruitMap.basic || 0) === 8;
+      const hasGold = (userFruitMap.gold || 0) === 8;
+
+      let newStatus = 0;
+      if (hasGold) newStatus = 2;
+      else if (hasSilver) newStatus = 1;
+
+      const updateSql = `
+        UPDATE collection
+        SET collection_completion_status = ?
+        WHERE collection_id = ?
+      `;
+
+      db.query(updateSql, [newStatus, collectionId], (err3) => {
         if (err3) return callback(err3);
 
-        const userMap = Object.fromEntries(userCounts.map(row => [row.category, row.count]));
-        const totalMap = Object.fromEntries(totalCounts.map(row => [row.category, row.total]));
-
-        const hasSilver = (userMap.basic || 0) === (totalMap.basic || 0);
-        const hasGold = (userMap.gold || 0) === (totalMap.gold || 0);
-
-        const badgeType = hasGold ? 'gold' : hasSilver ? 'silver' : null;
+        const badgeType = newStatus === 2 ? 'gold' : newStatus === 1 ? 'silver' : null;
         callback(null, badgeType);
       });
     });
