@@ -109,9 +109,16 @@
   <div class="mission-box">
     <p style="margin: 0;" class="font"><%= m.description %></p>
 
-    <% if (statusObj && statusObj.status === false) { %>
+    <% if (statusObj && statusObj.awaitingConfirm) { %>
+      <!-- ✅ 사용자 확정용 완료 버튼 -->
+      <form action="/dashboard/confirm/<%= statusObj.mission_execution_id %>" method="POST">
+        <button class="status-btn cert-btn font">완료</button>
+      </form>
+    <% } else if (statusObj && statusObj.status === false) { %>
+      <!-- ✅ 관리자 승인 전: 확인 중 -->
       <button class="status-btn waiting-btn font" disabled>확인 중</button>
     <% } else { %>
+      <!-- ✅ 최초 인증 버튼 -->
       <form action="/dashboard?missionId=<%= m.mission_id %>" method="get" style="margin: 0;">
         <button class="status-btn cert-btn font">인증</button>
       </form>
@@ -149,6 +156,29 @@
     </div>
   </div>
 
+<% } %>
+
+<% if (showLevelOptionModal) { %>
+  <div class="modal">
+    <div class="modal-content">
+      <p><strong><%= nickname %> 님</strong><br>
+         이번 단계의 미션을 모두 완료하셨습니다!</p>
+      <p>다음 행동을 선택해주세요:</p>
+
+      <form action="/dashboard/level-option" method="POST">
+        <input type="hidden" name="option" value="NEXT">
+        <button type="submit">다음 단계로!</button>
+      </form>
+      <form action="/dashboard/level-option" method="POST">
+        <input type="hidden" name="option" value="RETRY">
+        <button type="submit">한 번 더 도전</button>
+      </form>
+      <form action="/dashboard/level-option" method="POST">
+        <input type="hidden" name="option" value="WAIT">
+        <button type="submit">쉬어가기 (3일 뒤 자동 진행)</button>
+      </form>
+    </div>
+  </div>
 <% } %>
 
 

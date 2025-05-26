@@ -103,7 +103,7 @@ app.get('/', (req, res) => {
   res.render('index');
 });
 
-
+require('./scheduler/levelUpScheduler');
 
 // 전역 에러 핸들러
 app.use((err, req, res, next) => {

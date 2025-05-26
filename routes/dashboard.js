@@ -70,74 +70,161 @@ router.post('/submit', upload.single('photo'), async (req, res) => {
     res.status(500).render('error', { message: '미션 제출 실패', error: err });
   }
 });
+
+// ✅ 사용자가 인증 완료 확정 버튼을 눌렀을 때 (비료 지급 포함)
+router.post('/confirm/:mission_execution_id', async (req, res) => {
+  const userId = req.session.userId || 1;
+  const mission_execution_id = req.params.mission_execution_id;
+
+  try {
+    // 1. confirmed_by_user 플래그 업데이트
+    await promisePool.query(`
+      UPDATE certification
+      SET confirmed_by_user = true
+      WHERE mission_execution_id = ? AND user_id = ? AND checked = true
+    `, [mission_execution_id, userId]);
+
+    // 2. 사용자 인벤토리 ID 가져오기
+    const [[inventoryRow]] = await promisePool.query(
+      'SELECT inventory_id FROM inventory WHERE user_id = ?',
+      [userId]
+    );
+
+    const inventoryId = inventoryRow.inventory_id;
+
+    // 3. 비료 타입 ID 가져오기
+    const [[fertilizerTypeRow]] = await promisePool.query(
+      'SELECT item_type_id FROM item_type WHERE item_name = "비료"'
+    );
+
+    const fertilizerTypeId = fertilizerTypeRow.item_type_id;
+
+    // 4. 비료 1개 지급 (중복이면 수량 증가)
+    await promisePool.query(`
+      INSERT INTO item (item_type_id, inventory_id, item_id, item_count)
+      VALUES (?, ?, ?, 1)
+      ON DUPLICATE KEY UPDATE item_count = item_count + 1
+    `, [fertilizerTypeId, inventoryId, fertilizerTypeId]);
+
+    // 5. 모달 띄우기 위한 session 값 저장
+    req.session.prevConfirmedId = Number( mission_execution_id);
+
+    res.redirect('/dashboard/mission');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('인증 완료 처리 중 오류가 발생했습니다.');
+  }
+});
+
+
 // ✅ GET /dashboard/mission
 router.get('/mission', async (req, res) => {
   const userId = req.session.userId || 1;
 
-  // 전체 미션 가져오기
-  const allMissions = await missionModel.getAllMissions();
+  // ✅ 사용자 정보 조회 (레벨 포함)
+  const [[userInfo]] = await promisePool.query(
+    'SELECT nickname, level FROM user WHERE user_id = ?',
+    [userId]
+  );
 
-  // 인증 내역 (checked 여부 + 완료 날짜)
+  const currentLevel = userInfo.level;
+
+  // ✅ 사용자 레벨에 해당하는 미션만 가져오기
+  const [missions] = await promisePool.query(
+    'SELECT * FROM mission WHERE level = ? ORDER BY mission_id',
+    [currentLevel]
+  );
+
+  // ✅ 인증 및 상태 조회
   const [certifications] = await promisePool.query(`
-    SELECT me.mission_id, c.checked, c.certification_date
+    SELECT me.mission_id, c.checked, c.certification_date, c.confirmed_by_user, me.mission_execution_id
     FROM certification c
     JOIN mission_execution me ON c.mission_execution_id = me.mission_execution_id
     WHERE c.user_id = ?
   `, [userId]);
 
-  // 이전 완료된 미션 ID 저장 (모달 표시용)
-  const prevCompleted = req.session.prevCompleted || [];
-
-  // 인증 상태 저장: mission_id -> { status, date }
   const certStatus = {};
-  let newlyChecked = false;
+  let showFertilizerModal = false;
+  let latestMissionExecutionId = null;
 
   certifications.forEach(c => {
     const mid = c.mission_id;
+
     certStatus[mid] = {
-      status: c.checked === 1,
+      status: c.checked === 1 && c.confirmed_by_user === 1,
       date: c.certification_date,
+      mission_execution_id: c.mission_execution_id,
+      awaitingConfirm: c.checked === 1 && c.confirmed_by_user === 0
     };
 
-    if (c.checked && !prevCompleted.includes(mid)) {
-      newlyChecked = true;
+    if (c.confirmed_by_user === 1 && req.session.prevConfirmedId === c.mission_execution_id) {
+      showFertilizerModal = true;
+      latestMissionExecutionId = c.mission_execution_id;
     }
   });
 
-  // 최신 인증 완료된 mission_execution_id
-  const [latestCertified] = await promisePool.query(`
-    SELECT c.mission_execution_id
-    FROM certification c
-    JOIN mission_execution me ON c.mission_execution_id = me.mission_execution_id
-    WHERE c.user_id = ? AND c.checked = true
-    ORDER BY c.certification_date DESC
-    LIMIT 1
-  `, [userId]);
+  req.session.prevConfirmedId = null;
 
-  const latestMissionExecutionId = latestCertified.length > 0
-    ? latestCertified[0].mission_execution_id
-    : null;
-
-  // 현재 완료된 목록을 세션에 저장 (다음 렌더링 때 비교)
-  req.session.prevCompleted = certifications.filter(c => c.checked).map(c => c.mission_id);
+  // 현재 단계의 미션 수 체크
+  const currentMissions = missions.filter(m => m.level === currentLevel);
+  const clearedMissions = currentMissions.filter(m => certStatus[m.mission_id]?.status);
+  const showLevelOptionModal = !showFertilizerModal && clearedMissions.length === 5;
 
 
-
-const [userInfoRows] = await promisePool.query(
-  'SELECT nickname, level FROM user WHERE user_id = ?',
-  [userId]
-);
-
-const userInfo = userInfoRows[0]; // 첫 번째 행
-
-res.render('dashboard/mission', {
-  missions: allMissions,
-  certStatus,
-  nickname: userInfo.nickname,
-  currentLevel: `${userInfo.level}단계`, // 🔥 실제 단계 출력
-  showFertilizerModal: newlyChecked,
-  latestMissionExecutionId
+  res.render('dashboard/mission', {
+    missions,
+    certStatus,
+    nickname: userInfo.nickname,
+    currentLevel: `${currentLevel}단계`,
+    showFertilizerModal,
+    latestMissionExecutionId,
+    showLevelOptionModal
+  });
 });
+
+router.post('/level-option', async (req, res) => {
+  const userId = req.session.userId || 1;
+  const { option } = req.body; // 'NEXT', 'RETRY', 'WAIT'
+
+  try {
+    // 이전 옵션 삭제 (중복 방지)
+    await promisePool.query(`
+      DELETE FROM level_option WHERE user_id = ?
+    `, [userId]);
+
+    // 선택 저장
+    await promisePool.query(`
+      INSERT INTO level_option (user_id, selected_option, selected_date)
+      VALUES (?, ?, NOW())
+    `, [userId, option]);
+
+    // 즉시 처리
+    if (option === 'NEXT') {
+      await promisePool.query(`UPDATE user SET level = level + 1 WHERE user_id = ?`, [userId]);
+    } else if (option === 'RETRY') {
+      const [executions] = await promisePool.query(`
+        SELECT mission_execution_id FROM mission_execution me
+        JOIN mission m ON me.mission_id = m.mission_id
+        WHERE me.user_id = ? AND m.level = (SELECT level FROM user WHERE user_id = ?)
+      `, [userId, userId]);
+
+      const ids = executions.map(e => e.mission_execution_id);
+      if (ids.length > 0) {
+        await promisePool.query(`
+          DELETE FROM certification WHERE mission_execution_id IN (?)
+        `, [ids]);
+
+        await promisePool.query(`
+          DELETE FROM mission_execution WHERE mission_execution_id IN (?)
+        `, [ids]);
+      }
+    }
+
+    res.redirect('/dashboard/mission');
+  } catch (err) {
+    console.error('레벨 옵션 처리 실패:', err);
+    res.status(500).send('레벨 옵션 처리 실패');
+  }
 });
 
 
