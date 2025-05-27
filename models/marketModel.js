@@ -15,8 +15,7 @@ getMarketItems: () =>
     JOIN item_image ii ON it.item_name = ii.item_name
     WHERE gm.is_sold = 0
     ORDER BY gm.registered_date DESC
-  `)
-,
+  `),
 
   getInventoryList: () =>
     promisePool.query(`
@@ -61,9 +60,6 @@ updateIsSold: (conn, registrationId, userId) =>
     WHERE registration_id = ?
   `, [userId, registrationId]),
 
-
-
-
   // 해당 유저가 등록한 과일 탐색(등록 취소용)
   getGrowMarketItemById: (conn, registrationId, userId) =>
     conn.query(`SELECT * FROM growmarket WHERE registration_id = ? AND user_id = ?`, [registrationId, userId]),
@@ -95,6 +91,4 @@ updateIsSold: (conn, registrationId, userId) =>
       [itemTypeId, inventoryId, count]
     );
   }
-}
-
-};
+}};
