@@ -169,8 +169,49 @@ router.get('/mission', async (req, res) => {
   const currentMissions = missions.filter(m => m.level === currentLevel);
   const clearedMissions = currentMissions.filter(m => certStatus[m.mission_id]?.status);
   const showLevelOptionModal = !showFertilizerModal && clearedMissions.length === 5;
+  // ✅ 과일 보상: 이미 보상되지 않았다면 처리
+  if (clearedMissions.length === 5 && !req.session.levelRewardGiven) {
+    const [[userRow]] = await promisePool.query(`
+      SELECT u.level, i.inventory_id
+      FROM user u
+      JOIN inventory i ON u.user_id = i.user_id
+      WHERE u.user_id = ?
+    `, [userId]);
 
+    const [executions] = await promisePool.query(`
+      SELECT completed_date
+      FROM mission_execution me
+      JOIN mission m ON me.mission_id = m.mission_id
+      WHERE me.user_id = ? AND m.level = ? AND me.completed_or_not = true
+      ORDER BY completed_date ASC
+    `, [userId, userRow.level]);
+    if (executions.length >= 5) {
+      const start = new Date(executions[0].completed_date);
+      const end = new Date(executions[4].completed_date);
+      const isUnderTenDays = (end - start) / (1000 * 60 * 60 * 24) <= 10;
+  
+      const 지급 = async (itemName, amount) => {
+        await promisePool.query(`
+          INSERT INTO item (inventory_id, item_type_id, item_count)
+          SELECT ?, item_type_id, ?
+          FROM item_type
+          WHERE item_name = ?
+          ON DUPLICATE KEY UPDATE item_count = item_count + VALUES(item_count)
+        `, [userRow.inventory_id, amount, itemName]);
+    };
 
+    if (isUnderTenDays) {
+    //일단 테스트 용으로 사과로 지정해 놓음 추후에 변경
+      await 지급('황금과일', 1);
+      await 지급('사과', 2);
+    } else {
+      await 지급('사과', 3);
+    } 
+
+    // ✅ 중복 지급 방지용 세션 플래그
+    req.session.levelRewardGiven = true;
+ }
+}
   res.render('dashboard/mission', {
     missions,
     certStatus,
@@ -187,6 +228,8 @@ router.post('/level-option', async (req, res) => {
   const { option } = req.body; // 'NEXT', 'RETRY', 'WAIT'
 
   try {
+    // ✅ 레벨 옵션 선택할 때마다 보상 세션 초기화
+    req.session.levelRewardGiven = false;
     // 이전 옵션 삭제 (중복 방지)
     await promisePool.query(`
       DELETE FROM level_option WHERE user_id = ?
