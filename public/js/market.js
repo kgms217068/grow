@@ -31,6 +31,28 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+  // D-Day 계산 (등록일 기준 +30일 - 오늘 날짜(KST) 기준)
+document.querySelectorAll('.d-day').forEach(el => {
+  const dateStr = el.getAttribute('data-registered');
+  if (!dateStr) return;
+
+  // 등록일 (시간 무시)
+  const regDateOnly = new Date(dateStr);
+  regDateOnly.setHours(0, 0, 0, 0);
+
+  // 오늘 (KST 기준 날짜만)
+  const now = new Date();
+  const nowKST = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const todayDateOnly = new Date(nowKST.getFullYear(), nowKST.getMonth(), nowKST.getDate());
+
+  // 만료일 = 등록일 + 30일
+  const expireDate = new Date(regDateOnly);
+  expireDate.setDate(expireDate.getDate() + 30);
+
+  // D-day 계산
+  const dday = Math.floor((expireDate - todayDateOnly) / (1000 * 60 * 60 * 24));
+  el.textContent = `D-${dday}`;
+});
 
   // 알림 처리
   if (window.location.search.includes('cancelSuccess=true')) {

@@ -2,13 +2,16 @@ const { promisePool } = require('../db/db');
 
 module.exports = {
   deleteOldItems: () =>
-    promisePool.query(`DELETE FROM growmarket WHERE DATEDIFF(NOW(), registered_date) > 30`),
+    promisePool.query(`   
+      DELETE FROM growmarket
+      WHERE DATE(registered_date) <= CURDATE() - INTERVAL 30 DAY
+      `),
 
 getMarketItems: () =>
   promisePool.query(`
     SELECT gm.registration_id, gm.user_id, gm.item_type_id, gm.registered_date, gm.is_sold,
            gm.count, u.nickname, it.item_name, ii.image_path,
-           DATEDIFF(DATE_ADD(gm.registered_date, INTERVAL 30 DAY), CURDATE()) AS dday
+           DATEDIFF(DATE_ADD(DATE(gm.registered_date), INTERVAL 30 DAY), CURDATE()) AS dday
     FROM growmarket gm
     JOIN user u ON gm.user_id = u.user_id
     JOIN item_type it ON gm.item_type_id = it.item_type_id

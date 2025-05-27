@@ -47,7 +47,8 @@
           </div>
         </div>
         <div class="item-right">
-          <div class="d-day">D-<%= fruit.dday %></div>
+          <div class="d-day" data-registered="<%= fruit.registered_date.toISOString() %>"></div>
+
           <div class="fruit-detail"><%= fruit.item_name %> <%= fruit.count %>개</div>
           <% if (fruit.user_id === user.user_id) { %>
             <form action="/market/cancel/<%= fruit.registration_id %>" method="POST" onsubmit="return confirmCancel()">
