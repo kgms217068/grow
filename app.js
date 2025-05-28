@@ -69,10 +69,11 @@ const collectionRouter = require('./routes/collection');
 const communityRouter = require('./routes/community');
 const marketRouter = require('./routes/market');
 const mypageRouter = require('./routes/mypage');
+
+const homeRouter = require('./routes/home');
+const scrapRouter = require('./routes/scrap');
 const adminRouter = require('./routes/admin');
 const inventoryRouter = require('./routes/inventory');
-
-
 
 
 app.use(session({
@@ -97,6 +98,8 @@ app.use('/market', marketRouter);
 app.use('/mypage', mypageRouter);
 app.use('/admin', adminRouter);
 app.use('/inventory', inventoryRouter);
+app.use('/home', homeRouter);
+app.use('/scrap', scrapRouter);
 
 // 기본 라우트
 app.get('/', (req, res) => {
@@ -114,6 +117,5 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 서버 실행 중: http://localhost:${PORT}`);
-});
+
+module.exports = app;

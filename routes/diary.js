@@ -2,6 +2,12 @@ const express = require('express');
 const router = express.Router();
 const certModel = require('../models/certificationModel'); // diary 저장도 여기 있다고 가정
 
+const diaryController = require('../controllers/diaryController');
+const isLoggedIn = require('../middlewares/auth');
+
+router.get('/', isLoggedIn, diaryController.renderDiaryPage);
+
+
 // GET: 일기 작성 폼 보여주기
 router.get('/:missionExecutionId', (req, res) => {
   const missionExecutionId = req.params.missionExecutionId;
