@@ -1,0 +1,290 @@
+/* 공통 설정 */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* 기본 레이아웃 */
+.community-wrapper {
+  max-width: 430px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px 16px 140px;
+  background-color: white;
+  min-height: 100vh;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* 검색창 */
+.community-wrapper input[type="text"] {
+  width: 100%;
+}
+
+.community-wrapper .search-box {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.community-wrapper .post-list {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+}
+
+.community-wrapper .post-item {
+  margin-bottom: 2rem;
+}
+
+/* 글쓰기 버튼 */
+.write-button {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(120px); /* ← ✅ 더 자연스러운 우측 끝 기준 위치 */
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: white;
+  border: 2px solid black;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1500;
+}
+
+/* 게시글 상세 화면 */
+.container {
+  max-width: 430px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+  position: relative;
+  background-color: #ffffff;
+}
+
+/* 게시글 카드 */
+.post-card {
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+/* 게시글 헤더 */
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.post-user-info {
+  display: flex;
+  align-items: center;
+}
+
+.user-avatar {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  align-self: flex-start; /* ✅ 수직 정렬 고정 */
+}
+
+.user-avatar.small {
+  width: 30px;
+  height: 30px;
+}
+
+.user-avatar .user-icon {
+  font-size: 26px;
+  color: #aaa;
+  z-index: 1;
+  position: relative;
+}
+
+.user-avatar.small .user-icon {
+  font-size: 22px;
+}
+
+/* 게시글 삭제 버튼 */
+.post-delete {
+  color: gray;
+  z-index: 1000;
+  cursor: pointer;
+}
+
+/* 게시글 제목/내용 */
+.post-title {
+  margin-top: 10px;
+  font-size: 1.2rem;
+}
+
+.post-content {
+  margin-top: 5px;
+  font-size: 1rem;
+}
+
+/* 반응바 */
+.reaction-bar {
+  text-align: right;
+  margin-top: 10px;
+}
+
+.reaction-bar.right {
+  font-size: 0.9rem;
+}
+
+/* 댓글 리스트 */
+.comments {
+  padding: 0;
+  list-style: none;
+}
+
+.comment-item {
+  border: 1px solid #ccc;
+  border-radius: 15px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+/* 댓글 헤더 */
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.comment-user-info {
+  display: flex;
+  align-items: center;
+}
+
+.comment-content {
+  margin: 5px 0 0 40px;
+}
+
+/* 댓글 입력창 고정 */
+#comment-form {
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 430px;
+  width: 100%;
+  background-color: white;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  z-index: 900;
+  border-top: 1px solid #ccc;
+}
+
+#comment-form input {
+  flex-grow: 1;
+  border-radius: 25px;
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+#comment-form button {
+  margin-left: 10px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+/* 댓글 삭제 버튼 */
+.comment-delete {
+  color: gray;
+  z-index: 800;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/* 게시글 작성 화면 */
+.post-write-wrapper {
+  max-width: 430px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px 16px 120px;
+  background-color: white;
+  box-sizing: border-box;
+  position: relative;
+  overflow-y: auto;
+}
+
+.post-write-title {
+  margin: 0 0 20px;
+  color: #888;
+  font-size: 18px;
+}
+
+.post-write-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.post-input {
+  padding: 12px 16px;
+  font-size: 16px;
+  border-radius: 16px;
+  border: 1px solid black;
+  outline: none;
+}
+
+.post-textarea {
+  padding: 12px 16px;
+  font-size: 16px;
+  border-radius: 16px;
+  border: 1px solid black;
+  resize: none;
+  height: 200px;
+  outline: none;
+}
+
+.post-submit-button {
+  align-self: flex-end;
+  padding: 6px 12px;
+  background-color: #336600;
+  color: white;
+  font-size: 14px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+/* 하단 고정 영역 여백 확보용 */
+.bottom-spacer {
+  height: 140px;
+  pointer-events: none;
+}
+
+/* 휘장 이미지 */
+.badge-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+

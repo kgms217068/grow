@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>커뮤니티</title>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <!-- 외부 스타일시트 -->
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/community.css">
+</head>
+<body>
+  <!-- 커뮤니티 콘텐츠 -->
+  <div class="community-wrapper"
+       style="width: 430px; min-height: 100vh; margin: 0 auto; background: #fff; padding: 20px; box-sizing: border-box; position: relative;">
+    
+    <!-- 검색창 -->
+    <form action="/community" method="get" style="display: flex; justify-content: center; margin-bottom: 20px;">
+      <div style="position: relative; width: 100%;">
+        <input type="text" name="search" placeholder="검색"
+               style="width: 100%; height: 44px; padding: 0 44px 0 15px; border-radius: 22px; border: 1px solid #000; font-size: 16px; outline: none;">
+        <button type="submit"
+                style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 18px; cursor: pointer;">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+      </div>
+    </form>
+
+    <!-- 게시글 목록 -->
+    <ul class="post-list" style="list-style: none; padding: 0; margin: 0;">
+      <% posts.forEach(post => { %>
+        <li style="position: relative; width: 90%; margin: 20px auto; padding: 15px 10px; border-bottom: 1px solid #ccc;">
+          <div style="position: absolute; top: 15px; right: 10px; font-size: 12px; color: #666;">
+            <%= post.timeAgo %>
+          </div>
+
+          <a href="/community/detail/<%= post.post_id %>" style="text-decoration: none; color: black;">
+            <div style="display: flex; align-items: flex-start; gap: 10px;">
+              <div class="user-avatar" style="position: relative;">
+                <i class="fa-solid fa-user-circle user-icon"></i>
+                <% if (post.badge === 'gold') { %>
+                    <img src="/img/gold.png" class="badge-img" />
+                <% } else if (post.badge === 'silver') { %>
+                    <img src="/img/silver.png" class="badge-img" />
+                <% } %>
+              </div>
+
+              <div style="flex-grow: 1; overflow: hidden;">
+                <div style="font-weight: bold; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">
+                  <%= post.title %>
+                </div>
+                <div style="font-size: 14px; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <%= post.content %>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <div style="margin-top: 10px; font-size: 16px;">
+            <% if (post.likedByUser) { %>
+              <i class="fa-solid fa-heart" style="color: red;"></i> <%= post.likeCount %> &nbsp;&nbsp;
+            <% } else { %>
+              <i class="fa-regular fa-heart"></i> <%= post.likeCount %> &nbsp;&nbsp;
+            <% } %>
+
+            <i class="fa-regular fa-comment"></i> <%= post.commentCount %> &nbsp;&nbsp;
+
+            <% if (post.scrappedByUser) { %>
+              <i class="fa-solid fa-star" style="color: #ffee00;"></i> <%= post.scrapCount %>
+            <% } else { %>
+              <i class="fa-regular fa-star"></i> <%= post.scrapCount %>
+            <% } %>
+          </div>
+        </li>
+      <% }) %>
+    </ul>
+
+    <!-- 하단 여백 확보 -->
+    <div class="bottom-spacer"></div>
+  </div>
+<!-- ✅ 글쓰기 버튼: wrapper 바깥, 화면에 고정 -->
+  <a href="/community/post" class="write-button">
+    <i class="fa-solid fa-pen"></i>
+  </a>
+  <!-- 하단 네비게이션 -->
+  <div class="bottom-nav">
+    <ul>
+      <li><a href="/market"><i class="fa-solid fa-gift"></i><div>그로우마켓</div></a></li>
+      <li><a href="/home"><i class="fa-solid fa-house"></i><div>홈</div></a></li>
+      <li><a href="/community"><i class="fa-solid fa-users"></i><div>커뮤니티</div></a></li>
+      <li><a href="/mypage"><i class="fa-solid fa-user"></i><div>마이페이지</div></a></li>
+    </ul>
+  </div>
+
+  <script>
+    window.addEventListener('pageshow', function (event) {
+      if (event.persisted) {
+        window.location.reload();
+      }
+    });
+  </script>
+</body>
+</html>

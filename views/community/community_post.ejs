@@ -1,0 +1,51 @@
+<!-- community_post.ejs -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>게시글 작성</title>
+  <link rel="stylesheet" href="/css/community.css">
+</head>
+<body>
+  <div class="post-write-wrapper">
+    <form action="/community/post" method="POST" class="post-write-form">
+      <input type="text" name="title" placeholder="제목을 입력해주세요" required class="post-input">
+      <textarea name="content" placeholder="내용을 입력해주세요" required class="post-textarea"></textarea>
+      <button type="submit" class="post-submit-button">작성</button>
+    </form>
+  </div>
+
+<!-- ✅ 하단 고정 네비게이션 -->
+<div class="bottom-nav">
+  <ul>
+    <li>
+      <a href="/market">
+        <i class="fa-solid fa-gift"></i>
+        <div>그로우마켓</div>
+      </a>
+    </li>
+    <li>
+      <a href="/home">
+        <i class="fa-solid fa-house"></i>
+        <div>홈</div>
+      </a>
+    </li>
+    <li>
+      <a href="/community">
+        <i class="fa-solid fa-users"></i>
+        <div>커뮤니티</div>
+      </a>
+    </li>
+    <li>
+      <a href="/mypage">
+        <i class="fa-solid fa-user"></i>
+        <div>마이페이지</div>
+      </a>
+    </li>
+  </ul>
+</div>
+
+</body>
+</html>
+
