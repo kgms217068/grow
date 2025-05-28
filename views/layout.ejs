@@ -5,6 +5,7 @@
 
   <link rel="stylesheet" href="/css/style.css">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
 
@@ -13,7 +14,9 @@
 
   <!-- ✅ 하단 네비게이션바 (회원가입 페이지는 제외) -->
   <% if (!currentPath || !currentPath.includes('/register')) { %>
+
   <div class="bottom-nav">
+
   <a href="/market">
     <i class="fa-solid fa-gift"></i>
     <div>그로우마켓</div>
@@ -31,6 +34,7 @@
     <div>마이페이지</div>
   </a>
 </div>
+
   <% } %>
 
 </body>
