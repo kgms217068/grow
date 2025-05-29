@@ -1,0 +1,27 @@
+<% layout('layout') %>
+
+<div style="padding: 20px; max-width: 400px; margin: auto;">
+  <h2 style="text-align: center;">이메일 변경</h2>
+
+  <% if (message) { %>
+    <div class="success-message"><%= message %></div>
+  <% } %>
+  <% if (error && error.length) { %>
+    <div class="error-message"><%= error[0] %></div>
+  <% } %>
+
+  <form method="POST" action="/change-email">
+    <label>현재 이메일</label>
+    <input type="email" name="currentEmail" value="<%= user?.email || '' %>" readonly />
+
+    <label>새 이메일</label>
+    <input type="email" name="newEmail" required
+      oninvalid="this.setCustomValidity('새 이메일을 입력해주세요.')"
+      oninput="this.setCustomValidity('')" />
+
+    <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+      <button type="submit" style="background-color: #38761d; color: white; padding: 10px 20px;">변경하기</button>
+      <a href="/mypage" style="background-color: white; border: 1px solid #38761d; color: #38761d; padding: 10px 20px; text-align: center; text-decoration: none;">취소</a>
+    </div>
+  </form>
+</div>

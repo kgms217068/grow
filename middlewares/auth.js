@@ -10,4 +10,12 @@ module.exports = (req, res, next) => {
     req.isAuthenticated = () => true;
   }
   next();
+
+exports.ensureAuthenticated = (req, res, next) => {
+  if (req.isAuthenticated && req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/login');
+
+}
 };
