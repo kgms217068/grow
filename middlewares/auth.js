@@ -1,21 +1,25 @@
-module.exports = (req, res, next) => {
+// ✅ 가짜 로그인 미들웨어
+const fakeLogin = (req, res, next) => {
   if (!req.isAuthenticated || !req.isAuthenticated()) {
-    // ✅ 가짜 사용자 정보 주입
     req.user = {
       user_id: 1,
       nickname: '유나'
     };
-
-    // ✅ isAuthenticated 함수도 덧붙이기
     req.isAuthenticated = () => true;
   }
   next();
+};
 
-exports.ensureAuthenticated = (req, res, next) => {
+// ✅ 실제 인증 체크 미들웨어
+const ensureAuthenticated = (req, res, next) => {
   if (req.isAuthenticated && req.isAuthenticated()) {
     return next();
   }
   res.redirect('/login');
+};
 
-}
+// ✅ 내보내기
+module.exports = {
+  fakeLogin,
+  ensureAuthenticated
 };

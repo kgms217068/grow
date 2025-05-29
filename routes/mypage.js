@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const mypageController = require('../controllers/mypageController');
-const isLoggedIn = require('../middlewares/auth');
+const { ensureAuthenticated: isLoggedIn } = require('../middlewares/auth');
 
 // ✅ 1) JSON API: 로그인된 사용자 기준
 router.get('/api', isLoggedIn, mypageController.getMyPage);

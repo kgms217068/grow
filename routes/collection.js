@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const collectionController = require('../controllers/collectionController');
-const isLoggedIn = require('../middlewares/auth'); // 공통 미들웨어로 통일
+const { ensureAuthenticated: isLoggedIn } = require('../middlewares/auth');
 
 // 도감 페이지 렌더링
 router.get('/', isLoggedIn, collectionController.renderCollectionPage);
