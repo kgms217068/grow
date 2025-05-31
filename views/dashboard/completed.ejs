@@ -1,0 +1,15 @@
+<div style="text-align: center; margin-top: 80px;">
+  <div style="background: white; border-radius: 15px; padding: 25px; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 80%; max-width: 300px; margin: auto;">
+    <div style="background-color: #4CAF50; color: white; border-radius: 10px; padding: 10px; margin-bottom: 20px;">
+      <%= nickname %> 님의 현재 단계<br><strong><%= currentLevel %></strong>
+    </div>
+
+    <p><strong>미션 인증이 완료되었어요!<br>비료를 획득하셨습니다! 🪴</strong></p>
+    <img src="/img/fertilizer.png" alt="fertilizer" width="120"/>
+    <p style="margin-top: 10px;">비료를 통해<br>나무를 성장시켜 보세요!</p>
+
+    <a href="/dashboard/diary/<%= missionId %>">
+      <button style="background-color: #4CAF50; color: white; padding: 10px 20px; border-radius: 8px; border: none; margin-top: 15px;">일기 작성</button>
+    </a>
+  </div>
+</div>
