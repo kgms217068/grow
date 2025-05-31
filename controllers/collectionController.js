@@ -20,10 +20,10 @@ exports.getCollection = (req, res) => {
   });
 };
 
-// ✅ EJS 렌더링용 (불필요한 매핑 제거)
+// ✅ EJS 렌더링용 (layout.ejs 기반으로 수정됨)
 exports.renderCollectionPage = (req, res) => {
   const userId = req.user.user_id;
-  const category = req.query.category || 'basic'; // ← 영어로 통일됨
+  const category = req.query.category || 'basic';
   const page = parseInt(req.query.page) || 1;
   const limit = 1;
 
@@ -34,10 +34,12 @@ exports.renderCollectionPage = (req, res) => {
     }
 
     const imageName = result.fruits.length > 0
-      ? result.fruits[0].fruit_name // 이미 영어로 되어 있으므로 바로 사용 가능
+      ? result.fruits[0].fruit_name
       : 'default';
 
     res.render('collection', {
+      layout: 'layout',          // ✅ layout.ejs 사용
+      currentPath: req.path,     // ✅ 네비게이션 조건에 필요
       userId,
       category,
       imageName,

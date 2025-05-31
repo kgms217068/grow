@@ -21,6 +21,10 @@ const sessionStore = new MySQLStore({}, db.promisePool);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+const expressLayouts = require('express-ejs-layouts');  
+app.use(expressLayouts);                                
+app.set('layout', 'layout'); 
+
 // 미들웨어
 app.use(morgan('dev'));
 app.use(express.json());

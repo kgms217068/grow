@@ -1,14 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
+
+  <link rel="stylesheet" href="/css/style.css">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= title || "MyApp" %></title>
-  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <main class="app-container">
-    <%- body %>
-  </main>
+
+  <!-- 페이지 내용 -->
+  <%- body %>
+
+  <!-- ✅ 하단 네비게이션바 (회원가입 페이지는 제외) -->
+  <% if (!currentPath || (!currentPath.includes('/register') && !currentPath.includes('/login'))) { %>
+  <div class="bottom-nav" style="
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 60px;
+    background-color: #a4c639;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
+  ">
+    <a href="/market" style="text-align: center; color: #333; text-decoration: none;">
+      <div>🎁</div><div>그로우마켓</div>
+    </a>
+    <a href="/home" style="text-align: center; color: #333; text-decoration: none;">
+      <div>🏠</div><div>홈</div>
+    </a>
+    <a href="/community" style="text-align: center; color: #333; text-decoration: none;">
+      <div>👥</div><div>커뮤니티</div>
+    </a>
+    <a href="/mypage" style="text-align: center; color: #333; text-decoration: none;">
+      <div>👤</div><div>마이페이지</div>
+    </a>
+  </div>
+  <% } %>
+
 </body>
 </html>
