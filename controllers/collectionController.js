@@ -37,13 +37,23 @@ exports.renderCollectionPage = (req, res) => {
       ? result.fruits[0].fruit_name
       : 'default';
 
+    const fruitMessages = [
+      '이 과일은 당신이 하루를 이겨낸 증거예요.',
+      '오늘도 수고했어요. 이 과일은 당신의 노력의 결과예요.',
+      '작은 실천이 큰 열매를 맺었어요!',
+      '포기하지 않고 하루를 살아낸 당신, 멋져요!',
+      '당신의 하루가 이 과일처럼 영글었어요.'
+    ];
+    const randomMessage = fruitMessages[Math.floor(Math.random() * fruitMessages.length)];
+
     res.render('collection', {
-      layout: 'layout',          // ✅ layout.ejs 사용
-      currentPath: req.path,     // ✅ 네비게이션 조건에 필요
+      layout: 'layout',         
+      currentPath: req.path,    
       userId,
       category,
       imageName,
-      ...result
+      ...result,
+      fruitMessage: randomMessage
     });
   });
 };
