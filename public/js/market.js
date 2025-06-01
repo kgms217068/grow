@@ -31,19 +31,18 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-  // D-Day 계산 (등록일 기준 +30일 - 오늘 날짜(KST) 기준)
+  
 document.querySelectorAll('.d-day').forEach(el => {
   const dateStr = el.getAttribute('data-registered');
   if (!dateStr) return;
 
-  // 등록일 (시간 무시)
+  // 등록일 (시간 제거)
   const regDateOnly = new Date(dateStr);
   regDateOnly.setHours(0, 0, 0, 0);
 
-  // 오늘 (KST 기준 날짜만)
-  const now = new Date();
-  const nowKST = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const todayDateOnly = new Date(nowKST.getFullYear(), nowKST.getMonth(), nowKST.getDate());
+  // 오늘 날짜 (로컬 타임존 기준, 시간 제거)
+  const todayDateOnly = new Date();
+  todayDateOnly.setHours(0, 0, 0, 0);
 
   // 만료일 = 등록일 + 30일
   const expireDate = new Date(regDateOnly);
@@ -54,21 +53,30 @@ document.querySelectorAll('.d-day').forEach(el => {
   el.textContent = `D-${dday}`;
 });
 
+
   // 알림 처리
-  if (window.location.search.includes('cancelSuccess=true')) {
-    alert('등록이 취소되었습니다');
-    history.replaceState(null, '', '/market');
-  }
-  if (window.location.search.includes('error=not_enough')) {
-    alert('보유하신 과일이 부족합니다');
-    history.replaceState(null, '', '/market');
-  }
-  if (window.location.search.includes('error=exchange_limit')) {
-    alert('하루에 최대 3번까지만 교환 요청할 수 있습니다.');
-    history.replaceState(null, '', '/market');
-  }
-  if (window.location.search.includes('success=exchange')) {
-    alert('교환이 완료되었습니다!');
-    history.replaceState(null, '', '/market');
-  }
+if (window.location.search.includes('cancelSuccess=true')) {
+  alert('등록이 취소되었습니다');
+  history.replaceState(null, '', '/market');
+}
+if (window.location.search.includes('error=not_enough')) {
+  alert('보유하신 과일이 부족합니다');
+  history.replaceState(null, '', '/market');
+}
+if (window.location.search.includes('error=exchange_limit')) {
+  alert('하루에 최대 3번까지만 교환 요청할 수 있습니다.');
+  history.replaceState(null, '', '/market');
+}
+if (window.location.search.includes('error=already_exchanged')) {
+  alert('이미 교환된 과일입니다.');
+  history.replaceState(null, '', '/market');
+}
+if (window.location.search.includes('error=server')) {
+  alert('요청 처리 중 오류가 발생했습니다.');
+  history.replaceState(null, '', '/market');
+}
+if (window.location.search.includes('success=exchange')) {
+  alert('교환이 완료되었습니다!');
+  history.replaceState(null, '', '/market');
+}
 });

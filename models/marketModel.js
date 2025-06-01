@@ -1,24 +1,25 @@
 const { promisePool } = require('../db/db');
 
 module.exports = {
+  //30일 지난 과일 자동 삭제
   deleteOldItems: () =>
     promisePool.query(`   
       DELETE FROM growmarket
       WHERE DATE(registered_date) <= CURDATE() - INTERVAL 30 DAY
-      `),
+    `),
 
-getMarketItems: () =>
-  promisePool.query(`
-    SELECT gm.registration_id, gm.user_id, gm.item_type_id, gm.registered_date, gm.is_sold,
-           gm.count, u.nickname, it.item_name, ii.image_path,
-           DATEDIFF(DATE_ADD(DATE(gm.registered_date), INTERVAL 30 DAY), CURDATE()) AS dday
-    FROM growmarket gm
-    JOIN user u ON gm.user_id = u.user_id
-    JOIN item_type it ON gm.item_type_id = it.item_type_id
-    JOIN item_image ii ON it.item_name = ii.item_name
-    WHERE gm.is_sold = 0
-    ORDER BY gm.registered_date DESC
-  `),
+  getMarketItems: () =>
+    promisePool.query(`
+      SELECT gm.registration_id, gm.user_id, gm.item_type_id, gm.registered_date, gm.is_sold,
+          gm.count, u.nickname, it.item_name, ii.image_path,
+          DATEDIFF(DATE_ADD(DATE(gm.registered_date), INTERVAL 30 DAY), CURDATE()) AS dday
+      FROM growmarket gm
+      JOIN user u ON gm.user_id = u.user_id
+      JOIN item_type it ON gm.item_type_id = it.item_type_id
+      JOIN item_image ii ON it.item_name = ii.item_name
+      WHERE gm.is_sold = 0
+      ORDER BY gm.registered_date DESC
+    `),
 
   getInventoryList: () =>
     promisePool.query(`
@@ -33,12 +34,14 @@ getMarketItems: () =>
   getItemCount: (conn, itemTypeId, inventoryId) =>
     conn.query(`SELECT item_count FROM item WHERE item_type_id = ? AND inventory_id = ?`, [itemTypeId, inventoryId]),
 
- insertGrowMarketItem: (conn, userId, itemTypeId, now, quantity) =>
-  conn.query(`
-    INSERT INTO growmarket (user_id, item_type_id, registered_date, is_sold, count)
-    VALUES (?, ?, ?, 0, ?)
-  `, [userId, itemTypeId, now, quantity]),
+  //과일 등록 정보 삽입
+  insertGrowMarketItem: (conn, userId, itemTypeId, now, quantity) =>
+    conn.query(`
+      INSERT INTO growmarket (user_id, item_type_id, registered_date, is_sold, count)
+      VALUES (?, ?, ?, 0, ?)
+    `, [userId, itemTypeId, now, quantity]),
 
+  //사용자의 인벤토리에서 과일 수량 차감
   deductItemCount: (conn, quantity, itemTypeId, inventoryId) =>
   conn.query(`
     UPDATE item 
@@ -47,21 +50,21 @@ getMarketItems: () =>
   `, [quantity, itemTypeId, inventoryId, quantity]),
 
   //하루 교환 3번 제한
-getTodayExchangeCount: (conn, userId) =>
-  conn.query(`
-    SELECT COUNT(*) AS count
-    FROM growmarket
-    WHERE is_sold = 1 AND exchanged_by = ?
-      AND DATE(sold_date) = CURDATE()
-  `, [userId]),
+  getTodayExchangeCount: (conn, userId) =>
+    conn.query(`
+      SELECT COUNT(*) AS count
+      FROM growmarket
+      WHERE is_sold = 1 AND exchanged_by = ?
+        AND DATE(sold_date) = CURDATE()
+    `, [userId]),
   
   //교환 여부 업데이트
-updateIsSold: (conn, registrationId, userId) =>
-  conn.query(`
-    UPDATE growmarket
-    SET is_sold = 1, sold_date = NOW(), exchanged_by = ?
-    WHERE registration_id = ?
-  `, [userId, registrationId]),
+  updateIsSold: (conn, registrationId, userId) =>
+    conn.query(`
+      UPDATE growmarket
+      SET is_sold = 1, sold_date = NOW(), exchanged_by = ?
+      WHERE registration_id = ?
+    `, [userId, registrationId]),
 
   // 해당 유저가 등록한 과일 탐색(등록 취소용)
   getGrowMarketItemById: (conn, registrationId, userId) =>
