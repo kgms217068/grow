@@ -1,9 +1,7 @@
 const marketService = require('../services/marketService');
 
-const getUserId = (req) => req.session.user?.user_id;
-
 exports.getMarketMain = async (req, res) => {
-  const userId = getUserId(req);
+  const userId = req.user.user_id;
   const { error, success } = req.query;
 
   try {
@@ -25,7 +23,7 @@ exports.getMarketMain = async (req, res) => {
 
 exports.registerFruit = async (req, res) => {
   const { itemTypeId, quantity } = req.body;
-  const userId = getUserId(req);
+  const userId = req.user.user_id;
 
   if (!itemTypeId || !quantity) {
     return res.redirect('/market?error=server');
@@ -46,7 +44,7 @@ exports.registerFruit = async (req, res) => {
 };
 
 exports.exchangeFruit = async (req, res) => {
-  const userId = getUserId(req);
+  const userId = req.user.user_id;
   const { registrationId } = req.params;
 
   try {
@@ -68,7 +66,7 @@ exports.exchangeFruit = async (req, res) => {
 };
 
 exports.cancelRegistration = async (req, res) => {
-  const userId = getUserId(req);
+  const userId = req.user.user_id;
   const { registrationId } = req.params;
 
   try {
@@ -79,4 +77,3 @@ exports.cancelRegistration = async (req, res) => {
     res.redirect('/market?error=server');
   }
 };
-
