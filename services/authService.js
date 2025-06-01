@@ -104,7 +104,9 @@ const userService = {
     },
 
     deleteAccount: async (userId) => {
+	console.log('[DEBUG] 서비스 deleteAccount userId:', userId);
         const deleted = await User.deleteById(userId);
+	console.log('[DEBUG] delete result:', deleted);
         if (!deleted) throw new Error('회원탈퇴에 실패했습니다.');
         return true;
     }

@@ -30,6 +30,27 @@ router.get('/registerSuccess', (req, res) =>
 );
 
 
+router.get('/change-email', ensureAuthenticated, (req, res) => {
+  res.render('changeEmail', {
+    title: '이메일 변경',
+    user: req.user,
+    message: '',
+    error: [],
+    form: {}
+  });
+});
+
+router.get('/change-password', ensureAuthenticated, (req, res) => {
+  res.render('changePassword', {
+    title: '비밀번호 변경',
+    user: req.user,
+    message: '',
+    error: [],
+    form: {}
+  });
+});
+
+
 router.post('/change-email', ensureAuthenticated, authController.changeEmail);
 router.post('/change-password', ensureAuthenticated, authController.changePassword);
 router.post('/delete-account', ensureAuthenticated, authController.deleteAccount);
