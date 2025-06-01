@@ -35,5 +35,26 @@
   </div>
 <% }) %>
 
+<!-- ✅ 인증 완료된 목록 -->
+<h2 style="text-align: center; margin-top: 50px;">✅ 인증 완료된 미션</h2>
+
+<% if (approvedCerts.length === 0) { %>
+  <p style="text-align: center;">완료된 인증이 없습니다.</p>
+<% } %>
+
+<% approvedCerts.forEach(cert => { %>
+  <div class="cert-box" style="opacity: 0.7;">
+    <p><strong>사용자:</strong> <%= cert.nickname %></p>
+    <p><strong>미션:</strong> <%= cert.description %></p>
+    <p><strong>완료일자:</strong> <%= cert.certification_date.toISOString().split('T')[0] %></p>
+    <img src="/uploads/<%= cert.image_source %>" alt="인증 사진" />
+
+    <!-- ✅ 인증 취소 버튼 추가 -->
+    <form action="/admin/certifications/<%= cert.certification_id %>/cancel" method="POST">
+      <button type="submit" class="approve-btn" style="background-color: #e74c3c;">인증 취소</button>
+    </form>
+  </div>
+<% }) %>
+
 </body>
 </html>

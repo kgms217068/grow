@@ -18,13 +18,13 @@ exports.getCertificationsByUser = async (userId) => {
   return rows;
 };
 
-exports.saveDiary = async ({ mission_execution_id, user_id, title, content, emotions }) => {
-  const diarySql = `INSERT INTO diary (mission_execution_id, user_id, title, content) VALUES (?, ?, ?, ?)`;
-  const [result] = await promisePool.query(diarySql, [mission_execution_id, user_id, title, content]);
+exports.saveDiary = async ({ mission_execution_id, title, content, emotions }) => {
+  const diarySql = `INSERT INTO diary (title, content,mission_execution_id) VALUES (?, ?, ?)`;
+  const [result] = await promisePool.query(diarySql, [title, content,mission_execution_id]);
 
   const diaryId = result.insertId;
 
-  const emotionSql = `INSERT INTO emotion_tag (diary_id, emotion) VALUES ?`;
+  const emotionSql = `INSERT INTO emotion (diary_id, emotion_tag_name) VALUES ?`;
   const emotionData = emotions.map(e => [diaryId, e]);
 
   await promisePool.query(emotionSql, [emotionData]);

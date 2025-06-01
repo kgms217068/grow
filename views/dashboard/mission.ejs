@@ -4,41 +4,69 @@
   <title>미션 목록</title>
   <link rel="stylesheet" href="/css/style.css" />
   <style>
-    .mission-box {
-      margin: 10px auto;
-      padding: 15px;
-      width: 90%;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      background: #f4f8f2;
-    }
+
+  @font-face 
+  {
+    font-family: 'neon';
+    src: url('../../NanumSquareNeo-bRg.ttf') format('ttf');
+  }
+  body {
+  font-family: 'neon';
+  }
+  .mission-box 
+  {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px auto;
+  width: 340px;
+  height: 50px;
+  border: 1px solid black;
+  border-radius: 8px;
+  background: white;
+  padding: 0 14px;
+}
+.mission-done-box{
+  background: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px auto;
+  width: 340px;
+  height: 50px;
+  border-radius: 8px;
+  padding: 0 14px;
+}
     .status-btn {
-      padding: 5px 10px;
-      border: none;
       border-radius: 5px;
+      width: 75px;
+      height: 34px;
     }
     .cert-btn {
-      background-color: transparent;
-      border: 1px solid #4CAF50;
-      color: #4CAF50;
+      background-color: #71a304;
+      color: white;
+      width: 75px;
+      height: 34px;
+      font-weight: bold;
     }
     .waiting-btn {
-      background-color: #fbc02d;
-      color: black;
+      background-color: #71a304;
+      color: white;
+      font-weight: bold;
     }
     .done-btn {
-      background-color: #9e9e9e;
-      color: white;
+     font-size: 12px;
+      color: black;
     }
     .modal {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background-color: rgba(0,0,0,0.5);
+
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999;
+  z-index: 0;
 }
 .modal-content {
   background: white;
@@ -47,15 +75,21 @@
   text-align: center;
   box-shadow: 0 0 15px rgba(0,0,0,0.2);
 }
+.modal-content2{
+  position: inherit;
+  top:75%;
+}
 .write-diary-btn {
-  background: #4CAF50;
-  color: white;
+  background: white;
   padding: 10px 20px;
   margin-top: 15px;
   border: none;
   border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
 }
-
+.font{
+  font-size: 18px;
+}
   </style>
 </head>
 <body>
@@ -69,17 +103,24 @@
 
 <!-- ✅ 미완료 미션 -->
 <h3 style="text-align: center; margin-top: 30px;">미완료 미션</h3>
-<% missions.filter(m => certStatus[m.mission_id] !== true).forEach(m => {
-     const status = certStatus[m.mission_id]; // undefined / true / false
+<% missions.filter(m => !certStatus[m.mission_id]?.status).forEach(m => {
+     const statusObj = certStatus[m.mission_id];
 %>
   <div class="mission-box">
-    <p><strong><%= m.description %></strong></p>
+    <p style="margin: 0;" class="font"><%= m.description %></p>
 
-    <% if (status === false) { %>
-      <button class="status-btn waiting-btn" disabled>확인 중</button>
+    <% if (statusObj && statusObj.awaitingConfirm) { %>
+      <!-- ✅ 사용자 확정용 완료 버튼 -->
+      <form action="/dashboard/confirm/<%= statusObj.mission_execution_id %>" method="POST">
+        <button class="status-btn cert-btn font">완료</button>
+      </form>
+    <% } else if (statusObj && statusObj.status === false) { %>
+      <!-- ✅ 관리자 승인 전: 확인 중 -->
+      <button class="status-btn waiting-btn font" disabled>확인 중</button>
     <% } else { %>
-      <form action="/dashboard?missionId=<%= m.mission_id %>" method="get">
-        <button class="status-btn cert-btn">인증</button>
+      <!-- ✅ 최초 인증 버튼 -->
+      <form action="/dashboard?missionId=<%= m.mission_id %>" method="get" style="margin: 0;">
+        <button class="status-btn cert-btn font">인증</button>
       </form>
     <% } %>
   </div>
@@ -87,22 +128,55 @@
 
 <!-- ✅ 완료 미션 -->
 <h3 style="text-align: center; margin-top: 40px;">완료 미션</h3>
-<% missions.filter(m => certStatus[m.mission_id] === true).forEach(m => { %>
-  <div class="mission-box">
-    <p><strong><%= m.description %></strong></p>
-    <button class="status-btn done-btn" disabled>완료</button>
+<% missions.filter(m => certStatus[m.mission_id]?.status === true).forEach(m => {
+     const date = certStatus[m.mission_id]?.date;
+     const formattedDate = date ? new Date(date).toISOString().split('T')[0] : 'N/A';
+%>
+  <div class="mission-done-box">
+    <p style="margin-left: 20px;"><%= m.description %></p>
+    <p class="status-btn done-btn">완료일자<br><%= formattedDate %></p>
   </div>
 <% }) %>
+
+
+
 
 <% if (showFertilizerModal) { %>
   <div class="modal">
     <div class="modal-content">
-      <p><strong>미션 인증이 완료되었어요!<br>비료를 획득하셨습니다! 🪴</strong></p>
-      <img src="/img/fertilizer.png" alt="fertilizer" width="80" />
-      <p>비료를 통해<br>자신만의 나무를 성장시켜 보세요!</p>
-      <a href="/dashboard/diary/<%= recentMissionId %>">
+      <p><strong>미션 인증이 완료되었어요!</strong><br>비료를 획득하셨습니다!</p>
+      <img src="/img/fertilizer.png" alt="fertilizer" style="width: 150px;height: 150px;"/>
+      <p>비료를 통해<br>나무를 성장시켜 보세요!</p>
+
+    </div>
+    <div class="modal-content2">
+      <a href="/dashboard/diary/<%= latestMissionExecutionId %>">
         <button class="write-diary-btn">일기 작성</button>
       </a>
+    </div>
+  </div>
+
+<% } %>
+
+<% if (showLevelOptionModal) { %>
+  <div class="modal">
+    <div class="modal-content">
+      <p><strong><%= nickname %> 님</strong><br>
+         이번 단계의 미션을 모두 완료하셨습니다!</p>
+      <p>다음 행동을 선택해주세요:</p>
+
+      <form action="/dashboard/level-option" method="POST">
+        <input type="hidden" name="option" value="NEXT">
+        <button type="submit">다음 단계로!</button>
+      </form>
+      <form action="/dashboard/level-option" method="POST">
+        <input type="hidden" name="option" value="RETRY">
+        <button type="submit">한 번 더 도전</button>
+      </form>
+      <form action="/dashboard/level-option" method="POST">
+        <input type="hidden" name="option" value="WAIT">
+        <button type="submit">쉬어가기 (3일 뒤 자동 진행)</button>
+      </form>
     </div>
   </div>
 <% } %>

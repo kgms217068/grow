@@ -5,7 +5,10 @@ const path = require('path');
 const { promisePool } = require('../db/db');
 const certModel = require('../models/certificationModel');
 const missionModel = require('../models/missionModel');
+const userModel = require('../models/userModel');
 
+
+// 파일 업로드 설정
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, path.join(__dirname, '../public/uploads'));
@@ -17,40 +20,26 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// ✅ GET /dashboard — 다음 미션 1개 보여주기
+// ✅ GET /dashboard
 router.get('/', async (req, res) => {
-  try {
-    const userId = req.session.userId || 1;
+  const userId = req.session.userId || 1;
+  
 
-    const allMissions = await missionModel.getAllMissions();
+const user = await userModel.getUserById(userId); // ✅ 유저 정보 가져오기
 
-    // DB에서 인증 상태 가져오기
-    const [certRows] = await promisePool.query(`
-      SELECT me.mission_id, c.checked
-      FROM certification c
-      JOIN mission_execution me ON c.mission_execution_id = me.mission_execution_id
-      WHERE c.user_id = ?
-    `, [userId]);
+  const allMissions = await missionModel.getAllMissions();
+  const certifications = await certModel.getCertificationsByUser(userId);
+  const completedIds = certifications.map(c => c.mission_id);
 
-    const completedIds = certRows.map(c => c.mission_id);
-    const certStatus = {};
-    certRows.forEach(c => {
-      certStatus[c.mission_id] = c.checked ? true : false;
-    });
+  const nextMission = allMissions.find(m => !completedIds.includes(m.mission_id));
+  const result = certifications.find(c => c.mission_id === nextMission?.mission_id);
 
-    const nextMission = allMissions.find(m => !completedIds.includes(m.mission_id));
-    const result = certStatus[nextMission?.mission_id] ?? null;
-
-    res.render('dashboard/index', {
-      mission: nextMission || null,
-      result,
-      title: 'dashboard',
-      currentPath: req.path
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).render('error', { message: '미션 로딩 실패', error: err });
-  }
+  res.render('dashboard/index', {
+    mission: nextMission || null,
+    result: result || null,
+    title: 'dashboard',
+    currentPath: req.path
+  });
 });
 
 // ✅ POST /dashboard/submit
@@ -60,20 +49,21 @@ router.post('/submit', upload.single('photo'), async (req, res) => {
     const missionId = parseInt(req.body.missionId);
     const image_source = req.file ? req.file.filename : null;
 
-    // 미션 수행 기록 추가
-    const [result] = await promisePool.query(
+    // 1. 미션 실행 삽입
+    const [missionExecResult] = await promisePool.query(
       'INSERT INTO mission_execution (mission_id, user_id, completed_or_not) VALUES (?, ?, false)',
       [missionId, userId]
     );
-    const missionExecutionId = result.insertId;
+    const mission_execution_id = missionExecResult.insertId;
 
-    // 인증 등록 (checked = false 로 기본)
+    // 2. 인증 정보 삽입
     await certModel.saveCertification({
-      mission_execution_id: missionExecutionId,
+      mission_execution_id,
       user_id: userId,
       image_source
     });
 
+    // 3. 인증 후 미션 목록으로 이동
     res.redirect('/dashboard/mission');
   } catch (err) {
     console.error(err);
@@ -81,60 +71,216 @@ router.post('/submit', upload.single('photo'), async (req, res) => {
   }
 });
 
-// ✅ 완료 화면
-router.get('/completed', (req, res) => {
-  res.render('dashboard/completed', {
-    nickname: '가연이',
-    currentLevel: '3단계',
-    missionId: req.query.missionId,
-    
-  });
-});
+// ✅ 사용자가 인증 완료 확정 버튼을 눌렀을 때 (비료 지급 포함)
+router.post('/confirm/:mission_execution_id', async (req, res) => {
+  const userId = req.session.userId || 1;
+  const mission_execution_id = req.params.mission_execution_id;
 
-// ✅ 미션 목록 (전체)
-router.get('/mission', async (req, res) => {
   try {
-    const userId = req.session.userId || 1;
-    const allMissions = await missionModel.getAllMissions();
-     const certifications = await certModel.getCertificationsByUser(userId); 
+    // 1. confirmed_by_user 플래그 업데이트
+    await promisePool.query(`
+      UPDATE certification
+      SET confirmed_by_user = true
+      WHERE mission_execution_id = ? AND user_id = ? AND checked = true
+    `, [mission_execution_id, userId]);
 
-    const [certRows] = await promisePool.query(`
-      SELECT me.mission_id, c.checked
-      FROM certification c
-      JOIN mission_execution me ON c.mission_execution_id = me.mission_execution_id
-      WHERE c.user_id = ?
-    `, [userId]);
+    // 2. 사용자 인벤토리 ID 가져오기
+    const [[inventoryRow]] = await promisePool.query(
+      'SELECT inventory_id FROM inventory WHERE user_id = ?',
+      [userId]
+    );
 
-    const certStatus = {};
-    certRows.forEach(c => {
-      certStatus[c.mission_id] = c.checked ? true : false;
-    });
+    const inventoryId = inventoryRow.inventory_id;
 
-    const certMap = {};
-  let newlyChecked = false;
+    // 3. 비료 타입 ID 가져오기
+    const [[fertilizerTypeRow]] = await promisePool.query(
+      'SELECT item_type_id FROM item_type WHERE item_name = "비료"'
+    );
 
-  certifications.forEach(cert => {
-    certMap[cert.mission_id] = cert.checked;
-    
-    if (cert.just_checked) {
-      newlyChecked = true; // 직전 인증에서 완료 처리된 것 여부 판단 (이 값은 DB 컬럼 or 조건에 따라 지정)
-    }
-  });
+    const fertilizerTypeId = fertilizerTypeRow.item_type_id;
 
-    res.render('dashboard/mission', {
-      missions: allMissions,
-      certStatus,
-      nickname: '가연이',
-      currentLevel: '3단계',
-      showFertilizerModal: newlyChecked // 👈 새로 완료된 경우 모달 보여주기
-    });
+    // 4. 비료 1개 지급 (중복이면 수량 증가)
+    await promisePool.query(`
+      INSERT INTO item (item_type_id, inventory_id, item_id, item_count)
+      VALUES (?, ?, ?, 1)
+      ON DUPLICATE KEY UPDATE item_count = item_count + 1
+    `, [fertilizerTypeId, inventoryId, fertilizerTypeId]);
+
+    // 5. 모달 띄우기 위한 session 값 저장
+    req.session.prevConfirmedId = Number( mission_execution_id);
+
+    res.redirect('/dashboard/mission');
   } catch (err) {
     console.error(err);
-    res.status(500).render('error', { message: '미션 목록 불러오기 실패', error: err });
+    res.status(500).send('인증 완료 처리 중 오류가 발생했습니다.');
   }
 });
 
-// ✅ 일기 작성
+
+// ✅ GET /dashboard/mission
+router.get('/mission', async (req, res) => {
+  const userId = req.session.userId || 1;
+
+  // ✅ 사용자 정보 조회 (레벨 포함)
+  const [[userInfo]] = await promisePool.query(
+    'SELECT nickname, level FROM user WHERE user_id = ?',
+    [userId]
+  );
+
+  const currentLevel = userInfo.level;
+
+  // ✅ 사용자 레벨에 해당하는 미션만 가져오기
+  const [missions] = await promisePool.query(
+    'SELECT * FROM mission WHERE level = ? ORDER BY mission_id',
+    [currentLevel]
+  );
+
+  // ✅ 인증 및 상태 조회
+  const [certifications] = await promisePool.query(`
+    SELECT me.mission_id, c.checked, c.certification_date, c.confirmed_by_user, me.mission_execution_id
+    FROM certification c
+    JOIN mission_execution me ON c.mission_execution_id = me.mission_execution_id
+    WHERE c.user_id = ?
+  `, [userId]);
+
+  const certStatus = {};
+  let showFertilizerModal = false;
+  let latestMissionExecutionId = null;
+
+  certifications.forEach(c => {
+    const mid = c.mission_id;
+
+    certStatus[mid] = {
+      status: c.checked === 1 && c.confirmed_by_user === 1,
+      date: c.certification_date,
+      mission_execution_id: c.mission_execution_id,
+      awaitingConfirm: c.checked === 1 && c.confirmed_by_user === 0
+    };
+
+    if (c.confirmed_by_user === 1 && req.session.prevConfirmedId === c.mission_execution_id) {
+      showFertilizerModal = true;
+      latestMissionExecutionId = c.mission_execution_id;
+    }
+  });
+
+  req.session.prevConfirmedId = null;
+
+  // 현재 단계의 미션 수 체크
+  const currentMissions = missions.filter(m => m.level === currentLevel);
+  const clearedMissions = currentMissions.filter(m => certStatus[m.mission_id]?.status);
+  const showLevelOptionModal = !showFertilizerModal && clearedMissions.length === 5;
+  // ✅ 과일 보상: 이미 보상되지 않았다면 처리
+  if (clearedMissions.length === 5 && !req.session.levelRewardGiven) {
+    const [[userRow]] = await promisePool.query(`
+      SELECT u.level, i.inventory_id
+      FROM user u
+      JOIN inventory i ON u.user_id = i.user_id
+      WHERE u.user_id = ?
+    `, [userId]);
+
+    const [executions] = await promisePool.query(`
+      SELECT completed_date
+      FROM mission_execution me
+      JOIN mission m ON me.mission_id = m.mission_id
+      WHERE me.user_id = ? AND m.level = ? AND me.completed_or_not = true
+      ORDER BY completed_date ASC
+    `, [userId, userRow.level]);
+    if (executions.length >= 5) {
+      const start = new Date(executions[0].completed_date);
+      const end = new Date(executions[4].completed_date);
+      const isUnderTenDays = (end - start) / (1000 * 60 * 60 * 24) <= 10;
+  
+      const 지급 = async (itemName, amount) => {
+        await promisePool.query(`
+          INSERT INTO item (inventory_id, item_type_id, item_count)
+          SELECT ?, item_type_id, ?
+          FROM item_type
+          WHERE item_name = ?
+          ON DUPLICATE KEY UPDATE item_count = item_count + VALUES(item_count)
+        `, [userRow.inventory_id, amount, itemName]);
+    };
+
+    if (isUnderTenDays) {
+    //일단 테스트 용으로 사과로 지정해 놓음 추후에 변경
+      await 지급('황금과일', 1);
+      await 지급('사과', 2);
+    } else {
+      await 지급('사과', 3);
+    } 
+
+    // ✅ 중복 지급 방지용 세션 플래그
+    req.session.levelRewardGiven = true;
+ }
+}
+  res.render('dashboard/mission', {
+    missions,
+    certStatus,
+    nickname: userInfo.nickname,
+    currentLevel: `${currentLevel}단계`,
+    showFertilizerModal,
+    latestMissionExecutionId,
+    showLevelOptionModal
+  });
+});
+
+router.post('/level-option', async (req, res) => {
+  const userId = req.session.userId || 1;
+  const { option } = req.body; // 'NEXT', 'RETRY', 'WAIT'
+
+  try {
+    // ✅ 레벨 옵션 선택할 때마다 보상 세션 초기화
+    req.session.levelRewardGiven = false;
+    // 이전 옵션 삭제 (중복 방지)
+    await promisePool.query(`
+      DELETE FROM level_option WHERE user_id = ?
+    `, [userId]);
+
+    // 선택 저장
+    await promisePool.query(`
+      INSERT INTO level_option (user_id, selected_option, selected_date)
+      VALUES (?, ?, NOW())
+    `, [userId, option]);
+
+    // 즉시 처리
+    if (option === 'NEXT') {
+      await promisePool.query(`UPDATE user SET level = level + 1 WHERE user_id = ?`, [userId]);
+    } else if (option === 'RETRY') {
+      const [executions] = await promisePool.query(`
+        SELECT mission_execution_id FROM mission_execution me
+        JOIN mission m ON me.mission_id = m.mission_id
+        WHERE me.user_id = ? AND m.level = (SELECT level FROM user WHERE user_id = ?)
+      `, [userId, userId]);
+
+      const ids = executions.map(e => e.mission_execution_id);
+      if (ids.length > 0) {
+        await promisePool.query(`
+          DELETE FROM certification WHERE mission_execution_id IN (?)
+        `, [ids]);
+
+        await promisePool.query(`
+          DELETE FROM mission_execution WHERE mission_execution_id IN (?)
+        `, [ids]);
+      }
+    }
+
+    res.redirect('/dashboard/mission');
+  } catch (err) {
+    console.error('레벨 옵션 처리 실패:', err);
+    res.status(500).send('레벨 옵션 처리 실패');
+  }
+});
+
+
+// ✅ GET /dashboard/completed (사용 안함 - 현재 모달로 대체)
+router.get('/completed', (req, res) => {
+  res.render('dashboard/completed', {
+    nickname: userInfo.nickname,
+  currentLevel: `${userInfo.level}단계`, // 🔥 실제 단계 출력
+    missionId: req.query.missionId
+  });
+});
+
+// ✅ GET/POST /dashboard/diary/:missionId
 router.get('/diary/:missionId', (req, res) => {
   const missionId = req.params.missionId;
   res.render('dashboard/diary', { missionId });
@@ -142,8 +288,8 @@ router.get('/diary/:missionId', (req, res) => {
 
 router.post('/diary/:missionId', async (req, res) => {
   const userId = req.session.userId || 1;
-  const missionExecutionId = req.params.missionId;
   const { title, content, emotions } = req.body;
+  const missionExecutionId = req.params.missionId;
 
   await certModel.saveDiary({
     mission_execution_id: missionExecutionId,

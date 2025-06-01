@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title><%= nickname %>님의 정원</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: #F4F4F4;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      justify-content: center;
+    }
+    .main-wrapper {
+      position: relative;
+      width: 402px;
+      height: 874px;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      overflow: hidden;
+    }
+    .header-text {
+      position: absolute;
+      top: 45px;
+      width: 100%;
+      text-align: center;
+      font-weight: 700;
+      font-size: 30px;
+      color: #000;
+    }
+    .level-text {
+      position: absolute;
+      top: 88px;
+      width: 100%;
+      text-align: center;
+      font-size: 20px;
+      color: #000;
+    }
+    .button-group {
+      position: absolute;
+      top: 125px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+    .button-group button {
+      width: 131px;
+      height: 46px;
+      background: #FFFFFF;
+      border-radius: 10px;
+      border: 2px solid #000;
+      font-weight: 700;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .mission-status-box {
+      position: absolute;
+      top: 648px;
+      left: 42px;
+      width: 318px;
+      height: 109px;
+      background: #FFFFFF;
+      border: 1px solid #000000;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .mission-status-box .status-text {
+      font-weight: 700;
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+    .mission-button {
+      width: 298px;
+      height: 42px;
+      background: #F5B600;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 20px;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* ✅ 하단 네비게이션 스타일
+    .bottom-nav {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 85px;
+      background: rgba(113, 163, 4, 0.77);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      font-size: 14px;
+      color: #000;
+      z-index: 10;
+    }
+
+    .bottom-nav div {
+      text-align: center;
+      font-size: 14px;
+      cursor: pointer;
+    } */
+  </style>
+</head>
+<body>
+  <div class="main-wrapper" style="background-image: url('/images/tree/<%= fruitName %>_<%= missionCompleted %>.png');">
+    <div class="header-text"><%= nickname %>님의 정원</div>
+    <div class="level-text"><%= level %>단계</div>
+
+    <div class="button-group">
+      <button onclick="location.href='/collection?category=basic&page=1'">📖 도감</button>
+      <button onclick="location.href='/inventory'">👜 인벤토리</button>
+    </div>
+
+    <div class="mission-status-box">
+      <div class="status-text">미션 <%= missionCompleted %> / <%= missionTotal %> 완료</div>
+      <button class="mission-button" onclick="location.href='/mission'">오늘의 미션 하러 가기</button>
+    </div>
+
+    <div class="bottom-nav">
+      <div onclick="location.href='/market'">🛖 그로우마켓</div>
+      <div onclick="location.href='/home'">🏡 홈</div>
+      <div onclick="location.href='/community'">👥 커뮤니티</div>
+      <div onclick="location.href='/mypage'">👤 마이페이지</div>
+    </div>
+  </div>
+</body>
+</html>
