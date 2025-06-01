@@ -87,7 +87,9 @@
     <input type="email" name="currentEmail" value="<%= user?.email || '' %>" readonly>
 
     <label for="newEmail">새 이메일</label>
-    <input type="email" name="newEmail" required>
+    <input type="email" name="newEmail" required
+       oninvalid="this.setCustomValidity('새 이메일을 입력해주세요.')"
+       oninput="this.setCustomValidity('')">    
 
     <button type="submit" class="submit-btn">변경하기</button>
   </form>
