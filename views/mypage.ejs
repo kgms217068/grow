@@ -253,4 +253,53 @@
   document.getElementById('btn-scrap').addEventListener('click', () => {
     location.href = '/scrap';
   });
+
+  // ✅ 이메일 변경: POST 요청으로 진입
+  document.getElementById('btn-email').addEventListener('click', () => {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/change-email';
+    document.body.appendChild(form);
+    form.submit();
+  });
+
+  // ✅ 비밀번호 변경: POST 요청으로 진입
+  document.getElementById('btn-password').addEventListener('click', () => {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/change-password';
+    document.body.appendChild(form);
+    form.submit();
+  });
+
+  // ✅ 로그아웃은 GET 안 되므로 fetch로 POST 요청
+  document.getElementById('btn-logout').addEventListener('click', () => {
+    fetch('/logout', {
+      method: 'POST',
+      credentials: 'include'
+    }).then(res => {
+      if (res.ok) {
+        location.href = '/login';
+      } else {
+        alert('로그아웃 중 오류가 발생했습니다.');
+      }
+    });
+  });
+
+  // ✅ 탈퇴는 POST + 확인 메시지
+  document.getElementById('btn-withdraw').addEventListener('click', () => {
+    if (confirm('정말 탈퇴하시겠습니까?')) {
+      fetch('/delete-account', {
+        method: 'POST',
+        credentials: 'include'
+      }).then(res => {
+        if (res.ok) {
+          alert('탈퇴가 완료되었습니다.');
+          location.href = '/login';
+        } else {
+          alert('탈퇴 중 오류가 발생했습니다.');
+        }
+      });
+    }
+  });
 </script>

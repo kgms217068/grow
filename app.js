@@ -36,7 +36,7 @@ app.set('views', path.join(__dirname, 'views'));
 // 미들웨어
 app.use(expressLayouts);
 app.set('layout', 'layout'); // 기본 layout 지정
-
+app.set('view options', { layout: 'layout' });
 
 app.use(morgan('dev'));
 app.use(express.json());

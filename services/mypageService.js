@@ -51,7 +51,10 @@ exports.getMyPageData = (userId, callback) => {
 
       db.query(missionStatusSql, [userId, currentLevel], (err3, statusResults) => {
         if (err3) return callback(err3);
-        const { total, completed } = statusResults[0];
+
+        const { total, completed } = statusResults[0] || {};
+        const totalCount = total ?? 0;
+        const completedCount = completed ?? 0;
 
         updateAndGetBadgeType(userId, (err4, badgeType) => {
           if (err4) return callback(err4);
@@ -61,8 +64,8 @@ exports.getMyPageData = (userId, callback) => {
             nickname: user.nickname,
             email: user.email,
             level: currentLevel,
-            missionStatus: { completed, total },
-            badgeType // 'silver' | 'gold' | null
+            missionStatus: { completed: completedCount, total: totalCount },
+            badgeType
           });
         });
       });
