@@ -1,123 +1,84 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>스크랩한 글</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Inter', sans-serif;
-      background-color: #F9F9F9;
-      display: flex;
-      justify-content: center;
-    }
+<div class="main-wrapper">
+  <h2 class="scrap-title">스크랩한 글</h2>
 
-    .main-wrapper {
-      width: 402px;
-      min-height: 100vh;
-      background-color: #fff;
-      padding: 20px;
-      padding-bottom: 90px; /* 네비게이션 공간 확보 */
-    }
-
-    .scrap-title {
-      text-align: center;
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 24px;
-    }
-
-    .scrap-card {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border: 1px solid #000;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 16px;
-      background: #fff;
-      cursor: pointer;
-      transition: box-shadow 0.2s;
-    }
-
-    .scrap-card:hover {
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .scrap-text h3 {
-      margin: 0 0 6px;
-      font-size: 16px;
-      font-weight: 700;
-    }
-
-    .scrap-text p {
-      margin: 0;
-      font-size: 14px;
-      color: #555;
-    }
-
-    .scrap-arrow {
-      font-size: 20px;
-      color: #555;
-      margin-left: 12px;
-      text-decoration: none;
-    }
-
-    .empty-text {
-      text-align: center;
-      color: #999;
-      font-size: 15px;
-      margin-top: 50px;
-    }
-
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 402px;
-      height: 85px;
-      background: rgba(113, 163, 4, 0.77);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      font-size: 14px;
-      z-index: 10;
-    }
-
-    .bottom-nav div {
-      text-align: center;
-      font-size: 14px;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-  <div class="main-wrapper">
-    <h2 class="scrap-title">스크랩한 글</h2>
-
-    <% if (scrapPosts.length === 0) { %>
-      <p class="empty-text">스크랩한 글이 없습니다.</p>
-    <% } else { %>
-      <% scrapPosts.forEach(post => { %>
-        <div class="scrap-card" onclick="location.href='/post/<%= post.post_id %>'">
-          <div class="scrap-text">
-            <h3><%= post.post_title %></h3>
-            <p><%= post.post_content.length > 30 ? post.post_content.substring(0, 30) + '...' : post.post_content %></p>
-          </div>
-          <div class="scrap-arrow">➔</div>
+  <% if (scrapPosts.length === 0) { %>
+    <p class="empty-text">스크랩한 글이 없습니다.</p>
+  <% } else { %>
+    <% scrapPosts.forEach(post => { %>
+      <div class="scrap-card" onclick="location.href='/post/<%= post.post_id %>'">
+        <div class="scrap-text">
+          <h3><%= post.post_title %></h3>
+          <p>
+            <%= post.post_content.length > 30 
+              ? post.post_content.substring(0, 30) + '...' 
+              : post.post_content %>
+          </p>
         </div>
-      <% }) %>
-    <% } %>
-  </div>
+        <div class="scrap-arrow">➔</div>
+      </div>
+    <% }) %>
+  <% } %>
+</div>
 
-  <div class="bottom-nav">
-    <div onclick="location.href='/market'">🛖 그로우마켓</div>
-    <div onclick="location.href='/home'">🏡 홈</div>
-    <div onclick="location.href='/community'">👥 커뮤니티</div>
-    <div onclick="location.href='/mypage'">👤 마이페이지</div>
-  </div>
-</body>
-</html>
+<style>
+  .main-wrapper {
+    width: 402px;
+    min-height: 100vh;
+    background-color: #fff;
+    padding: 20px;
+    padding-bottom: 90px; /* ✅ 네비게이션 영역 확보 */
+    margin: 0 auto;
+  }
+
+  .scrap-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 24px;
+  }
+
+  .scrap-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #000;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    background: #fff;
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+  }
+
+  .scrap-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .scrap-text h3 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    font-weight: 700;
+    word-break: break-word;
+  }
+
+  .scrap-text p {
+    margin: 0;
+    font-size: 14px;
+    color: #555;
+    word-break: break-word;
+  }
+
+  .scrap-arrow {
+    font-size: 20px;
+    color: #555;
+    margin-left: 12px;
+    text-decoration: none;
+  }
+
+  .empty-text {
+    text-align: center;
+    color: #999;
+    font-size: 15px;
+    margin-top: 50px;
+  }
+</style>

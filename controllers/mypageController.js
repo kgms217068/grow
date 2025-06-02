@@ -37,7 +37,7 @@ exports.getCollection = (req, res) => {
   });
 };
 
-// ✅ 마이페이지 EJS 렌더링
+// ✅ 마이페이지 EJS 렌더링 (layout.ejs 사용 + currentPath 전달)
 exports.renderMypage = (req, res) => {
   const userId = req.user.user_id;
 
@@ -51,6 +51,10 @@ exports.renderMypage = (req, res) => {
       return res.status(404).render('error', { message: '사용자를 찾을 수 없습니다.' });
     }
 
-    res.render('mypage', data);
+    res.render('mypage', {
+      ...data,               // nickname, level, email, badgeType, missionStatus 등
+      layout: 'layout',      // ✅ layout.ejs 적용
+      currentPath: req.path  // ✅ 네비게이션 조건 분기 위해 전달
+    });
   });
 };
