@@ -1,247 +1,233 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>마이페이지</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Inter', sans-serif;
-      background: #F9F9F9;
-      display: flex;
-      justify-content: center;
-    }
+<style>
+  .main-wrapper {
+    position: relative;
+    width: 402px;
+    min-height: 100vh;
+    background-color: #ffffff;
+    margin: 0 auto;
+  }
 
-    .main-wrapper {
-      position: relative;
-      width: 402px;
-      height: 874px;
-      background-color: #ffffff;
-      overflow: hidden;
-    }
+  .container {
+    padding: 20px;
+    padding-bottom: 90px;
+  }
 
-    .container {
-      padding: 20px;
-      padding-bottom: 90px;
-    }
+  .profile-section {
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+  }
 
-    /* 🏅 프로필 + 휘장 */
-    .profile-section {
-      display: flex;
-      align-items: center;
-      margin-top: 20px;
-    }
+  .profile-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+  }
 
-    .profile-wrapper {
-      position: relative;
-      width: 100px;
-      height: 100px;
-    }
+  .profile-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: transparent;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+  }
 
-    .profile-img {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      overflow: hidden;
-      z-index: 1;
-    }
+  .profile-img svg {
+    width: 80px;
+    height: 80px;
+  }
 
-    .profile-img svg {
-      width: 100px;
-      height: 100px;
-      display: block;
-    }
+  .badge-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100px;
+    height: 100px;
+    z-index: 2;
+    pointer-events: none;
+  }
 
-    .badge-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100px;
-      height: 100px;
-      z-index: 2;
-      pointer-events: none;
-    }
+  .nickname-box {
+    margin-left: 20px;
+  }
 
-    .nickname-box {
-      margin-left: 20px;
-    }
+  .nickname {
+    font-weight: 700;
+    font-size: 24px;
+    margin: 0;
+  }
 
-    .nickname {
-      font-weight: 700;
-      font-size: 24px;
-      margin: 0;
-    }
+  .level {
+    font-size: 16px;
+    margin: 4px 0 0;
+  }
 
-    .level {
-      font-size: 16px;
-      margin: 4px 0 0;
-    }
+  .mission-section {
+    margin-top: 30px;
+  }
 
-    .mission-section {
-      margin-top: 30px;
-    }
+  .mission-title {
+    font-weight: 700;
+    font-size: 20px;
+    margin: 0 0 8px;
+  }
 
-    .mission-title {
-      font-weight: 700;
-      font-size: 20px;
-      margin: 0 0 8px;
-    }
+  .mission-progress-text {
+    font-size: 16px;
+    margin: 0 0 8px;
+  }
 
-    .mission-progress-text {
-      font-size: 16px;
-      margin: 0 0 8px;
-    }
+  .progress-bar {
+    width: 100%;
+    background: #eee;
+    height: 12px;
+    border-radius: 6px;
+    overflow: hidden;
+  }
 
-    .progress-bar {
-      width: 100%;
-      background: #eee;
-      height: 12px;
-      border-radius: 6px;
-      overflow: hidden;
-    }
+  .progress-bar-fill {
+    height: 12px;
+    background: #267C13;
+    width: 0%;
+    transition: width 0.3s ease;
+  }
 
-    .progress-bar-fill {
-      height: 12px;
-      background: #267C13;
-      width: 0%;
-      transition: width 0.3s ease;
-    }
+  .menu-buttons {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
 
-    .menu-buttons {
-      margin-top: 30px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+  .menu-button {
+    width: 100%;
+    padding: 12px 0;
+    border: 1px solid #000;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    background: white;
+    cursor: pointer;
+  }
 
-    .menu-button {
-      width: 100%;
-      padding: 12px 0;
-      border: 1px solid #000;
-      border-radius: 8px;
-      font-size: 18px;
-      font-weight: 700;
-      text-align: center;
-      background: white;
-      cursor: pointer;
-    }
+  .personal-section {
+    margin-top: 40px;
+  }
 
-    .personal-section {
-      margin-top: 40px;
-    }
+  .personal-title {
+    font-weight: 700;
+    font-size: 20px;
+    margin: 0 0 8px;
+  }
 
-    .personal-title {
-      font-weight: 700;
-      font-size: 20px;
-      margin: 0 0 8px;
-    }
+  .email-text {
+    font-size: 16px;
+    margin: 0 0 12px;
+  }
 
-    .email-text {
-      font-size: 16px;
-      margin: 0 0 12px;
-    }
+  .small-buttons-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 12px;
+  }
 
-    .small-buttons-vertical {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 8px;
-      margin-top: 12px;
-    }
+  .small-button {
+    width: 180px;
+    padding: 8px 0;
+    font-size: 16px;
+    border: 1px solid #000;
+    border-radius: 8px;
+    text-align: center;
+    background: white;
+    cursor: pointer;
+  }
 
-    .small-button {
-      width: 180px;
-      padding: 8px 0;
-      font-size: 16px;
-      border: 1px solid #000;
-      border-radius: 8px;
-      text-align: center;
-      background: white;
-      cursor: pointer;
-    }
+  .logout-withdraw {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
+  }
 
-    .logout-withdraw {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 16px;
-    }
+  .logout-withdraw span {
+    font-size: 16px;
+    color: #000;
+    cursor: pointer;
+  }
+</style>
 
-    .logout-withdraw span {
-      font-size: 16px;
-      color: #000;
-      cursor: pointer;
-    }
+<div class="main-wrapper">
+  <div class="container">
+    <div class="profile-section">
+      <div class="profile-wrapper">
+        <div class="profile-img">
+          <!-- ✅ 기본 검은 원 배경 + 흰사람 SVG 아이콘 -->
+          <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="256" cy="256" r="256" fill="black"/>
+            <path d="M256 128c-35.3 0-64 28.7-64 64s28.7 64 64 64
+                     64-28.7 64-64-28.7-64-64-64zm0 160c-70.7 0-128 
+                     57.3-128 128h256c0-70.7-57.3-128-128-128z"
+                  fill="white"/>
+          </svg>
 
-   
-  </style>
-</head>
-<body>
-  <div class="main-wrapper">
-    <div class="container">
-      <div class="profile-section">
-        <div class="profile-wrapper">
-          <div class="profile-img">
-            <!-- 기본 프로필 SVG -->
-            <svg viewBox="0 0 140 135" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path fill-rule="evenodd" clip-rule="evenodd"
-                d="M108.996 107.421C114.648 102.299 119.151 96.1138 122.227 89.2474C125.302 82.381 126.884 74.9794 126.875 67.5C126.875 37.2094 101.413 12.6562 70 12.6562C38.5875 12.6562 13.125 37.2094 13.125 67.5C13.1161 74.9794 14.6981 82.381 17.7733 89.2474C20.8486 96.1138 25.3516 102.299 31.0042 107.421C41.5447 117.022 55.5004 122.363 70 122.344C84.4997 122.363 98.4554 117.022 108.996 107.421ZM35.8459 100.193C39.9413 95.2517 45.1384 91.2641 51.0512 88.5258C56.9641 85.7874 63.4406 84.3687 70 84.375C76.5594 84.3687 83.036 85.7874 88.9488 88.5258C94.8616 91.2641 100.059 95.2517 104.154 100.193C99.686 104.545 94.3662 107.998 88.5032 110.352C82.6403 112.706 76.3509 113.914 70 113.906C63.6491 113.914 57.3598 112.706 51.4969 110.352C45.6339 107.998 40.3141 104.545 35.8459 100.193ZM91.875 50.625C91.875 56.2194 89.5704 61.5847 85.468 65.5405C81.3656 69.4964 75.8016 71.7188 70 71.7188C64.1984 71.7188 58.6344 69.4964 54.5321 65.5405C50.4297 61.5847 48.125 56.2194 48.125 50.625C48.125 45.0306 50.4297 39.6653 54.5321 35.7095C58.6344 31.7536 64.1984 29.5313 70 29.5312C75.8016 29.5313 81.3656 31.7536 85.468 35.7095C89.5704 39.6653 91.875 45.0306 91.875 50.625Z"
-                fill="#000" />
-            </svg>
-          </div>
-          <img id="badge-overlay" class="badge-overlay" src="" alt="휘장">
         </div>
-
-        <div class="nickname-box">
-          <p class="nickname" id="nickname">닉네임</p>
-          <p class="level" id="level">단계</p>
-        </div>
+        <img id="badge-overlay" class="badge-overlay" src="" alt="휘장">
       </div>
-
-      <div class="mission-section">
-        <p class="mission-title">미션 수행 현황</p>
-        <p class="mission-progress-text" id="mission-progress">미션 0 / 0개 완료</p>
-        <div class="progress-bar">
-          <div class="progress-bar-fill" id="progress-bar"></div>
-        </div>
-      </div>
-
-      <div class="menu-buttons">
-        <div class="menu-button" id="btn-dogam">도감</div>
-        <div class="menu-button" id="btn-inventory">인벤토리</div>
-        <div class="menu-button" id="btn-diary">내가 쓴 일기</div>
-        <div class="menu-button" id="btn-scrap">스크랩한 글</div>
-      </div>
-
-      <div class="personal-section">
-        <p class="personal-title">개인정보 수정</p>
-        <p class="email-text" id="email">email@example.com</p>
-        <div class="small-buttons-vertical">
-          <div class="small-button" id="btn-email">이메일 변경</div>
-          <div class="small-button" id="btn-password">비밀번호 변경</div>
-        </div>
-      </div>
-
-      <div class="logout-withdraw">
-        <span id="btn-logout">로그아웃</span>
-        <span id="btn-withdraw">탈퇴</span>
+      <div class="nickname-box">
+        <p class="nickname" id="nickname">닉네임</p>
+        <p class="level" id="level">1단계</p>
       </div>
     </div>
 
-   
+    <div class="mission-section">
+      <p class="mission-title">미션 수행 현황</p>
+      <p class="mission-progress-text" id="mission-progress">미션 0 / 0개 완료</p>
+      <div class="progress-bar">
+        <div class="progress-bar-fill" id="progress-bar"></div>
+      </div>
+    </div>
 
-  <script>
+    <div class="menu-buttons">
+      <div class="menu-button" id="btn-dogam">도감</div>
+      <div class="menu-button" id="btn-inventory">인벤토리</div>
+      <div class="menu-button" id="btn-diary">내가 쓴 일기</div>
+      <div class="menu-button" id="btn-scrap">스크랩한 글</div>
+    </div>
+
+    <div class="personal-section">
+      <p class="personal-title">개인정보 수정</p>
+      <p class="email-text" id="email">email@example.com</p>
+      <div class="small-buttons-vertical">
+        <div class="small-button" id="btn-email">이메일 변경</div>
+        <div class="small-button" id="btn-password">비밀번호 변경</div>
+      </div>
+    </div>
+
+    <div class="logout-withdraw">
+      <span id="btn-logout">로그아웃</span>
+      <span id="btn-withdraw">탈퇴</span>
+    </div>
+  </div>
+</div>
+
+
+<script>
   fetch('/mypage/api')
     .then(res => res.json())
     .then(data => {
-      console.log('[DEBUG] badgeType:', data.badgeType);
-
       document.getElementById('nickname').innerText = data.nickname + ' 님';
       document.getElementById('level').innerText = `${data.level}단계`;
       
       document.getElementById('mission-progress').innerText = `미션 ${data.missionStatus.total} / 5개 완료`;
       const percent = (data.missionStatus.total) * 20;
+
       document.getElementById('progress-bar').style.width = percent + '%';
       document.getElementById('email').innerText = data.email;
 
@@ -255,26 +241,96 @@
       } else {
         badge.style.display = 'none';
       }
-    })
-    .catch(err => console.error(err));
+    });
 
-  // ✅ 메뉴 버튼들 이벤트 연결
   document.getElementById('btn-dogam').addEventListener('click', () => {
-    window.location.href = '/collection?category=basic&page=1';
+    location.href = '/collection?category=basic&page=1';
   });
-
   document.getElementById('btn-inventory').addEventListener('click', () => {
-    window.location.href = '/inventory';  // 팀원이 구현할 인벤토리 페이지로 이동
+    location.href = '/inventory';
   });
-
   document.getElementById('btn-diary').addEventListener('click', () => {
-    window.location.href = '/diary';
+    location.href = '/diary';
+  });
+  document.getElementById('btn-scrap').addEventListener('click', () => {
+    location.href = '/scrap';
   });
 
-  document.getElementById('btn-scrap').addEventListener('click', () => {
-    window.location.href = '/scrap';
+  // ✅ 이메일 변경: POST 요청으로 진입
+  document.getElementById('btn-email').addEventListener('click', () => {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/change-email';
+    document.body.appendChild(form);
+    form.submit();
+  });
+
+  // ✅ 비밀번호 변경: POST 요청으로 진입
+  document.getElementById('btn-password').addEventListener('click', () => {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/change-password';
+    document.body.appendChild(form);
+    form.submit();
+  });
+
+  // ✅ 로그아웃은 GET 안 되므로 fetch로 POST 요청
+  document.getElementById('btn-logout').addEventListener('click', () => {
+    fetch('/logout', {
+      method: 'POST',
+      credentials: 'include'
+    }).then(res => {
+      if (res.ok) {
+        location.href = '/login';
+      } else {
+        alert('로그아웃 중 오류가 발생했습니다.');
+      }
+    });
+  });
+
+  // ✅ 탈퇴는 POST + 확인 메시지
+  document.getElementById('btn-withdraw').addEventListener('click', () => {
+    if (confirm('정말 탈퇴하시겠습니까?')) {
+      fetch('/delete-account', {
+        method: 'POST',
+        credentials: 'include'
+      }).then(res => {
+        if (res.ok) {
+          alert('탈퇴가 완료되었습니다.');
+          location.href = '/login';
+        } else {
+          alert('탈퇴 중 오류가 발생했습니다.');
+        }
+      });
+    }
+  });
+  
+  // 이메일 변경 → 이메일 변경 페이지로 이동
+  document.getElementById('btn-email').addEventListener('click', () => {
+    window.location.href = '/change-email';
+  });
+
+  // 비밀번호 변경 → 비밀번호 변경 페이지로 이동
+  document.getElementById('btn-password').addEventListener('click', () => {
+    window.location.href = '/change-password';
+  });
+
+  // 로그아웃
+  document.getElementById('btn-logout').addEventListener('click', () => {
+    fetch('/logout', { method: 'POST' })
+      .then(() => location.href = '/login')
+      .catch(() => alert('로그아웃 실패'));
+  });
+
+  // 탈퇴
+  document.getElementById('btn-withdraw').addEventListener('click', () => {
+    if (!confirm('정말 탈퇴하시겠습니까?')) return;
+
+    fetch('/delete-account', { method: 'POST' })
+      .then(res => {
+        if (res.ok) location.href = '/login';
+        else res.json().then(data => alert(data.error[0]));
+      })
+      .catch(() => alert('탈퇴 실패'));
   });
 </script>
-
-</body>
-</html>

@@ -1,19 +1,33 @@
-  body {
-    margin: 0;
-    padding: 0;
-    background: #f8f8f8;
-    font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', Arial, sans-serif;
-  }
+*, *::before, *::after {
+  box-sizing: border-box;
+}
 
-  .login-container {
-    max-width: 400px;
-    margin: 40px auto;
-    background: #fff;
-    border-radius: 10px;
-    padding: 48px 32px 40px 32px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    text-align: left;
-  }
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f7f7f7;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.container {
+  flex-grow: 1;
+  max-width: 430px;
+  width: 100%;
+  margin: 0 auto;
+  background-color: #fff;
+  padding: 30px 20px 40px;
+  box-sizing: border-box;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
 
   .login-title {
     color: #267C13;
@@ -102,21 +116,3 @@
     font-weight: 600;
     font-size: 0.95rem;
   }
-
-  .forgot-password-link {
-    text-align: right;
-    margin-bottom: 16px;
-  }
-
-  .forgot-password-link a {
-    font-size: 0.95rem;
-    color: #555;
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-
-  .forgot-password-link a:hover {
-    color: #267C13;
-    text-decoration: underline;
-  }
-

@@ -1,27 +1,119 @@
-<% layout('layout') %>
+<style>
+*, *::before, *::after {
+  box-sizing: border-box;
+}
 
-<div style="padding: 20px; max-width: 400px; margin: auto;">
-  <h2 style="text-align: center;">이메일 변경</h2>
+/* 기본 배경과 폰트 설정 */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f7f7f7;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* 메인 박스 */
+.container {
+  flex-grow: 1;
+  max-width: 430px;
+  width: 100%;
+  margin: 0 auto;
+  background-color: #fff;
+  padding: 30px 20px 40px;
+  box-sizing: border-box;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+  .form-title {
+    color: #267C13;
+    font-weight: 700;
+    text-align: center;
+    font-size: 1.6rem;
+    margin-bottom: 32px;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  input[type="email"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 18px;
+    border: 1.5px solid #bbb;
+    border-radius: 4px;
+    font-size: 1rem;
+    background: #fff;
+    transition: border 0.2s;
+  }
+
+  input:focus {
+    border: 1.5px solid #267C13;
+    outline: none;
+  }
+
+  .submit-btn {
+    background: #267C13;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 14px 0;
+    width: 100%;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .submit-btn:hover {
+    background: #1b570e;
+  }
+
+  .message {
+    color: #267C13;
+    margin-bottom: 18px;
+    text-align: center;
+    font-size: 1rem;
+  }
+
+  .error {
+    color: #D32F2F;
+    margin-bottom: 18px;
+    text-align: center;
+    font-size: 0.98rem;
+  }
+</style>
+
+<div class="container">
+  <div class="form-title">이메일 변경</div>
 
   <% if (message) { %>
-    <div class="success-message"><%= message %></div>
+    <div class="message"><%= message %></div>
   <% } %>
   <% if (error && error.length) { %>
-    <div class="error-message"><%= error[0] %></div>
+    <div class="error"><%= error[0] %></div>
   <% } %>
 
   <form method="POST" action="/change-email">
-    <label>현재 이메일</label>
-    <input type="email" name="currentEmail" value="<%= user?.email || '' %>" readonly />
+    <label for="currentEmail">현재 이메일</label>
+    <input type="email" name="currentEmail" value="<%= user?.email || '' %>" readonly>
 
-    <label>새 이메일</label>
+    <label for="newEmail">새 이메일</label>
     <input type="email" name="newEmail" required
-      oninvalid="this.setCustomValidity('새 이메일을 입력해주세요.')"
-      oninput="this.setCustomValidity('')" />
+       oninvalid="this.setCustomValidity('새 이메일을 입력해주세요.')"
+       oninput="this.setCustomValidity('')">    
 
-    <div style="display: flex; justify-content: space-between; margin-top: 20px;">
-      <button type="submit" style="background-color: #38761d; color: white; padding: 10px 20px;">변경하기</button>
-      <a href="/mypage" style="background-color: white; border: 1px solid #38761d; color: #38761d; padding: 10px 20px; text-align: center; text-decoration: none;">취소</a>
-    </div>
+    <button type="submit" class="submit-btn">변경하기</button>
   </form>
 </div>
+

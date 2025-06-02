@@ -1,20 +1,36 @@
-    body {
-      margin: 0;
-      padding: 0;
-      background: #f8f8f8;
-      font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', Arial, sans-serif;
-    }
+*, *::before, *::after {
+  box-sizing: border-box;
+}
 
-    .register-container {
-      max-width: 400px;
-      margin: 40px auto;
-      background: #fff;
-      border-radius: 10px;
-      padding: 48px 32px 40px 32px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      text-align: left;
-    }
+/* 기본 배경과 폰트 설정 */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
 
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f7f7f7;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* 메인 박스 */
+.container {
+  flex-grow: 1;
+  max-width: 430px;
+  width: 100%;
+  margin: 0 auto;
+  background-color: #fff;
+  padding: 30px 20px 40px;
+  box-sizing: border-box;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+   
     .register-title {
       color: #267C13;
       font-weight: 700;
@@ -116,9 +132,8 @@
     }
 
     @media (max-width: 500px) {
-      .register-container {
+      .container {
         padding: 24px 8px;
         max-width: 98vw;
       }
     }
-

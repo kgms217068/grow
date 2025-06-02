@@ -20,10 +20,10 @@ exports.getCollection = (req, res) => {
   });
 };
 
-// ✅ EJS 렌더링용 (불필요한 매핑 제거)
+// ✅ EJS 렌더링용 (layout.ejs 기반으로 수정됨)
 exports.renderCollectionPage = (req, res) => {
   const userId = req.user.user_id;
-  const category = req.query.category || 'basic'; // ← 영어로 통일됨
+  const category = req.query.category || 'basic';
   const page = parseInt(req.query.page) || 1;
   const limit = 1;
 
@@ -34,14 +34,26 @@ exports.renderCollectionPage = (req, res) => {
     }
 
     const imageName = result.fruits.length > 0
-      ? result.fruits[0].fruit_name // 이미 영어로 되어 있으므로 바로 사용 가능
+      ? result.fruits[0].fruit_name
       : 'default';
 
+    const fruitMessages = [
+      '이 과일은 당신이 하루를 이겨낸 증거예요.',
+      '오늘도 수고했어요. 이 과일은 당신의 노력의 결과예요.',
+      '작은 실천이 큰 열매를 맺었어요!',
+      '포기하지 않고 하루를 살아낸 당신, 멋져요!',
+      '당신의 하루가 이 과일처럼 영글었어요.'
+    ];
+    const randomMessage = fruitMessages[Math.floor(Math.random() * fruitMessages.length)];
+
     res.render('collection', {
+      layout: 'layout',         
+      currentPath: req.path,    
       userId,
       category,
       imageName,
-      ...result
+      ...result,
+      fruitMessage: randomMessage
     });
   });
 };
