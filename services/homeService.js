@@ -37,7 +37,7 @@ exports.getHomeData = async (userId) => {
 
     // 4. 이미지 경로 계산
     const treeImage = `/images/tree/${fruitName}_${missionCompleted}.png`;
-
+//${fruitName}
     // 5. 진행률 계산
     const progressRate = missionTotal === 0
       ? 0

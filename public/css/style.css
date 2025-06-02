@@ -65,7 +65,7 @@ ul {
   max-width: 430px;
   height: 60px;
   background-color: #71A304;
-<<<<<<< HEAD
+
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -79,21 +79,7 @@ ul {
   justify-content: space-around;
   padding: 10px 0;
   margin: 0;
-=======
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
-  z-index: 100;
-}
 
-.bottom-nav ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: space-around;
->>>>>>> feature/growmarket-seoyeon
 }
 
 .bottom-nav a {
@@ -105,18 +91,11 @@ ul {
   font-weight: 500;
   font-size: 12px;
   color: #333;
-<<<<<<< HEAD
-  cursor: pointer;
+    cursor: pointer;
 }
 
 .bottom-nav a i {
   font-size: 18px;
   margin-bottom: 2px;
   color: #333;
-=======
-}
-.bottom-nav a i {
-  font-size: 18px;
-  margin-bottom: 2px;
->>>>>>> feature/growmarket-seoyeon
 }

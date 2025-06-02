@@ -4,10 +4,25 @@ const authService = require('../services/authService');
 exports.register = async (req, res) => {
   try {
     const userId = await authService.register(req.body);
+
+    // ✅ 인벤토리 자동 생성
+    const inventoryModel = require('../models/inventoryModel');
+        const missionExecutionModel = require('../models/missionExecutionModel');
+
+    console.log('🧩 인벤토리 생성 시작');
+await inventoryModel.createInitialInventory(userId);
+try{console.log('✅ 인벤토리 생성 완료');}
+catch(err){
+  console.log(err);
+}
+
+await inventoryModel.giveDefaultSeedToUser(userId);
+
+        await missionExecutionModel.assignInitialMissionsToUser(userId);
+
     // 회원가입 성공 시 성공 페이지 렌더링
     res.status(201).render('registerSuccess', { userId });
   } catch (err) {
-    // 실패 시 폼 정보와 오류 메시지를 배열로 전달
     res.status(400).render('register', {
       title: '회원가입',
       error: [err.message],
@@ -16,14 +31,14 @@ exports.register = async (req, res) => {
   }
 };
 
+
 exports.login = (req, res, next) => {
   passport.authenticate('local', (err, user, info) => {
     if (err) return next(err);
 
     if (!user) {
-      // 로그인 실패 시 에러 메시지와 입력된 이메일 유지
       return res.status(401).render('login', {
-	title: '로그인',
+        title: '로그인',
         form: { email: req.body.email },
         error: [info?.message || '이메일 또는 비밀번호가 올바르지 않습니다']
       });
@@ -31,11 +46,20 @@ exports.login = (req, res, next) => {
 
     req.logIn(user, (err) => {
       if (err) return next(err);
-      // 로그인 성공 시
+
+      // ✅ 여기서 직접 세션에 사용자 정보 저장!
+      req.session.user = {
+        user_id: user.user_id,
+        nickname: user.nickname
+        // 필요한 필드는 더 추가 가능
+      };
+
+      console.log('✅ 세션 저장됨:', req.session.user); // 이젠 undefined가 아니어야 함
       return res.redirect('/home');
     });
   })(req, res, next);
 };
+
 
 exports.logout = (req, res) => {
     req.flash('success', '로그아웃되었습니다.');

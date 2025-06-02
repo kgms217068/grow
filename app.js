@@ -43,20 +43,16 @@ app.use((req, res, next) => {
 // 미들웨어
 app.use(expressLayouts);
 app.set('layout', 'layout'); // 기본 layout 지정
-
-
-
-
-
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(session({
   key: 'user_sid',
   secret: process.env.SESSION_SECRET || 'secret-key',
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   store: sessionStore
 }));
 app.use(flash());
@@ -85,19 +81,13 @@ const homeRouter = require('./routes/home');
 const scrapRouter = require('./routes/scrap');
 const adminRouter = require('./routes/admin');
 const inventoryRouter = require('./routes/inventory');
-
+const lastCompleteRouter = require('./routes/last-complete');
 
 app.use(session({
   secret: 'your-dev-secret', // 진짜 배포 시엔 환경변수로
   resave: false,
   saveUninitialized: false
 }));
-
-// 💡 테스트용 가짜 로그인 (임시로 모든 요청에 유저ID를 넣어줌)
-app.use((req, res, next) => {
-  req.session.userId = 1;  // user_id 1번 강제 사용
-  next();
-});
 
 
 app.use('/', authRouter);
@@ -111,13 +101,25 @@ app.use('/admin', adminRouter);
 app.use('/inventory', inventoryRouter);
 app.use('/home', homeRouter);
 app.use('/scrap', scrapRouter);
+app.use('/last-complete', lastCompleteRouter);
 
+app.use((req, res, next) => {
+  console.log('[현재 로그인 유저]', req.user);
+  res.locals.user = req.user; // view에서도 접근 가능하도록
+  next();
+});
 // 기본 라우트
 app.get('/', (req, res) => {
   res.render('index');
 });
 
 require('./scheduler/levelUpScheduler');
+
+app.use((req, res, next) => {
+  res.locals.user = req.user;
+  next();
+});
+
 
 // 전역 에러 핸들러
 app.use((err, req, res, next) => {
@@ -128,7 +130,17 @@ app.use((err, req, res, next) => {
   });
 });
 
+
+
+
 app.listen(PORT, () => {
   console.log(`🚀 서버 실행 중: http://localhost:${PORT}`);
 });
+
+app.use((req, res, next) => {
+  console.log('🔐 req.user:', req.user);
+  console.log('🔐 req.session.user:', req.session.user);
+  next();
+});
+
 module.exports = app;

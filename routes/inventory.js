@@ -3,7 +3,7 @@ const router = express.Router();
 const { promisePool } = require('../db/db');
 
 router.get('/', async (req, res) => {
-  const userId = req.session.userId || 1;
+  const userId = req.session.user?.user_id || req.user?.user_id;
 
   const [items] = await promisePool.query(`
     SELECT 
@@ -29,7 +29,7 @@ router.get('/', async (req, res) => {
 // ✅ 씨앗 심기 POST 요청
 router.post('/plant', async (req, res) => {
   const { itemId } = req.body;
-  const userId = req.session.userId || 1;
+  const userId = req.session.user?.user_id || req.user?.user_id;
 
   try {
     const [result] = await promisePool.query(`

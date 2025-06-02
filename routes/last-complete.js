@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  res.render('last-complete'); // 또는 views/complete.ejs
+  res.render('last-complete.ejs'); // 또는 views/complete.ejs
 });
 
 module.exports = router;

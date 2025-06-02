@@ -22,7 +22,7 @@ const upload = multer({ storage });
 
 // ✅ GET /dashboard
 router.get('/', async (req, res) => {
-  const userId = req.session.userId || 1;
+  const userId = req.session.user?.user_id || req.user?.user_id;
   
 
 const user = await userModel.getUserById(userId); // ✅ 유저 정보 가져오기
@@ -45,7 +45,7 @@ const user = await userModel.getUserById(userId); // ✅ 유저 정보 가져오
 // ✅ POST /dashboard/submit
 router.post('/submit', upload.single('photo'), async (req, res) => {
   try {
-    const userId = req.session.userId || 1;
+    const userId = req.session.user?.user_id || req.user?.user_id;
     const missionId = parseInt(req.body.missionId);
     const image_source = req.file ? req.file.filename : null;
 
@@ -73,24 +73,35 @@ router.post('/submit', upload.single('photo'), async (req, res) => {
 
 // ✅ 사용자가 인증 완료 확정 버튼을 눌렀을 때 (비료 지급 포함)
 router.post('/confirm/:mission_execution_id', async (req, res) => {
-  const userId = req.session.userId || 1;
+  const userId = req.session.user?.user_id || req.user?.user_id;
   const mission_execution_id = req.params.mission_execution_id;
 
-  try {
-    // 1. confirmed_by_user 플래그 업데이트
-    await promisePool.query(`
-      UPDATE certification
-      SET confirmed_by_user = true
-      WHERE mission_execution_id = ? AND user_id = ? AND checked = true
-    `, [mission_execution_id, userId]);
+  // 1. 인증 완료 처리 (certification 테이블)
+await promisePool.query(`
+  UPDATE certification
+  SET confirmed_by_user = true,
+      completed_date = NOW()
+  WHERE mission_execution_id = ? AND user_id = ? AND checked = true
+`, [mission_execution_id, userId]);
 
-    // 2. 사용자 인벤토리 ID 가져오기
-    const [[inventoryRow]] = await promisePool.query(
-      'SELECT inventory_id FROM inventory WHERE user_id = ?',
-      [userId]
-    );
+// ✅ 1.5. mission_execution 테이블도 완료 처리
+await promisePool.query(`
+  UPDATE mission_execution
+  SET completed_or_not = true,
+      completed_date = NOW()
+  WHERE mission_execution_id = ?
+`, [mission_execution_id]);
 
-    const inventoryId = inventoryRow.inventory_id;
+// 2. 사용자 인벤토리 ID 가져오기
+const [[inventoryRow]] = await promisePool.query(
+  'SELECT inventory_id FROM inventory WHERE user_id = ?',
+  [userId]
+);
+
+
+const inventoryId = inventoryRow.inventory_id;
+
+    
 
     // 3. 비료 타입 ID 가져오기
     const [[fertilizerTypeRow]] = await promisePool.query(
@@ -110,31 +121,32 @@ router.post('/confirm/:mission_execution_id', async (req, res) => {
     req.session.prevConfirmedId = Number( mission_execution_id);
 
     res.redirect('/dashboard/mission');
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('인증 완료 처리 중 오류가 발생했습니다.');
-  }
+  
 });
 
 
 // ✅ GET /dashboard/mission
 router.get('/mission', async (req, res) => {
-  const userId = req.session.userId || 1;
+  const userId = req.session.user?.user_id || req.user?.user_id;
 
   // ✅ 사용자 정보 조회 (레벨 포함)
   const [[userInfo]] = await promisePool.query(
     'SELECT nickname, level FROM user WHERE user_id = ?',
     [userId]
   );
-
-  const currentLevel = userInfo.level;
-
+  if (!userInfo) {
+  console.error('❌ 유저 정보 조회 실패: user_id =', userId);
+  return res.status(500).send('유저 정보를 불러올 수 없습니다.');
+}
+ //const currentLevel = userInfo.level;
+const currentLevel = userInfo.level;
   // ✅ 사용자 레벨에 해당하는 미션만 가져오기
   const [missions] = await promisePool.query(
     'SELECT * FROM mission WHERE level = ? ORDER BY mission_id',
-    [currentLevel]
+    [currentLevel],
+    
   );
-
+console.log('🎯 등록 가능한 미션 목록:', missions)
   // ✅ 인증 및 상태 조회
   const [certifications] = await promisePool.query(`
     SELECT me.mission_id, c.checked, c.certification_date, c.confirmed_by_user, me.mission_execution_id
@@ -222,9 +234,13 @@ router.get('/mission', async (req, res) => {
     showLevelOptionModal
   });
 });
-
+exports.renderDashboard = async (req, res) => {
+  const userId = req.session.user?.user_id || req.user?.user_id;
+  const missions = await missionModel.getMissionsForUser(userId);
+  res.render('dashboard', { missions });
+};
 router.post('/level-option', async (req, res) => {
-  const userId = req.session.userId || 1;
+  const userId = req.session.user?.user_id || req.user?.user_id;
   const { option } = req.body; // 'NEXT', 'RETRY', 'WAIT'
 
   try {
@@ -287,7 +303,7 @@ router.get('/diary/:missionId', (req, res) => {
 });
 
 router.post('/diary/:missionId', async (req, res) => {
-  const userId = req.session.userId || 1;
+  const userId = req.session.user?.user_id || req.user?.user_id;
   const { title, content, emotions } = req.body;
   const missionExecutionId = req.params.missionId;
 

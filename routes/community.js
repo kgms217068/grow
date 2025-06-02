@@ -8,7 +8,7 @@ router.get('/', async (req, res) => {
   res.set('Cache-Control', 'no-store'); // ✅ 캐시 사용 금지
 
   const keyword = req.query.search || '';
-  const userId = req.session.user?.user_id || 1;
+  const userId = req.user?.user_id;
 
   try {
     const posts = await service.fetchPosts(keyword, userId);
@@ -27,8 +27,14 @@ router.get('/post', (req, res) => {
 
 // 글 작성 처리
 router.post('/post', async (req, res) => {
+  console.log('📍 req.session.user:', req.session.user); // 여기도 꼭 찍기
+
   const { title, content } = req.body;
-  const userId = 1; // 실제로는 req.session.user?.user_id
+  const userId = req.session.user?.user_id;
+
+  if (!userId) {
+    return res.status(401).send('로그인이 필요합니다.');
+  }
 
   try {
     await service.createPost(title, content, userId);
@@ -39,10 +45,11 @@ router.post('/post', async (req, res) => {
   }
 });
 
+
 // 게시글 상세 보기
 router.get('/detail/:postId', async (req, res) => {
   const { postId } = req.params;
-  const userId = req.session.user?.user_id || 1;
+  const userId = req.user?.user_id;
 
   try {
     // 댓글은 service.fetchPostDetail에서 최신순 정렬되어 넘어옴
@@ -66,7 +73,8 @@ router.get('/detail/:postId', async (req, res) => {
 router.post('/detail/:postId/comment', async (req, res) => {
   const { postId } = req.params;
   const { content } = req.body;
-  const userId = 1; // 실제 로그인 사용자로 대체
+  const userId = req.user?.user_id;
+ // 실제 로그인 사용자로 대체
 
   try {
     const comment = await service.addComment(postId, userId, content);
@@ -80,7 +88,7 @@ router.post('/detail/:postId/comment', async (req, res) => {
 // 댓글 삭제
 router.delete('/detail/:postId/comment/:commentId', async (req, res) => {
   const { postId, commentId } = req.params;
-  const userId = req.session.user?.user_id || 1;
+  const userId = req.user?.user_id;
 
   try {
     const success = await service.removeComment(postId, commentId, userId);
@@ -95,7 +103,7 @@ router.delete('/detail/:postId/comment/:commentId', async (req, res) => {
 // 스크랩 토글
 router.post('/scrap/:postId', async (req, res) => {
   const { postId } = req.params;
-  const userId = req.session.user?.user_id || 1;
+  const userId = req.user?.user_id;
 
   try {
     const result = await service.toggleScrapPost(postId, userId);
@@ -109,7 +117,7 @@ router.post('/scrap/:postId', async (req, res) => {
 // 게시글 좋아요 토글
 router.post('/like/:postId', async (req, res) => {
   const { postId } = req.params;
-  const userId = req.session.user?.user_id || 1;
+  const userId = req.user?.user_id;
 
   try {
     const result = await service.togglePostLike(postId, userId);
@@ -123,7 +131,7 @@ router.post('/like/:postId', async (req, res) => {
 // 댓글 좋아요 토글
 router.post('/like/comment/:commentId', async (req, res) => {
   const { commentId } = req.params;
-  const userId = req.session.user?.user_id || 1;
+  const userId = req.user?.user_id;
 
   try {
     const result = await service.toggleCommentLike(commentId, userId);
@@ -137,7 +145,7 @@ router.post('/like/comment/:commentId', async (req, res) => {
 // 게시글 삭제
 router.delete('/post/:postId', async (req, res) => {
   const { postId } = req.params;
-  const userId = req.session.user?.user_id || 1;
+  const userId = req.user?.user_id;
 
   try {
     const result = await service.deletePostByUser(postId, userId);
