@@ -302,4 +302,33 @@
       });
     }
   });
+  
+  // 이메일 변경 → 이메일 변경 페이지로 이동
+  document.getElementById('btn-email').addEventListener('click', () => {
+    window.location.href = '/change-email';
+  });
+
+  // 비밀번호 변경 → 비밀번호 변경 페이지로 이동
+  document.getElementById('btn-password').addEventListener('click', () => {
+    window.location.href = '/change-password';
+  });
+
+  // 로그아웃
+  document.getElementById('btn-logout').addEventListener('click', () => {
+    fetch('/logout', { method: 'POST' })
+      .then(() => location.href = '/login')
+      .catch(() => alert('로그아웃 실패'));
+  });
+
+  // 탈퇴
+  document.getElementById('btn-withdraw').addEventListener('click', () => {
+    if (!confirm('정말 탈퇴하시겠습니까?')) return;
+
+    fetch('/delete-account', { method: 'POST' })
+      .then(res => {
+        if (res.ok) location.href = '/login';
+        else res.json().then(data => alert(data.error[0]));
+      })
+      .catch(() => alert('탈퇴 실패'));
+  });
 </script>

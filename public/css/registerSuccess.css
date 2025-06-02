@@ -1,19 +1,34 @@
-i    body {
-      margin: 0;
-      padding: 0;
-      background: #f8f8f8;
-      font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', Arial, sans-serif;
-    }
+*, *::before, *::after {
+  box-sizing: border-box;
+}
 
-    .success-container {
-      max-width: 400px;
-      margin: 40px auto;
-      background: #fff;
-      border-radius: 10px;
-      padding: 48px 32px 40px 32px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      text-align: center;
-    }
+/* 기본 배경과 폰트 설정 */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #f8f8f8;
+  font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', Arial, sans-serif;
+}
+
+.success-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 48px 32px 40px 32px;
+  background: #fff;
+  border-radius: 10px;
+  min-height: 100vh; /* ✅ 이 한 줄만 추가해주면 OK */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
 
     .success-check {
       font-size: 56px;
@@ -62,8 +77,9 @@ i    body {
     }
 
     @media (max-width: 500px) {
-      .success-container {
+      .container {
         padding: 24px 8px;
         max-width: 98vw;
       }
     }
+
