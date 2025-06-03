@@ -6,6 +6,7 @@
 body {
   margin: 0;
   font-family: 'Noto Sans KR', sans-serif;
+  background-color: #f8f8f8;
 }
 
 /* 기본 레이아웃 */
@@ -228,6 +229,7 @@ body {
   box-sizing: border-box;
   position: relative;
   overflow-y: auto;
+  min-height: 100vh;
 }
 
 .post-write-title {
