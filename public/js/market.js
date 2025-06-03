@@ -1,5 +1,3 @@
-// /public/js/market.js
-
 function confirmCancel() {
   return confirm('정말로 등록을 취소하시겠습니까?');
 }
@@ -31,44 +29,61 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-  // D-Day 계산 (등록일 기준 +30일 - 오늘 날짜(KST) 기준)
-document.querySelectorAll('.d-day').forEach(el => {
-  const dateStr = el.getAttribute('data-registered');
-  if (!dateStr) return;
 
-  // 등록일 (시간 무시)
-  const regDateOnly = new Date(dateStr);
-  regDateOnly.setHours(0, 0, 0, 0);
+  // 등록 폼 유효성 검사 (alert 방식)
+  const registerForm = document.querySelector('.form');
+  registerForm?.addEventListener('submit', (e) => {
+    const fruitType = document.getElementById('selectedFruitType');
+    const quantity = registerForm.querySelector('input[name="quantity"]');
 
-  // 오늘 (KST 기준 날짜만)
-  const now = new Date();
-  const nowKST = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const todayDateOnly = new Date(nowKST.getFullYear(), nowKST.getMonth(), nowKST.getDate());
+    if (!fruitType.value) {
+      alert('등록할 과일 종류를 선택해주세요!');
+      e.preventDefault();
+      return;
+    }
 
-  // 만료일 = 등록일 + 30일
-  const expireDate = new Date(regDateOnly);
-  expireDate.setDate(expireDate.getDate() + 30);
+    if (!quantity.value || Number(quantity.value) < 1) {
+      alert('과일 수량을 1 이상으로 입력해주세요!');
+      e.preventDefault();
+      return;
+    }
+  });
 
-  // D-day 계산
-  const dday = Math.floor((expireDate - todayDateOnly) / (1000 * 60 * 60 * 24));
-  el.textContent = `D-${dday}`;
-});
+  // D-Day 계산
+  document.querySelectorAll('.d-day').forEach(el => {
+    const dateStr = el.getAttribute('data-registered');
+    if (!dateStr) return;
 
-  // 알림 처리
-  if (window.location.search.includes('cancelSuccess=true')) {
+    const regDateOnly = new Date(dateStr);
+    regDateOnly.setHours(0, 0, 0, 0);
+
+    const todayDateOnly = new Date();
+    todayDateOnly.setHours(0, 0, 0, 0);
+
+    const expireDate = new Date(regDateOnly);
+    expireDate.setDate(expireDate.getDate() + 30);
+
+    const dday = Math.floor((expireDate - todayDateOnly) / (1000 * 60 * 60 * 24));
+    el.textContent = `D-${dday}`;
+  });
+
+  // URL 쿼리 기반 알림 처리
+  const qs = window.location.search;
+
+  if (qs.includes('cancelSuccess=true')) {
     alert('등록이 취소되었습니다');
-    history.replaceState(null, '', '/market');
-  }
-  if (window.location.search.includes('error=not_enough')) {
+  } else if (qs.includes('error=not_enough')) {
     alert('보유하신 과일이 부족합니다');
-    history.replaceState(null, '', '/market');
-  }
-  if (window.location.search.includes('error=exchange_limit')) {
+  } else if (qs.includes('error=exchange_limit')) {
     alert('하루에 최대 3번까지만 교환 요청할 수 있습니다.');
-    history.replaceState(null, '', '/market');
-  }
-  if (window.location.search.includes('success=exchange')) {
+  } else if (qs.includes('error=already_exchanged')) {
+    alert('이미 교환된 과일입니다.');
+  } else if (qs.includes('error=server')) {
+    alert('요청 처리 중 오류가 발생했습니다.');
+  } else if (qs.includes('success=exchange')) {
     alert('교환이 완료되었습니다!');
-    history.replaceState(null, '', '/market');
   }
+
+  // URL 정리 (알림 후 주소 깔끔하게 유지)
+  history.replaceState(null, '', '/market');
 });
