@@ -10,17 +10,19 @@ exports.getHomeData = async (userId) => {
     const user = userRows[0];
     if (!user) throw new Error('User not found');
 
-    // 2. 현재 단계의 미션 완료 여부 조회
+    // 2. 현재 단계의 미션 완료 여부 조회 (LEFT JOIN으로 수정)
     const [missionRows] = await db.promise().query(
       `SELECT me.completed_or_not
-       FROM mission_execution me
-       JOIN mission m ON me.mission_id = m.mission_id
-       WHERE me.user_id = ? AND m.level = ?`,
+      FROM mission m
+      LEFT JOIN mission_execution me
+        ON m.mission_id = me.mission_id AND me.user_id = ?
+      WHERE m.level = ?`,
       [userId, user.level]
     );
 
     const missionTotal = Array.isArray(missionRows) ? missionRows.length : 0;
-    const missionCompleted = missionRows?.filter(row => row.completed_or_not).length || 0;
+    const missionCompleted = missionRows?.filter(row => row.completed_or_not === 1).length || 0;
+
 
     // 3. 과일 이름 그대로 사용 (최신 등록 순 기준)
     const [fruitRows] = await db.promise().query(

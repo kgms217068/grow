@@ -41,13 +41,15 @@ exports.getMyPageData = (userId, callback) => {
       }
 
       const missionStatusSql = `
-        SELECT
-          COUNT(*) AS total,
-          SUM(CASE WHEN me.completed_or_not = true THEN 1 ELSE 0 END) AS completed
-        FROM mission_execution me
-        JOIN mission m ON me.mission_id = m.mission_id
-        WHERE me.user_id = ? AND m.level = ?
+        SELECT 
+          COUNT(m.mission_id) AS total,
+          SUM(CASE WHEN me.completed_or_not = 1 THEN 1 ELSE 0 END) AS completed
+        FROM mission m
+        LEFT JOIN mission_execution me
+          ON m.mission_id = me.mission_id AND me.user_id = ?
+        WHERE m.level = ?
       `;
+
 
       db.query(missionStatusSql, [userId, currentLevel], (err3, statusResults) => {
         if (err3) return callback(err3);
