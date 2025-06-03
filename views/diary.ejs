@@ -84,7 +84,9 @@
          const isLong = d.content.length >= 70;
     %>
       <div class="diary-card">
-        <div class="diary-date"><%= d.diary_date.toISOString().split('T')[0] %></div>
+    <div class="diary-date">
+  <%= d.diary_date ? d.diary_date.toISOString().split('T')[0] : '날짜 없음' %>
+</div>
         <div class="diary-meta">단계: <%= d.level %>단계 / 미션: <%= d.mission_content %></div>
 
         <% if (d.emotion_tag) { %>

@@ -7,21 +7,18 @@ router.get('/', async (req, res) => {
 
   const [items] = await promisePool.query(`
     SELECT 
-      i.item_id, 
-      i.item_count, 
-      it.item_name, 
-      CASE 
-    WHEN it.item_type_id = 1 THEN 'basic'
-    WHEN it.item_type_id = 2 THEN 'gold'
-    ELSE 'unknown'
-  END AS category,
-      ii.image_path,
-      ii.description
-    FROM item i
-    JOIN item_type it ON i.item_type_id = it.item_type_id
-    JOIN item_image ii ON it.item_name = ii.item_name
-    WHERE i.inventory_id = (SELECT inventory_id FROM inventory WHERE user_id = ?)
-    ORDER BY i.item_id
+  i.item_id, 
+  i.item_count, 
+  it.item_name, 
+  i.category, -- ✅ 핵심 수정
+  ii.image_path,
+  ii.description
+FROM item i
+JOIN item_type it ON i.item_type_id = it.item_type_id
+JOIN item_image ii ON it.item_name = ii.item_name
+WHERE i.inventory_id = (SELECT inventory_id FROM inventory WHERE user_id = ?)
+ORDER BY i.item_id
+
   `, [userId]);
 
   res.render('inventory', { items });
