@@ -41,20 +41,20 @@ exports.getMyPageData = (userId, callback) => {
       }
 
       const missionStatusSql = `
-        SELECT
-          COUNT(*) AS total,
-          SUM(CASE WHEN me.completed_or_not = true THEN 1 ELSE 0 END) AS completed
-        FROM mission_execution me
-        JOIN mission m ON me.mission_id = m.mission_id
-        WHERE me.user_id = ? AND m.level = ?
+        SELECT 
+          SUM(CASE WHEN me.completed_or_not = 1 THEN 1 ELSE 0 END) AS completed
+        FROM mission m
+        LEFT JOIN mission_execution me
+          ON m.mission_id = me.mission_id AND me.user_id = ?
+        WHERE m.level = ?
       `;
+
 
       db.query(missionStatusSql, [userId, currentLevel], (err3, statusResults) => {
         if (err3) return callback(err3);
-
-        const { total, completed } = statusResults[0] || {};
-        const totalCount = total ?? 0;
-        const completedCount = completed ?? 0;
+        
+        const completedCount = statusResults[0]?.completed ?? 0;
+        const totalCount = 5;
 
         updateAndGetBadgeType(userId, (err4, badgeType) => {
           if (err4) return callback(err4);

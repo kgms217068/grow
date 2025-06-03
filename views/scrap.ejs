@@ -1,7 +1,4 @@
-<div class="main-wrapper">
-  <h2 class="scrap-title">스크랩한 글</h2>
-
-    <style>
+<style>
   .main-wrapper {
     width: 402px;
     min-height: 100vh;
@@ -63,32 +60,21 @@
     margin-top: 50px;
   }
 </style>
-</head>
-<body>
-  <div class="main-wrapper">
-    <h2 class="scrap-title">스크랩한 글</h2>
 
-    <% if (scrapPosts.length === 0) { %>
-      <p class="empty-text">스크랩한 글이 없습니다.</p>
-    <% } else { %>
-      <% scrapPosts.forEach(post => { %>
-        <div class="scrap-card" onclick="location.href='/community/detail/<%= post.post_id %>'">
-          <div class="scrap-text">
-            <h3><%= post.post_title %></h3>
-            <p><%= post.post_content.length > 30 ? post.post_content.substring(0, 30) + '...' : post.post_content %></p>
-          </div>
-          <div class="scrap-arrow">➔</div>
+<div class="main-wrapper">
+  <h2 class="scrap-title">스크랩한 글</h2>
 
+  <% if (scrapPosts.length === 0) { %>
+    <p class="empty-text">스크랩한 글이 없습니다.</p>
+  <% } else { %>
+    <% scrapPosts.forEach(post => { %>
+      <div class="scrap-card" onclick="location.href='/community/detail/<%= post.post_id %>'">
+        <div class="scrap-text">
+          <h3><%= post.post_title %></h3>
+          <p><%= post.post_content.length > 30 ? post.post_content.substring(0, 30) + '...' : post.post_content %></p>
         </div>
         <div class="scrap-arrow">➔</div>
       </div>
     <% }) %>
   <% } %>
 </div>
-
-
-</body>
-</html>
-
-
-
