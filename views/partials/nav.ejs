@@ -1,0 +1,53 @@
+<!-- views/partials/nav.ejs -->
+<style>
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background-color: #A3C74E;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 10px 0;
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+  
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 0.9rem;
+      color: #333;
+      text-decoration: none;
+    }
+  
+    .nav-item i {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+  
+    .nav-item:hover {
+      color: black;
+    }
+  </style>
+  
+  <div class="bottom-nav">
+    <a href="/market" class="nav-item">
+      <i class="fa fa-gift"></i>
+      그로우마켓
+    </a>
+    <a href="/dashboard" class="nav-item">
+      <i class="fa fa-home"></i>
+      홈
+    </a>
+    <a href="/community" class="nav-item">
+      <i class="fa fa-users"></i>
+      커뮤니티
+    </a>
+    <a href="/mypage" class="nav-item">
+      <i class="fa fa-user"></i>
+      마이페이지
+    </a>
+  </div>
+  

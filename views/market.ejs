@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>그로우마켓</title>
+  <link rel="stylesheet" href="/css/market.css">
+</head>
+<body>
+<div class="container">
+  
+  <!-- 등록 폼 -->
+  <form action="/market/register" method="POST" class="form">
+    <div class="custom-select-wrapper">
+      <div class="custom-select-trigger">등록할 과일종류를 선택하세요</div>
+      <div class="custom-options">
+        <% inventory.forEach(item => { %>
+          <span class="custom-option" data-value="<%= item.item_type_id %>"><%= item.item_name %></span>
+        <% }) %>
+      </div>
+      <input type="hidden" name="itemTypeId" id="selectedFruitType">
+    </div>
+
+    <input type="number" name="quantity" placeholder="등록할 과일 수량을 입력해주세요" class="input" min="1" required>
+    <button type="submit" class="register-btn">등록</button>
+    <div class="notice">
+      등록 후 30일이 지나면 과일이 자동으로 삭제됩니다<br>
+      <% if (typeof remainingExchanges !== 'undefined') { %>
+        오늘의 남은 교환 횟수는 <strong><%= remainingExchanges %></strong>번입니다
+      <% } %>
+    </div>
+  </form>
+
+  <!-- 과일 목록 -->
+  <div class="item-list">
+    <% fruits.forEach(fruit => { %>
+      <% 
+        const registeredAt = new Date(fruit.registered_date);
+        const kstDate = new Date(registeredAt.getTime() + 9 * 60 * 60 * 1000);
+        const yyyyMmDd = kstDate.toISOString().slice(0, 10);
+      %>
+      <div class="item">
+        <div class="item-left">
+          <img src="<%= fruit.image_path ? '/img/' + fruit.image_path : '/img/default-fruit.png' %>" alt="<%= fruit.item_name %>">
+          <div class="info">
+            <div class="nickname"><%= fruit.nickname %></div>
+            <div class="subtext"><%= yyyyMmDd %></div>
+          </div>
+        </div>
+        <div class="item-right">
+          <div class="d-day" data-registered="<%= fruit.registered_date.toISOString() %>"></div>
+
+          <div class="fruit-detail"><%= fruit.item_name %> <%= fruit.count %>개</div>
+          <% if (fruit.user_id === user.user_id) { %>
+            <form action="/market/cancel/<%= fruit.registration_id %>" method="POST" onsubmit="return confirmCancel()">
+              <button class="cancel-btn">등록 취소</button>
+            </form>
+          <% } else if (!fruit.is_sold) { %>
+            <form action="/market/exchange/<%= fruit.registration_id %>" method="POST">
+              <button class="exchange-btn">교환 요청</button>
+            </form>
+          <% } else { %>
+            <span class="subtext">거래 완료됨</span>
+          <% } %>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</div>
+
+<script src="/js/market.js"></script>
+</body>
+</html>

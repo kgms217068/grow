@@ -1,10 +1,22 @@
-/* public/css/style.css */
-body {
+body { 
   margin: 0;
   font-family: 'Pretendard', sans-serif;
   background-color: #f0fff0;
+  overflow-y: auto;
 }
 
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+/* 상단 네비게이션 */
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -14,23 +26,22 @@ body {
 }
 
 .nav-links {
-  list-style: none;
   display: flex;
   gap: 15px;
 }
 
 .nav-links li a {
-  text-decoration: none;
-  color: #333;
   font-weight: bold;
+  color: #333;
 }
 
 .nav-links li a:hover {
   color: #007a5e;
 }
 
+/* 히어로 영역 */
 .hero {
-  padding: 50px;
+  padding: 3rem 1rem;
   text-align: center;
 }
 
@@ -42,4 +53,49 @@ body {
 .hero p {
   font-size: 1.2rem;
   color: #555;
+}
+
+/* 하단 고정 네비게이션 */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  height: 60px;
+  background-color: #71A304;
+
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-top: 1px solid #ccc;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.bottom-nav ul {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  margin: 0;
+
+}
+
+.bottom-nav a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 12px;
+  color: #333;
+    cursor: pointer;
+}
+
+.bottom-nav a i {
+  font-size: 18px;
+  margin-bottom: 2px;
+  color: #333;
 }

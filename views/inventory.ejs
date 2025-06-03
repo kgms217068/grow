@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>인벤토리</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body {
+      font-family: 'neon';
+      background-color: #fff;
+    }
+    .inventory-container {
+  position: relative;
+  margin: 40px auto;
+  top:170px;
+  background-color: #d1bb97;
+  border-radius: 20px;
+  width: 280px;
+  height: 380px;
+  padding: 20px;
+  min-height: 300px; /* ✅ 슬롯이 공간 확보할 수 있게 추가 */
+}
+
+    .inventory-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      font-size: 20px;
+    }
+    .tab-buttons {
+      display: flex;
+      justify-content: space-around;
+      margin: 10px 0;
+    }
+    .tab-btn {
+      width: 130px;
+      padding: 6px 0;
+      font-weight: bold;
+      background-color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background-color: #a7855f;
+      color: white;
+    }
+    .item-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 50px);
+      grid-template-rows: repeat(4, 50px);
+      gap: 10px;
+      justify-content: center;
+      margin: 10px 0;
+    }
+    .item-slot {
+      background-color: #6f5a3d;
+      border-radius: 8px;
+      position: relative;
+      cursor: pointer;
+    }
+    .item-slot.selected {
+      outline: 3px solid aqua;
+     
+    }
+    .item-slot img {
+      width: 50px;
+      height: 50px;
+      background-color: #6f5a3d;
+      border-radius: 8px;
+    }
+    .item-count {
+      position: absolute;
+      bottom: 2px;
+      right: 4px;
+      font-size: 12px;
+      color: white;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px black;
+    }
+    .slot-count {
+      text-align: center;
+      /* margin-top: 15px; */
+      font-size: 14px;
+      position:relative;
+      top:50px;
+    /* left:370px; */
+
+    }
+  .item-info {
+  background-color: #f3e6d0;
+  padding: 15px;
+  border-radius: 12px;
+  margin-top: 10px;
+  display: none;
+  position: relative;
+  bottom:180px;
+  right: 10px;
+  width: 265px;
+  height: 150px;
+  bottom: 210px;
+}
+
+.info-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.info-left img {
+  width: 80px;
+  height: 80px;
+}
+
+.info-divider {
+  width: 1px;
+  height: 150px;
+  background-color: black;
+  margin: 0 12px;
+}
+
+.info-right {
+  flex: 1;
+}
+
+.info-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.info-desc {
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 0 0 5px;
+}
+
+.info-count {
+  font-size: 12px;
+  color: gray;
+  margin-bottom: 8px;
+}
+
+.plant-btn {
+  background-color: #eeeeee;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+ .item-slot img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+   
+  </style>
+</head>
+<body>
+
+<div class="inventory-container">
+  <div class="inventory-header">
+    <span>👜 인벤토리</span>
+    <a href="/home" style="text-decoration: none; color: black;"><strong>X</strong></a>
+  </div>
+
+  <div class="tab-buttons">
+    <button class="tab-btn active" onclick="filterItems('basic')">기본</button>
+    <button class="tab-btn" onclick="filterItems('gold')">황금</button>
+  </div>
+
+  <div class="item-grid" id="itemGrid">
+    <% for (let i = 0; i <= 20; i++) {
+         const item = items[i];
+    %>
+      <div class=" item-slot <%= item ? '' : 'empty' %>" data-type="<%= item && item.category ? item.category : 'none' %>"
+
+           onclick="selectItem(<%= i %>)" data-idx="<%= i %>">
+        <% if (item) { %>
+          <img style="max-width: 80px; max-height: 80px;" src="/img/<%= item.image_path %>" alt="<%= item.item_name %>">
+          <div class="item-count"><%= item.item_count %></div>
+        
+          <% } %>
+      </div>
+   
+    <% } %>
+
+    
+  </div>
+
+
+
+  <div class="slot-count"><%= items && items.filter(i => i).length %>/20</div>
+
+
+<div class="item-info" id="itemInfo">
+  <div class="info-wrapper">
+    <!-- 왼쪽: 이미지 -->
+    <div class="info-left">
+      <img id="infoImg" src="" alt="">
+    </div>
+
+    <!-- 가운데: 구분선 -->
+    <div class="info-divider"></div>
+
+    <!-- 오른쪽: 텍스트 -->
+    <div class="info-right">
+      <strong id="infoName" class="info-title"></strong>
+      <p id="infoDesc" class="info-desc"></p>
+      <p class="info-count">개수: <span id="infoCount"></span>개</p>
+         <form class="plant-form" action="/inventory/plant" method="POST">
+        <input type="hidden" id="hiddenItemId" name="itemId">
+        <button type="submit">씨앗 심기</button>
+      </form>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+ const allItems = <%- JSON.stringify(items) %>;
+
+function filterItems(category) {
+  const currentCategory = category;
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`.tab-btn[onclick*="${category}"]`).classList.add('active');
+
+ const slots = document.querySelectorAll('.item-slot');
+let visibleIdx = 0;
+
+allItems.forEach((item, idx) => {
+  if (!item || (item.category || 'basic') !== currentCategory) return;
+
+  const slot = slots[visibleIdx];
+  if (!slot) return;
+
+  slot.innerHTML = `
+    <div class="item-img">
+      <img src="/img/${item.image_path}" />
+      <div class="item-count">${item.item_count}</div>
+    </div>
+  `;
+  visibleIdx++;
+
+  
+});
+
+
+
+  document.getElementById('itemInfo').style.display = 'none';
+}
+
+  function selectItem(index) {
+  const item = allItems[index];
+  if (!item) return;
+
+  const slots = document.querySelectorAll('.item-slot');
+  slots.forEach((s, i) => {
+    s.classList.remove('selected');
+    if (i >= 5 && i <= 19) s.style.display = 'none';
+  });
+
+  const slot = slots[index];
+  slot.classList.add('selected');
+
+  // 아이템 정보 채우기
+  document.getElementById('itemInfo').style.display = 'block';
+  document.getElementById('infoImg').src = '/img/' + item.image_path;
+  document.getElementById('infoName').innerText = item.item_name;
+  document.getElementById('infoDesc').innerText = item.description || '설명이 없습니다.';
+  document.getElementById('infoCount').innerText = item.item_count;
+}
+
+
+  // 기본 탭으로 시작
+  filterItems('basic');
+</script>
+
+</body>
+</html>

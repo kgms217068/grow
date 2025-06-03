@@ -1,0 +1,38 @@
+<div class="mission-wrapper">
+  <div class="level-banner">
+    <%= nickname %> 님의 현재 단계<br><strong><%= currentLevel %></strong>
+  </div>
+
+  <h3>미완료 미션</h3>
+  <% missions.forEach((mission) => { 
+    const status = statusMap[mission.mission_id];
+    if (!status) { %>
+      <div class="mission-card">
+        <span><%= mission.description %></span>
+        <a href="/dashboard"><button>인증</button></a>
+      </div>
+  <% } }) %>
+
+  <h3>확인 중</h3>
+  <% missions.forEach((mission) => { 
+    const status = statusMap[mission.mission_id];
+    if (status === 'pending') { %>
+      <div class="mission-card">
+        <span><%= mission.description %></span>
+        <button disabled>확인 중</button>
+      </div>
+  <% } }) %>
+
+  <h3>완료 미션</h3>
+  <% missions.forEach((mission) => { 
+    const status = statusMap[mission.mission_id];
+    if (status === 'done') { %>
+      <div class="mission-card completed">
+        <span><%= mission.description %></span>
+        <span style="color: gray">완료</span>
+      </div>
+  <% } }) %>
+</div>
+
+<!-- ✅ 하단 네비게이션 -->
+<%- include('../partials/footer') %>

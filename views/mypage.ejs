@@ -1,0 +1,336 @@
+<style>
+  .main-wrapper {
+    position: relative;
+    width: 402px;
+    min-height: 100vh;
+    background-color: #ffffff;
+    margin: 0 auto;
+  }
+
+  .container {
+    padding: 20px;
+    padding-bottom: 90px;
+  }
+
+  .profile-section {
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+  }
+
+  .profile-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+  }
+
+  .profile-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: transparent;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+  }
+
+  .profile-img svg {
+    width: 80px;
+    height: 80px;
+  }
+
+  .badge-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100px;
+    height: 100px;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .nickname-box {
+    margin-left: 20px;
+  }
+
+  .nickname {
+    font-weight: 700;
+    font-size: 24px;
+    margin: 0;
+  }
+
+  .level {
+    font-size: 16px;
+    margin: 4px 0 0;
+  }
+
+  .mission-section {
+    margin-top: 30px;
+  }
+
+  .mission-title {
+    font-weight: 700;
+    font-size: 20px;
+    margin: 0 0 8px;
+  }
+
+  .mission-progress-text {
+    font-size: 16px;
+    margin: 0 0 8px;
+  }
+
+  .progress-bar {
+    width: 100%;
+    background: #eee;
+    height: 12px;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 12px;
+    background: #267C13;
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+
+  .menu-buttons {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .menu-button {
+    width: 100%;
+    padding: 12px 0;
+    border: 1px solid #000;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    background: white;
+    cursor: pointer;
+  }
+
+  .personal-section {
+    margin-top: 40px;
+  }
+
+  .personal-title {
+    font-weight: 700;
+    font-size: 20px;
+    margin: 0 0 8px;
+  }
+
+  .email-text {
+    font-size: 16px;
+    margin: 0 0 12px;
+  }
+
+  .small-buttons-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .small-button {
+    width: 180px;
+    padding: 8px 0;
+    font-size: 16px;
+    border: 1px solid #000;
+    border-radius: 8px;
+    text-align: center;
+    background: white;
+    cursor: pointer;
+  }
+
+  .logout-withdraw {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
+  }
+
+  .logout-withdraw span {
+    font-size: 16px;
+    color: #000;
+    cursor: pointer;
+  }
+</style>
+
+<div class="main-wrapper">
+  <div class="container">
+    <div class="profile-section">
+      <div class="profile-wrapper">
+        <div class="profile-img">
+          <!-- ✅ 기본 검은 원 배경 + 흰사람 SVG 아이콘 -->
+          <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="256" cy="256" r="256" fill="black"/>
+            <path d="M256 128c-35.3 0-64 28.7-64 64s28.7 64 64 64
+                     64-28.7 64-64-28.7-64-64-64zm0 160c-70.7 0-128 
+                     57.3-128 128h256c0-70.7-57.3-128-128-128z"
+                  fill="white"/>
+          </svg>
+
+        </div>
+        <img id="badge-overlay" class="badge-overlay" src="" alt="휘장">
+      </div>
+      <div class="nickname-box">
+        <p class="nickname" id="nickname">닉네임</p>
+        <p class="level" id="level">1단계</p>
+      </div>
+    </div>
+
+    <div class="mission-section">
+      <p class="mission-title">미션 수행 현황</p>
+      <p class="mission-progress-text" id="mission-progress">미션 0 / 0개 완료</p>
+      <div class="progress-bar">
+        <div class="progress-bar-fill" id="progress-bar"></div>
+      </div>
+    </div>
+
+    <div class="menu-buttons">
+      <div class="menu-button" id="btn-dogam">도감</div>
+      <div class="menu-button" id="btn-inventory">인벤토리</div>
+      <div class="menu-button" id="btn-diary">내가 쓴 일기</div>
+      <div class="menu-button" id="btn-scrap">스크랩한 글</div>
+    </div>
+
+    <div class="personal-section">
+      <p class="personal-title">개인정보 수정</p>
+      <p class="email-text" id="email">email@example.com</p>
+      <div class="small-buttons-vertical">
+        <div class="small-button" id="btn-email">이메일 변경</div>
+        <div class="small-button" id="btn-password">비밀번호 변경</div>
+      </div>
+    </div>
+
+    <div class="logout-withdraw">
+      <span id="btn-logout">로그아웃</span>
+      <span id="btn-withdraw">탈퇴</span>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  fetch('/mypage/api')
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('nickname').innerText = data.nickname + ' 님';
+      document.getElementById('level').innerText = `${data.level}단계`;
+      
+      document.getElementById('mission-progress').innerText = `미션 ${data.missionStatus.total} / 5개 완료`;
+      const percent = (data.missionStatus.total) * 20;
+
+      document.getElementById('progress-bar').style.width = percent + '%';
+      document.getElementById('email').innerText = data.email;
+
+      const badge = document.getElementById('badge-overlay');
+      if (data.badgeType === 'silver') {
+        badge.src = '/images/badge/silver.png';
+        badge.style.display = 'block';
+      } else if (data.badgeType === 'gold') {
+        badge.src = '/images/badge/gold.png';
+        badge.style.display = 'block';
+      } else {
+        badge.style.display = 'none';
+      }
+    });
+
+  document.getElementById('btn-dogam').addEventListener('click', () => {
+    location.href = '/collection?category=basic&page=1';
+  });
+  document.getElementById('btn-inventory').addEventListener('click', () => {
+    location.href = '/inventory';
+  });
+  document.getElementById('btn-diary').addEventListener('click', () => {
+    location.href = '/diary';
+  });
+  document.getElementById('btn-scrap').addEventListener('click', () => {
+    location.href = '/scrap';
+  });
+
+  // ✅ 이메일 변경: POST 요청으로 진입
+  document.getElementById('btn-email').addEventListener('click', () => {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/change-email';
+    document.body.appendChild(form);
+    form.submit();
+  });
+
+  // ✅ 비밀번호 변경: POST 요청으로 진입
+  document.getElementById('btn-password').addEventListener('click', () => {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/change-password';
+    document.body.appendChild(form);
+    form.submit();
+  });
+
+  // ✅ 로그아웃은 GET 안 되므로 fetch로 POST 요청
+  document.getElementById('btn-logout').addEventListener('click', () => {
+    fetch('/logout', {
+      method: 'POST',
+      credentials: 'include'
+    }).then(res => {
+      if (res.ok) {
+        location.href = '/login';
+      } else {
+        alert('로그아웃 중 오류가 발생했습니다.');
+      }
+    });
+  });
+
+  // ✅ 탈퇴는 POST + 확인 메시지
+  document.getElementById('btn-withdraw').addEventListener('click', () => {
+    if (confirm('정말 탈퇴하시겠습니까?')) {
+      fetch('/delete-account', {
+        method: 'POST',
+        credentials: 'include'
+      }).then(res => {
+        if (res.ok) {
+          alert('탈퇴가 완료되었습니다.');
+          location.href = '/login';
+        } else {
+          alert('탈퇴 중 오류가 발생했습니다.');
+        }
+      });
+    }
+  });
+  
+  // 이메일 변경 → 이메일 변경 페이지로 이동
+  document.getElementById('btn-email').addEventListener('click', () => {
+    window.location.href = '/change-email';
+  });
+
+  // 비밀번호 변경 → 비밀번호 변경 페이지로 이동
+  document.getElementById('btn-password').addEventListener('click', () => {
+    window.location.href = '/change-password';
+  });
+
+  // 로그아웃
+  document.getElementById('btn-logout').addEventListener('click', () => {
+    fetch('/logout', { method: 'POST' })
+      .then(() => location.href = '/login')
+      .catch(() => alert('로그아웃 실패'));
+  });
+
+  // 탈퇴
+  document.getElementById('btn-withdraw').addEventListener('click', () => {
+    if (!confirm('정말 탈퇴하시겠습니까?')) return;
+
+    fetch('/delete-account', { method: 'POST' })
+      .then(res => {
+        if (res.ok) location.href = '/login';
+        else res.json().then(data => alert(data.error[0]));
+      })
+      .catch(() => alert('탈퇴 실패'));
+  });
+</script>

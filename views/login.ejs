@@ -1,6 +1,36 @@
-<% layout('layout') %>
-<h2>로그인</h2>
-<form action="/login" method="POST">
-  <input type="text" name="username" placeholder="이름을 입력하세요" required />
-  <button type="submit">시작하기</button>
-</form>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <link rel="stylesheet" href="/css/login.css">
+</head>
+<body>
+  <div class="container">
+    <div class="login-title">
+      나의 일상이 자라는 정원,<br>
+      <span>GROW</span>
+    </div>
+    <form class="login-form" action="/login" method="POST">
+      <label for="email">이메일</label>
+      <input type="email" name="email" placeholder="이메일 주소"
+        value="<%= form && form.email ? form.email : '' %>" required
+        oninvalid="this.setCustomValidity('올바른 이메일 주소를 입력해주세요.')"
+        oninput="this.setCustomValidity('')" />
+
+      <label for="password">비밀번호</label>
+      <input type="password" name="password" placeholder="비밀번호"
+        required
+        oninvalid="this.setCustomValidity('비밀번호를 입력해주세요.')"
+        oninput="this.setCustomValidity('')" />
+
+      <% if (error && error.length) { %>
+        <div class="error-message"><%= error[0] %></div>
+      <% } %>
+
+      <button type="submit" class="login-btn">로그인</button>
+      <a href="/register" class="register-btn">회원가입</a>
+    </form>
+  </div>
+</body>
+</html>

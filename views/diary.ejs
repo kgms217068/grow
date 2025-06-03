@@ -1,0 +1,164 @@
+<style>
+  .container {
+    position: relative;
+    width: 402px;
+    height: 874px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    overflow-y: auto;
+    padding: 20px;
+    padding-bottom: 90px; /* 하단 네비게이션 고려 */
+  }
+
+  .title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: #267C13;
+    margin-bottom: 20px;
+  }
+
+  .diary-card {
+    background-color: #FAFAFA;
+    border-radius: 16px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .diary-date {
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+
+  .diary-meta {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 6px;
+  }
+
+  .emotion-tag {
+    display: inline-block;
+    background-color: #D4E7C2;
+    color: #2A5B1C;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 8px;
+    margin-bottom: 2px;
+  }
+
+  .diary-content {
+    font-size: 16px;
+    color: #333;
+    line-height: 1.6;
+    white-space: pre-line;
+    word-break: break-word;
+  }
+
+  .diary-content.short {
+    max-height: 72px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+
+  .more-toggle {
+    display: inline-block;
+    font-size: 14px;
+    color: #267C13;
+    cursor: pointer;
+  }
+</style>
+
+<div class="container">
+  <div class="title">내가 쓴 일기</div>
+
+  <% if (diaries.length === 0) { %>
+    <p style="text-align:center; color:#999;">작성한 일기가 없습니다.</p>
+  <% } else { %>
+    <% diaries.forEach(d => { 
+         const isLong = d.content.length >= 70;
+    %>
+      <div class="diary-card">
+        <div class="diary-date"><%= d.diary_date.toISOString().split('T')[0] %></div>
+        <div class="diary-meta">단계: <%= d.level %>단계 / 미션: <%= d.mission_content %></div>
+
+        <% if (d.emotion_tag) { %>
+          <div class="emotion-tag"><%= d.emotion_tag %></div>
+        <% } %>
+
+<<<<<<< HEAD
+   
+  </style>
+</head>
+<body>
+  <div class="main-wrapper">
+    <div class="container">
+      <div class="title">내가 쓴 일기</div>
+
+      <% if (diaries.length === 0) { %>
+        <p style="text-align:center; color:#999;">작성한 일기가 없습니다.</p>
+      <% } else { %>
+        <% diaries.forEach(d => { 
+             const isLong = d.content.length >= 70;
+        %>
+          <div class="diary-card">
+           <div class="diary-date">
+  <%= d.diary_date ? d.diary_date.toISOString().split('T')[0] : '날짜 없음' %>
+</div>
+
+           
+            <div class="diary-meta">단계: <%= d.level %>단계 / 미션: <%= d.mission_content %></div>
+
+            <% if (d.emotion_tag) { %>
+              <div class="emotion-tag"><%= d.emotion_tag %></div>
+            <% } %>
+
+            <div class="diary-content <%= isLong ? 'short' : '' %>" <%= isLong ? 'onclick="toggleContent(this)"' : '' %>>
+              <%= d.content %>
+            </div>
+
+            <% if (isLong) { %>
+              <span class="more-toggle" onclick="toggleContent(this.previousElementSibling)">더보기</span>
+            <% } %>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+  </div>
+
+
+  <script>
+    function toggleContent(el) {
+      el.classList.toggle("short");
+      const toggleText = el.nextElementSibling;
+      toggleText.innerText = el.classList.contains("short") ? "더보기" : "접기";
+    }
+  </script>
+</body>
+</html>
+=======
+        <div class="diary-content <%= isLong ? 'short' : '' %>" <%= isLong ? 'onclick="toggleContent(this)"' : '' %>>
+          <%= d.content %>
+        </div>
+
+        <% if (isLong) { %>
+          <span class="more-toggle" onclick="toggleContent(this.previousElementSibling)">더보기</span>
+        <% } %>
+      </div>
+    <% }) %>
+  <% } %>
+</div>
+
+<script>
+  function toggleContent(el) {
+    el.classList.toggle("short");
+    const toggleText = el.nextElementSibling;
+    toggleText.innerText = el.classList.contains("short") ? "더보기" : "접기";
+  }
+</script>
+>>>>>>> c2fc5d0b626a0e1d467d5782bcd88811a1efd078

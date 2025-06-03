@@ -1,0 +1,94 @@
+<div class="main-wrapper">
+  <h2 class="scrap-title">스크랩한 글</h2>
+
+    <style>
+  .main-wrapper {
+    width: 402px;
+    min-height: 100vh;
+    background-color: #fff;
+    padding: 20px;
+    padding-bottom: 90px; /* ✅ 네비게이션 영역 확보 */
+    margin: 0 auto;
+  }
+
+  .scrap-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 24px;
+  }
+
+  .scrap-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #000;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    background: #fff;
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+  }
+
+  .scrap-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .scrap-text h3 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    font-weight: 700;
+    word-break: break-word;
+  }
+
+  .scrap-text p {
+    margin: 0;
+    font-size: 14px;
+    color: #555;
+    word-break: break-word;
+  }
+
+  .scrap-arrow {
+    font-size: 20px;
+    color: #555;
+    margin-left: 12px;
+    text-decoration: none;
+  }
+
+  .empty-text {
+    text-align: center;
+    color: #999;
+    font-size: 15px;
+    margin-top: 50px;
+  }
+</style>
+</head>
+<body>
+  <div class="main-wrapper">
+    <h2 class="scrap-title">스크랩한 글</h2>
+
+    <% if (scrapPosts.length === 0) { %>
+      <p class="empty-text">스크랩한 글이 없습니다.</p>
+    <% } else { %>
+      <% scrapPosts.forEach(post => { %>
+        <div class="scrap-card" onclick="location.href='/community/detail/<%= post.post_id %>'">
+          <div class="scrap-text">
+            <h3><%= post.post_title %></h3>
+            <p><%= post.post_content.length > 30 ? post.post_content.substring(0, 30) + '...' : post.post_content %></p>
+          </div>
+          <div class="scrap-arrow">➔</div>
+
+        </div>
+        <div class="scrap-arrow">➔</div>
+      </div>
+    <% }) %>
+  <% } %>
+</div>
+
+
+</body>
+</html>
+
+
+

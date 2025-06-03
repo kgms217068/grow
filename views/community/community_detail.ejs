@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>게시글 상세</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/community.css">
+</head>
+<body>
+  <div class="container">
+    <input type="hidden" id="post-id" value="<%= post.post_id %>">
+
+    <!-- 게시글 카드 -->
+    <div class="post-card">
+      <div class="post-header">
+        <div class="post-user-info">
+          <div class="user-avatar" style="position: relative;">
+            <i class="fa-solid fa-user-circle user-icon"></i>
+            <% if (post.badge === 'gold') { %>
+              <img src="/img/gold.png" class="badge-img" />
+            <% } else if (post.badge === 'silver') { %>
+              <img src="/img/silver.png" class="badge-img" />
+            <% } %>
+          </div>
+          <div>
+            <strong><%= post.nickname %></strong><br>
+            <small><%= new Date(post.createdAt).toLocaleString('ko-KR') %></small>
+          </div>
+        </div>
+        <% if (userId === post.user_id) { %>
+          <small class="post-delete" id="delete-post">게시글 삭제</small>
+        <% } %>
+      </div>
+
+      <h3 class="post-title"><%= post.title %></h3>
+      <p class="post-content"><%= post.content %></p>
+
+      <!-- 반응 바 -->
+      <div class="reaction-bar">
+        <!-- 좋아요 -->
+        <span id="like-icon" style="cursor: pointer;">
+          <i class="<%= likedByUser ? 'fa-solid' : 'fa-regular' %> fa-heart" style="<%= likedByUser ? 'color:red;' : '' %>"></i>
+        </span>
+        <span id="like-count"><%= post.likeCount %></span>
+
+        <!-- 댓글 -->
+        <i class="fa-regular fa-comment"></i>
+        <span id="comment-count"><%= comments.length %></span>
+
+        <!-- 스크랩 -->
+        <span id="scrap-icon" style="cursor: pointer;">
+          <i class="<%= scrappedByUser ? 'fa-solid' : 'fa-regular' %> fa-star" style="<%= scrappedByUser ? 'color:#FFEE00;' : '' %>"></i>
+        </span>
+        <span id="scrap-count"><%= post.scrapCount %></span>
+      </div>
+    </div>
+
+    <!-- 댓글 목록 -->
+    <ul class="comments" id="comment-list">
+      <% comments.forEach(comment => { %>
+        <li class="comment-item" id="comment-<%= comment.comment_id %>">
+          <div class="comment-header">
+            <div class="comment-user-info">
+              <div class="user-avatar small" style="position: relative;">
+                <i class="fa-solid fa-user-circle user-icon"></i>
+                <% if (comment.badge === 'gold') { %>
+                  <img src="/img/gold.png" class="badge-img" />
+                <% } else if (comment.badge === 'silver') { %>
+                  <img src="/img/silver.png" class="badge-img" />
+                <% } %>
+              </div>
+              <div>
+                <strong><%= comment.nickname %></strong><br>
+                <small class="comment-time"><%= comment.timeAgo %></small>
+              </div>
+            </div>
+            <% if (comment.user_id === userId) { %>
+              <small class="comment-delete" data-comment-id="<%= comment.comment_id %>">댓글삭제</small>
+            <% } %>
+          </div>
+
+          <p class="comment-content"><%= comment.comment_content %></p>
+
+          <div class="reaction-bar right" data-comment-id="<%= comment.comment_id %>">
+            <span class="comment-like-icon" style="cursor: pointer;">
+              <i class="<%= comment.is_liked ? 'fa-solid' : 'fa-regular' %> fa-heart" style="<%= comment.is_liked ? 'color:red;' : '' %>"></i>
+            </span>
+            <span class="comment-like-count"><%= comment.like_count %></span>
+          </div>
+        </li>
+      <% }) %>
+    </ul>
+
+    <!-- 댓글 입력창 여유 공간 확보 -->
+    <div style="height: 120px;"></div>
+
+    <!-- 댓글 입력창 -->
+    <form id="comment-form" class="comment-form">
+      <input type="text" id="comment-content" placeholder="댓글을 작성하세요" />
+      <button type="submit">
+        <i class="fa-solid fa-pen"></i>
+      </button>
+    </form>
+  </div>
+
+  <!-- 상태 전달용 스크립트 -->
+  <script>
+    window.initialPostState = {
+      postId: "<%= post.post_id %>",
+      liked: <%- JSON.stringify(likedByUser || false) %>,
+      scrapped: <%- JSON.stringify(scrappedByUser || false) %>
+    };
+  </script>
+
+  <script src="/js/community_detail.js"></script>
+</body>
+</html>
