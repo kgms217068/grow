@@ -225,10 +225,11 @@
       document.getElementById('nickname').innerText = data.nickname + ' 님';
       document.getElementById('level').innerText = `${data.level}단계`;
       
-      document.getElementById('mission-progress').innerText = `미션 ${data.missionStatus.total} / 5개 완료`;
-      const percent = (data.missionStatus.total) * 20;
-
+      document.getElementById('mission-progress').innerText = `미션 ${data.missionStatus.completed} / ${data.missionStatus.total}개 완료`;
+      
+      const percent = (data.missionStatus.completed / data.missionStatus.total) * 100;
       document.getElementById('progress-bar').style.width = percent + '%';
+
       document.getElementById('email').innerText = data.email;
 
       const badge = document.getElementById('badge-overlay');

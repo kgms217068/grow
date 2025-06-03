@@ -42,7 +42,6 @@ exports.getMyPageData = (userId, callback) => {
 
       const missionStatusSql = `
         SELECT 
-          COUNT(m.mission_id) AS total,
           SUM(CASE WHEN me.completed_or_not = 1 THEN 1 ELSE 0 END) AS completed
         FROM mission m
         LEFT JOIN mission_execution me
@@ -53,10 +52,9 @@ exports.getMyPageData = (userId, callback) => {
 
       db.query(missionStatusSql, [userId, currentLevel], (err3, statusResults) => {
         if (err3) return callback(err3);
-
-        const { total, completed } = statusResults[0] || {};
-        const totalCount = total ?? 0;
-        const completedCount = completed ?? 0;
+        
+        const completedCount = statusResults[0]?.completed ?? 0;
+        const totalCount = 5;
 
         updateAndGetBadgeType(userId, (err4, badgeType) => {
           if (err4) return callback(err4);
