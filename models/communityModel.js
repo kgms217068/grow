@@ -1,4 +1,3 @@
-// ✅ models/communityModel.js
 const { promisePool } = require('../db/db');
 
 exports.getPosts = (keyword) => {
@@ -7,12 +6,11 @@ exports.getPosts = (keyword) => {
        p.creation_date AS createdAt, p.comment_num AS commentCount,
        p.likes_num AS likeCount, p.scrap_num AS scrapCount,
        u.nickname, p.user_id
-FROM post p
-JOIN user u ON p.user_id = u.user_id
-WHERE p.post_title LIKE ?
-ORDER BY p.creation_date DESC
-
-  `, [`%${keyword}%`]);
+    FROM post p
+    JOIN user u ON p.user_id = u.user_id
+    WHERE p.post_title LIKE ?
+    ORDER BY p.creation_date DESC
+    `, [`%${keyword}%`]);
 };
 
 exports.insertPost = (title, content, userId) => {

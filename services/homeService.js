@@ -19,8 +19,8 @@ exports.getHomeData = async (userId) => {
       [userId, user.level]
     );
 
-    const missionTotal = missionRows.length;
-    const missionCompleted = missionRows.filter(row => row.completed_or_not).length;
+    const missionTotal = Array.isArray(missionRows) ? missionRows.length : 0;
+    const missionCompleted = missionRows?.filter(row => row.completed_or_not).length || 0;
 
     // 3. 과일 이름 그대로 사용 (최신 등록 순 기준)
     const [fruitRows] = await db.promise().query(
@@ -37,7 +37,7 @@ exports.getHomeData = async (userId) => {
 
     // 4. 이미지 경로 계산
     const treeImage = `/images/tree/${fruitName}_${missionCompleted}.png`;
-
+//${fruitName}
     // 5. 진행률 계산
     const progressRate = missionTotal === 0
       ? 0

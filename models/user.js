@@ -88,10 +88,13 @@ const User = {
     },
 
     deleteById: async (user_id) => {
+	console.log('[DEBUG] 모델 deleteById user_id:', user_id);
+
         const [result] = await promisePool.query(
             'DELETE FROM `user` WHERE user_id = ?',
             [user_id]
         );
+	console.log('[DEBUG] affectedRows:', result.affectedRows);
         return result.affectedRows > 0;
     }
 

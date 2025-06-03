@@ -175,4 +175,3 @@ exports.deletePostByUser = async (postId, userId) => {
   await model.deletePost(postId);
   return { status: 200 };
 };
-

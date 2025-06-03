@@ -1,9 +1,9 @@
 const homeService = require('../services/homeService');
 
+// ✅ API용 (그대로 유지)
 exports.getHomeData = async (req, res) => {
   try {
     const userId = req.user.user_id;
-
     const homeData = await homeService.getHomeData(userId);
     res.json(homeData);
   } catch (error) {
@@ -12,14 +12,19 @@ exports.getHomeData = async (req, res) => {
   }
 };
 
-// ✅ EJS 뷰 렌더링용 핸들러
+// ✅ EJS 뷰 렌더링용 (layout.ejs 기반 네비게이션 포함)
 exports.renderHomePage = async (req, res) => {
   try {
     const userId = req.user.user_id;
     const homeData = await homeService.getHomeData(userId);
-    res.render('home', homeData); // 👉 views/home.ejs에 전달
+
+    res.render('home', {
+      ...homeData,              // nickname, level, fruitName, missionCompleted 등
+      layout: 'layout',         // layout.ejs 적용
+      currentPath: req.path     // 네비게이션 조건용
+    });
   } catch (error) {
-    console.error(error);
+    console.error('[홈 페이지 오류]', error);
     res.status(500).render('error', { message: error.message });
   }
 };

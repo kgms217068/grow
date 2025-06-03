@@ -4,7 +4,7 @@ const certModel = require('../models/certificationModel');
 const missionModel = require('../models/missionModel');
 
 router.get('/', async (req, res) => {
-  const userId = req.session.userId || 1;
+const userId = req.session.user?.user_id || req.user?.user_id;
 
   const missions = await missionModel.getAllMissions();
   const certs = await certModel.getCertificationsByUser(userId);
@@ -17,13 +17,7 @@ router.get('/', async (req, res) => {
     statusMap[cert.mission_id] = hasDiary ? 'done' : 'pending';
   });
 
-  res.render('mission/list', {
-    title: '미션 목록',
-    nickname: '가연이',
-    currentLevel: '3단계',
-    missions,
-    statusMap
-  });
+  
 });
 
 module.exports = router;
