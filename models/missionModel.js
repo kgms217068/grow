@@ -37,7 +37,7 @@ exports.getMissionsForUser = async (userId) => {
 exports.assignInitialMissionsToUser = async (userId) => {
   // 예: 모든 mission_id 중에서 1단계(step=1) 또는 가장 기본 미션만 할당
   const [missions] = await promisePool.query(
-    `SELECT mission_id FROM mission WHERE step = 1`
+    `SELECT mission_id FROM mission WHERE level = 1`
   );
 
   const insertQueries = missions.map((mission) =>

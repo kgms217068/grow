@@ -13,9 +13,12 @@ exports.createInitialInventory = async (userId) => {
 
 // inventoryModel.js 안에 추가
 exports.giveDefaultSeedToUser = async (userId) => {
-  const [[appleItem]] = await promisePool.query(
-    'SELECT item_id FROM item WHERE item_name = "사과"'
-  );
+  const [[appleItem]] = await promisePool.query(`
+    SELECT i.item_id
+    FROM item i
+    JOIN item_type t ON i.item_type_id = t.item_type_id
+    WHERE t.item_name = "사과"
+  `);
 
   if (!appleItem) throw new Error('❌ 사과 item_id 없음');
 

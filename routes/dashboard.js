@@ -6,7 +6,15 @@ const { promisePool } = require('../db/db');
 const certModel = require('../models/certificationModel');
 const missionModel = require('../models/missionModel');
 const userModel = require('../models/userModel');
+//추가: multer 관련
+const fs = require('fs');
+// ✅ 업로드 경로 상수
+const uploadPath = path.join(__dirname, '../public/uploads');
 
+// ✅ uploads 폴더가 없으면 생성
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
+}
 
 // 파일 업로드 설정
 const storage = multer.diskStorage({
@@ -97,11 +105,19 @@ const [[inventoryRow]] = await promisePool.query(
   'SELECT inventory_id FROM inventory WHERE user_id = ?',
   [userId]
 );
+let inventoryId;
+if (!inventoryRow) {
+  const [insertResult] = await promisePool.query(
+    'INSERT INTO inventory (user_id) VALUES (?)',
+    [userId]
+  );
+  inventoryId = insertResult.insertId;
+} else {
+  inventoryId = inventoryRow.inventory_id;
+}
 
 
-const inventoryId = inventoryRow.inventory_id;
-
-    
+//const inventoryId = inventoryRow.inventory_id;
 
     // 3. 비료 타입 ID 가져오기
     const [[fertilizerTypeRow]] = await promisePool.query(
@@ -112,10 +128,10 @@ const inventoryId = inventoryRow.inventory_id;
 
     // 4. 비료 1개 지급 (중복이면 수량 증가)
     await promisePool.query(`
-      INSERT INTO item (item_type_id, inventory_id, item_id, item_count)
-      VALUES (?, ?, ?, 1)
+      INSERT INTO item (item_type_id, inventory_id, item_count)
+      VALUES (?, ?, 1)
       ON DUPLICATE KEY UPDATE item_count = item_count + 1
-    `, [fertilizerTypeId, inventoryId, fertilizerTypeId]);
+    `, [fertilizerTypeId, inventoryId]);
 
     // 5. 모달 띄우기 위한 session 값 저장
     req.session.prevConfirmedId = Number( mission_execution_id);
@@ -315,7 +331,7 @@ router.post('/diary/:missionId', async (req, res) => {
     emotions: Array.isArray(emotions) ? emotions : [emotions]
   });
 
-  res.redirect('/dashboard');
+  res.redirect('/dashboard/mission');
 });
 
 module.exports = router;

@@ -27,7 +27,7 @@ router.post('/:missionExecutionId', async (req, res) => {
       emotions: Array.isArray(emotions) ? emotions : [emotions]
     });
 
-    res.redirect('/dashboard');
+    res.redirect('/dashboard/mission');
   } catch (err) {
     console.error(err);
     res.status(500).render('error', { message: '일기 저장 실패', error: err });
