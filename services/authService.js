@@ -103,13 +103,40 @@ const userService = {
         return true;
     },
 
-    deleteAccount: async (userId) => {
-	console.log('[DEBUG] 서비스 deleteAccount userId:', userId);
-        const deleted = await User.deleteById(userId);
-	console.log('[DEBUG] delete result:', deleted);
-        if (!deleted) throw new Error('회원탈퇴에 실패했습니다.');
-        return true;
-    }
+   deleteAccount: async (userId) => {
+  const pool = require('../db/db').promisePool;
+  console.log('[DEBUG] 서비스 deleteAccount userId:', userId);
+
+  try {
+    // 💣 이게 없으면 계속 오류 발생
+    await pool.query(`DELETE FROM growmarket WHERE user_id = ?`, [userId]);
+    await pool.query(`DELETE FROM inventory WHERE user_id = ?`, [userId]);
+
+    await pool.query(`DELETE FROM emotion WHERE diary_id IN (
+      SELECT diary_id FROM diary d
+      JOIN mission_execution me ON d.mission_execution_id = me.mission_execution_id
+      WHERE me.user_id = ?
+    )`, [userId]);
+
+    await pool.query(`DELETE FROM diary WHERE mission_execution_id IN (
+      SELECT mission_execution_id FROM mission_execution WHERE user_id = ?
+    )`, [userId]);
+
+    await pool.query(`DELETE FROM mission_execution WHERE user_id = ?`, [userId]);
+
+    // 🔚 마지막에 user 삭제
+    const deleted = await User.deleteById(userId);
+
+    if (!deleted) throw new Error('회원탈퇴에 실패했습니다.');
+    return true;
+
+  } catch (err) {
+    console.error('[ERROR] 탈퇴 실패:', err);
+    throw new Error('회원 탈퇴 도중 오류가 발생했습니다.');
+  }
+}
+
+
 };
 
 module.exports = userService;

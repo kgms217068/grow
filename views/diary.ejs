@@ -85,13 +85,28 @@
     %>
       <div class="diary-card">
     <div class="diary-date">
-  <%= d.diary_date ? d.diary_date.toISOString().split('T')[0] : '날짜 없음' %>
+  <% if (d.diary_date) { 
+     const kstDate = new Date(new Date(d.diary_date).getTime() + 9 * 60 * 60 * 1000); 
+     const formattedDate = kstDate.toISOString().split('T')[0]; 
+%>
+  <%= formattedDate %>
+<% } else { %>
+  날짜 없음
+<% } %>
+
 </div>
         <div class="diary-meta">단계: <%= d.level %>단계 / 미션: <%= d.mission_content %></div>
 
-        <% if (d.emotion_tag) { %>
-          <div class="emotion-tag"><%= d.emotion_tag %></div>
-        <% } %>
+        <% if (d.emotion_tag && Array.isArray(d.emotion_tag)) { %>
+  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <% d.emotion_tag.forEach(tag => { %>
+      <div class="emotion-tag"><%= tag %></div>
+    <% }) %>
+  </div>
+          <% } else if (d.emotion_tag) { %>
+            <div class="emotion-tag"><%= d.emotion_tag %></div>
+    <% } %>
+
 
         <div class="diary-content <%= isLong ? 'short' : '' %>" <%= isLong ? 'onclick="toggleContent(this)"' : '' %>>
           <%= d.content %>

@@ -279,11 +279,13 @@ function filterItems(category) {
   document.querySelectorAll('.item-slot').forEach(s => s.classList.remove('selected'));
 document.getElementById('plantItemId').value = item.item_id;
 
+
+
   // 선택된 슬롯 찾아서 표시
   const slots = document.querySelectorAll('.item-slot');
   for (let i = 0; i < slots.length; i++) {
     if (slots[i].querySelector('img')?.src.includes(item.image_path)) {
-      slots[i].classList.add('selected');
+      slots[i].classList.add('selected'); 
       break;
     }
   }

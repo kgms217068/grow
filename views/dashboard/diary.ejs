@@ -7,14 +7,15 @@
   <textarea name="content" placeholder="내용" rows="4" required style="width: 100%; margin-top: 10px;"></textarea>
 
   <h3>오늘의 감정은?</h3>
-  <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
-    <% ['기쁨','슬픔','분노','즐거움','후회','뿌듯함'].forEach(tag => { %>
-      <label style="border: 1px solid #ccc; padding: 6px 10px; border-radius: 6px;">
-        <input type="checkbox" name="emotions" value="<%= tag %>" />
-        <%= tag %>
-      </label>
-    <% }) %>
-  </div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+  <% ['기쁨','슬픔','분노','즐거움','후회','뿌듯함'].forEach(tag => { %>
+    <label style="border: 1px solid #ccc; padding: 6px 10px; border-radius: 6px;">
+      <input type="checkbox" name="emotions[]" value="<%= tag %>" />
+      <%= tag %>
+    </label>
+  <% }) %>
+</div>
+
 
   <button type="submit" style="margin-top: 20px; background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 8px;">저장하기</button>
 </form>
