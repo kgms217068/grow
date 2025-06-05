@@ -42,11 +42,13 @@ const userService = {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // 사용자 생성
-        return await User.create({
-            email,
-            password: hashedPassword,
-	    nickname,
-        });
+        // return await User.create({
+        //     email,
+        //     password: hashedPassword,
+	    // nickname,
+        // });
+        const { user_id } = await User.create({ email, password: hashedPassword, nickname });
+        return user_id;
     },
 
     login: async (email, password) => {

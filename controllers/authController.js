@@ -7,18 +7,18 @@ exports.register = async (req, res) => {
 
     // ✅ 인벤토리 자동 생성
     const inventoryModel = require('../models/inventoryModel');
-        const missionExecutionModel = require('../models/missionExecutionModel');
+    const missionModel = require('../models/missionModel');
 
-    console.log('🧩 인벤토리 생성 시작');
-await inventoryModel.createInitialInventory(userId);
-try{console.log('✅ 인벤토리 생성 완료');}
-catch(err){
-  console.log(err);
-}
+    try {
+      console.log('🧩 인벤토리 생성 시작');
+      await inventoryModel.createInitialInventory(userId);
+      console.log('✅ 인벤토리 생성 완료');
+    } catch (err) {
+      console.log('❌ 인벤토리 생성 실패:', err.message);
+    }
 
-await inventoryModel.giveDefaultSeedToUser(userId);
-
-        await missionExecutionModel.assignInitialMissionsToUser(userId);
+    await inventoryModel.giveDefaultSeedToUser(userId);
+    await missionModel.assignInitialMissionsToUser(userId);
 
     // 회원가입 성공 시 성공 페이지 렌더링
     res.status(201).render('registerSuccess', { userId });

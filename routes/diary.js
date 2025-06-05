@@ -29,6 +29,7 @@ router.post('/:missionExecutionId', async (req, res) => {
       emotions: emotionArray
     });
 
+<<<<<<< HEAD
     // ✅ 각 감정을 개별적으로 저장
     for (const emotion of emotionArray) {
       await certModel.saveEmotionTag(missionExecutionId, emotion);  // 감정 태그 저장 함수 (DB에 INSERT)
@@ -36,6 +37,9 @@ router.post('/:missionExecutionId', async (req, res) => {
 
  console.log('emotions:', emotions);
    res.redirect('/dashboard');
+=======
+    res.redirect('/dashboard/mission');
+>>>>>>> feature/yeonjung_fix_etc
   } catch (err) {
     console.error(err);
     res.status(500).render('error', { message: '일기 저장 실패', error: err });
