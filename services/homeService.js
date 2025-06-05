@@ -47,21 +47,17 @@ exports.getHomeData = async (userId) => {
       [userId, currentLevel]
     );
 
-    const missionTotal = missionStatusRows[0]?.total ?? 0;
+    const missionTotal = 5;
     const missionCompleted = missionStatusRows[0]?.completed ?? 0;
 
-    // 4. 과일 이름 조회 (최신 등록 순 기준)
+    // 4. 사용자가 실제로 심은 과일(planted_fruit 기준) 조회
     const [fruitRows] = await db.promise().query(
-      `SELECT f.fruit_name
-       FROM fruit f
-       JOIN collection c ON f.collection_id = c.collection_id
-       WHERE c.user_id = ?
-       ORDER BY f.registered DESC
-       LIMIT 1`,
+      `SELECT fruit_name FROM planted_fruit WHERE user_id = ?`,
       [userId]
     );
 
-    const fruitName = fruitRows.length > 0 ? fruitRows[0].fruit_name : 'default';
+    const hasPlanted = fruitRows.length > 0;
+    const fruitName = hasPlanted ? fruitRows[0].fruit_name : 'default';
 
     // 5. 이미지 경로 계산
     const treeImage = `/images/tree/${fruitName}_${missionCompleted}.png`;
@@ -78,7 +74,8 @@ exports.getHomeData = async (userId) => {
       missionTotal,
       progressRate,
       fruitName,
-      treeImage
+      treeImage,
+      hasPlanted // ✅ 프론트엔드에서 팝업 조건으로 사용
     };
   } catch (err) {
     throw err;
