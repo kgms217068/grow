@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const certMo = require('../models/certificationModel'); // diary 저장도 여기 있다고 가정
+const certModel = require('../models/certificationModel'); // diary 저장도 여기 있다고 가정
 
 const diaryController = require('../controllers/diaryController');
 const { ensureAuthenticated: isLoggedIn } = require('../middlewares/auth');
@@ -34,7 +34,8 @@ router.post('/:missionExecutionId', async (req, res) => {
       await certModel.saveEmotionTag(missionExecutionId, emotion);  // 감정 태그 저장 함수 (DB에 INSERT)
     }
 
-    res.redirect('/dashboard');
+ console.log('emotions:', emotions);
+   res.redirect('/dashboard');
   } catch (err) {
     console.error(err);
     res.status(500).render('error', { message: '일기 저장 실패', error: err });
