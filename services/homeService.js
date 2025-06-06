@@ -48,19 +48,46 @@ exports.getHomeData = async (userId) => {
     );
 
     const missionTotal = 5;
-    const missionCompleted = missionStatusRows[0]?.completed ?? 0;
+   
+const missionCompleted = Number(missionStatusRows[0]?.completed ?? 0);
 
     // 4. 사용자가 실제로 심은 과일(planted_fruit 기준) 조회
-    const [fruitRows] = await db.promise().query(
-      `SELECT fruit_name FROM planted_fruit WHERE user_id = ?`,
-      [userId]
-    );
+  const [fruitRows] = await db.promise().query(
+  `SELECT f.fruit_name, gs.growth_rate
+   FROM growth_status gs
+   JOIN fruit f ON gs.fruit_id = f.fruit_id
+   WHERE gs.user_id = ? AND gs.is_harvested = false
+   ORDER BY gs.planted_at DESC
+   LIMIT 1
+  `,
+  [userId]
+);
 
     const hasPlanted = fruitRows.length > 0;
-    const fruitName = hasPlanted ? fruitRows[0].fruit_name : 'default';
+const fruitName = hasPlanted ? fruitRows[0].fruit_name : 'default';
+const growthRate = hasPlanted ? fruitRows[0].growth_rate : 0;
+// 이미지 경로 계산
 
-    // 5. 이미지 경로 계산
-    const treeImage = `/images/tree/${fruitName}_${missionCompleted}.png`;
+const treeImage = hasPlanted
+  ? `/images/tree/${fruitName}_${Math.floor(growthRate / 20)}.png`
+  : '/images/tree/default_0.png';
+
+if (growthRate >= 100) {
+  // 자동 수확 가능 상태
+  await promisePool.query(`
+    UPDATE growth_status SET is_harvested = true
+    WHERE growth_status_id = ? AND user_id = ?
+  `, [growthStatusId, userId]);
+
+  // 도감 등록
+  await promisePool.query(`
+    INSERT IGNORE INTO collection (user_id, fruit_id, collected_at)
+    SELECT user_id, fruit_id, NOW()
+    FROM growth_status
+    WHERE growth_status_id = ? AND user_id = ?
+  `, [growthStatusId, userId]);
+}
+
 
     // 6. 진행률 계산
     const progressRate = missionTotal === 0

@@ -20,7 +20,7 @@
       position: relative;
       width: 402px;
       height: 874px;
-      background-image: url('/images/tree/<%= fruitName %>_<%= missionCompleted %>.png');
+      background-image: url("<%=treeImage %>");
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -138,6 +138,8 @@
         onclick="location.href='/dashboard/mission'"
         <%= !hasPlanted ? 'disabled style="background-color: #ccc; cursor: not-allowed;"' : '' %>>
         오늘의 미션 하러 가기
+<%= treeImage %> 
+
       </button>
     </div>
 
@@ -153,5 +155,8 @@
       </div>
     </div>
   <% } %>
+
+
+
 </body>
 </html>
