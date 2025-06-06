@@ -456,9 +456,25 @@ router.post('/harvest/:growthStatusId', async (req, res) => {
 // });
 
 // ✅ GET/POST /dashboard/diary/:missionId
-router.get('/diary/:missionId', (req, res) => {
-  const missionId = req.params.missionId;
-  res.render('dashboard/diary', { missionId });
+router.get('/diary/:missionId',async (req, res) => {
+  const missionId = Number(req.params.missionId);
+ console.log('🧩 missionId 전달됨:', missionId);
+
+  if (isNaN(missionId)) {
+  return res.status(400).send('올바르지 않은 미션 ID입니다.');
+}
+
+    const [[missionRow]] = await promisePool.query(`
+    SELECT description FROM mission WHERE mission_id = ?
+  `, [missionId]);
+
+  if (!missionRow) {
+    return res.status(404).send('미션을 찾을 수 없습니다.');
+  }
+
+ console.log('📦 missionRow:', missionRow);
+
+  res.render('dashboard/diary', { missionId ,  mission: missionRow});
 });
 
 router.post('/diary/:missionId', async (req, res) => {
