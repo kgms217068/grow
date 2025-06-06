@@ -12,7 +12,7 @@ exports.getHomeData = async (userId) => {
     const currentLevel = userRow.level;
 
     // 2. 현재 단계의 미션 수행 현황
-    const [statusRows] = await db.promise().query(`
+    const [missionStatusRows] = await db.promise().query(`
       SELECT 
         COUNT(DISTINCT m.mission_id) AS total,
         COUNT(c.certification_id) AS completed
