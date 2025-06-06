@@ -1,4 +1,5 @@
 const db = require('../models/db');
+const { promisePool } = require('../db/db');
 
 exports.getHomeData = async (userId) => {
   try {
@@ -51,42 +52,71 @@ exports.getHomeData = async (userId) => {
    
 const missionCompleted = Number(missionStatusRows[0]?.completed ?? 0);
 
-    // 4. 사용자가 실제로 심은 과일(planted_fruit 기준) 조회
-  const [fruitRows] = await db.promise().query(
-  `SELECT f.fruit_name, gs.growth_rate
-   FROM growth_status gs
-   JOIN fruit f ON gs.fruit_id = f.fruit_id
-   WHERE gs.user_id = ? AND gs.is_harvested = false
-   ORDER BY gs.planted_at DESC
-   LIMIT 1
-  `,
-  [userId]
-);
+  // 4. 현재 심은 나무가 있는지 확인 (is_harvested = false)
+const [plantedRows] = await promisePool.query(`
+  SELECT gs.growth_status_id, gs.growth_rate, gs.is_harvested, 
+  f.fruit_name, f.fruit_id
+  FROM growth_status gs
+  JOIN fruit f ON gs.fruit_id = f.fruit_id
+  WHERE gs.user_id = ? AND gs.is_harvested = false
+  ORDER BY gs.planted_at DESC
+  LIMIT 1
+`, [userId]);
 
-    const hasPlanted = fruitRows.length > 0;
-const fruitName = hasPlanted ? fruitRows[0].fruit_name : 'default';
-const growthRate = hasPlanted ? fruitRows[0].growth_rate : 0;
-// 이미지 경로 계산
+let hasPlanted = plantedRows.length > 0;
+let growthStatusId = null;
+let growthRate = 0;
+let fruitId = null;
+let fruitName = 'default';
 
+if (hasPlanted) {
+  const planted = plantedRows[0];
+  growthStatusId = planted.growth_status_id;
+  growthRate = planted.growth_rate;
+  fruitId = planted.fruit_id;
+  fruitName = planted.fruit_name;
+
+  // ✅ 성장률이 100 이상이면 자동 수확 및 도감 등록
+  if (growthRate >= 100) {
+    await promisePool.query(`
+      UPDATE growth_status SET is_harvested = true
+      WHERE growth_status_id = ? AND user_id = ?
+    `, [growthStatusId, userId]);
+
+  if (fruitId) {
+  const [fruitExist] = await promisePool.query(
+    'SELECT * FROM fruit WHERE fruit_id = ?',
+    [fruitId]
+  );
+
+  if (fruitExist.length === 0) {
+    console.error('❌ 잘못된 fruitId:', fruitId);
+  } else {
+    await promisePool.query(`
+      INSERT IGNORE INTO collection (user_id, fruit_id, collected_at)
+      VALUES (?, ?, NOW())
+    `, [userId, fruitId]);
+    console.log('✅ 도감에 추가됨:', { userId, fruitId });
+  }
+} else {
+  console.error('❌ fruitId가 정의되지 않음!');
+}
+
+    // 수확 후 현재 나무가 없기 때문에 이미지/데이터 초기화
+    hasPlanted = false;
+    fruitName = 'default';
+    growthRate = 0;
+  }
+}
+
+// 🌱 이미지 경로 구성 (성장률 기준)
+const stage = Math.floor(growthRate / 20); // 예: 40 → 2
 const treeImage = hasPlanted
-  ? `/images/tree/${fruitName}_${Math.floor(growthRate / 20)}.png`
+  ? `/images/tree/${fruitName}_${stage}.png`
   : '/images/tree/default_0.png';
 
-if (growthRate >= 100) {
-  // 자동 수확 가능 상태
-  await promisePool.query(`
-    UPDATE growth_status SET is_harvested = true
-    WHERE growth_status_id = ? AND user_id = ?
-  `, [growthStatusId, userId]);
 
-  // 도감 등록
-  await promisePool.query(`
-    INSERT IGNORE INTO collection (user_id, fruit_id, collected_at)
-    SELECT user_id, fruit_id, NOW()
-    FROM growth_status
-    WHERE growth_status_id = ? AND user_id = ?
-  `, [growthStatusId, userId]);
-}
+
 
 
     // 6. 진행률 계산

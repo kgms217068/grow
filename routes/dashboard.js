@@ -100,6 +100,15 @@ await promisePool.query(`
   WHERE mission_execution_id = ?
 `, [mission_execution_id]);
 
+// ✅ 추가: growth_status 테이블에서 성장률도 올리기 (예: +20)
+await promisePool.query(`
+  UPDATE growth_status
+  SET growth_rate = LEAST(growth_rate + 20, 100)
+  WHERE user_id = ? AND is_harvested = false
+  ORDER BY planted_at DESC
+  LIMIT 1
+`, [userId]);
+
 // 2. 사용자 인벤토리 ID 가져오기
 const [[inventoryRow]] = await promisePool.query(
   'SELECT inventory_id FROM inventory WHERE user_id = ?',
@@ -343,12 +352,38 @@ router.post('/use-fertilizer', async (req, res) => {
       WHERE item_id = ?
     `, [fertilizerRow.item_id]);
 
-    // 5. 성장률 +20 (최대 100)
-    await promisePool.query(`
-      UPDATE growth_status
-      SET growth_rate = LEAST(growth_rate + 20, 100)
-      WHERE growth_status_id = ?
-    `, [growthStatusId]);
+   // 🌱 1. 비료 사용 → 성장률 증가
+await promisePool.query(`
+  UPDATE growth_status
+  SET growth_rate = LEAST(growth_rate + 20, 100)
+  WHERE growth_status_id = ? AND user_id = ? AND is_harvested = false
+`, [growthStatusId, userId]);
+
+// ✅ 2. 미션 완료 기록 추가
+// 현재 레벨 가져오기
+const [[userRow]] = await promisePool.query(
+  `SELECT level FROM user WHERE user_id = ?`,
+  [userId]
+);
+
+const currentLevel = userRow.level;
+
+// 완료되지 않은 미션 중 하나 찾기
+const [[availableMission]] = await promisePool.query(`
+  SELECT m.mission_id
+  FROM mission m
+  LEFT JOIN mission_execution me 
+    ON m.mission_id = me.mission_id AND me.user_id = ?
+  WHERE m.level = ? AND (me.completed_or_not IS NULL OR me.completed_or_not = 0)
+  LIMIT 1
+`, [userId, currentLevel]);
+
+if (availableMission) {
+  await promisePool.query(`
+    INSERT INTO mission_execution (mission_id, user_id, completed_or_not, completed_date)
+    VALUES (?, ?, 1, NOW())
+  `, [availableMission.mission_id, userId]);
+}
 
     res.redirect('/home');
   } catch (error) {
