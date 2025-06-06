@@ -1,20 +1,11 @@
-// services/mypageService.js
 const db = require('../models/db');
 
 exports.getMyPageData = (userId, callback) => {
+  // 1. 유저 정보 조회 (level 포함)
   const userSql = `
-    SELECT user_id AS id, nickname, email
+    SELECT user_id AS id, nickname, email, level
     FROM user
     WHERE user_id = ?
-  `;
-
-  const levelStatusSql = `
-    SELECT m.level, COUNT(*) AS completed_count
-    FROM mission_execution me
-    JOIN mission m ON me.mission_id = m.mission_id
-    WHERE me.user_id = ? AND me.completed_or_not = true
-    GROUP BY m.level
-    ORDER BY m.level ASC
   `;
 
   db.query(userSql, [userId], (err, userResults) => {
@@ -22,51 +13,40 @@ exports.getMyPageData = (userId, callback) => {
     if (userResults.length === 0) return callback(null, null);
 
     const user = userResults[0];
+    const currentLevel = user.level;
 
-    db.query(levelStatusSql, [userId], (err2, levelResults) => {
+    // 2. 현재 단계의 미션 수행 현황 (certification 기준)
+    const missionStatusSql = `
+    SELECT 
+      COUNT(DISTINCT m.mission_id) AS total,
+      COUNT(DISTINCT c.certification_id) AS completed
+    FROM mission m
+    LEFT JOIN mission_execution me 
+      ON m.mission_id = me.mission_id AND me.user_id = ?
+    LEFT JOIN certification c 
+      ON me.mission_execution_id = c.mission_execution_id 
+        AND c.user_id = ? 
+        AND c.checked = 1 
+        AND c.confirmed_by_user = 1
+    WHERE m.level = ?
+  `;
+
+    db.query(missionStatusSql, [userId, userId, currentLevel], (err2, statusResults) => {
       if (err2) return callback(err2);
 
-      let currentLevel = 1;
-      const levelMap = new Map();
-      levelResults.forEach(row => {
-        levelMap.set(row.level, row.completed_count);
-      });
+      const completedCount = statusResults[0]?.completed ?? 0;
+      const totalCount = statusResults[0]?.total ?? 5;
 
-      for (let lv = 1; lv <= 8; lv++) {
-        const count = levelMap.get(lv) || 0;
-        if (count < 5) {
-          currentLevel = lv;
-          break;
-        }
-      }
-
-      const missionStatusSql = `
-        SELECT 
-          SUM(CASE WHEN me.completed_or_not = 1 THEN 1 ELSE 0 END) AS completed
-        FROM mission m
-        LEFT JOIN mission_execution me
-          ON m.mission_id = me.mission_id AND me.user_id = ?
-        WHERE m.level = ?
-      `;
-
-
-      db.query(missionStatusSql, [userId, currentLevel], (err3, statusResults) => {
+      updateAndGetBadgeType(userId, (err3, badgeType) => {
         if (err3) return callback(err3);
-        
-        const completedCount = statusResults[0]?.completed ?? 0;
-        const totalCount = 5;
 
-        updateAndGetBadgeType(userId, (err4, badgeType) => {
-          if (err4) return callback(err4);
-
-          callback(null, {
-            userId: user.id,
-            nickname: user.nickname,
-            email: user.email,
-            level: currentLevel,
-            missionStatus: { completed: completedCount, total: totalCount },
-            badgeType
-          });
+        callback(null, {
+          userId: user.id,
+          nickname: user.nickname,
+          email: user.email,
+          level: currentLevel,
+          missionStatus: { completed: completedCount, total: totalCount },
+          badgeType
         });
       });
     });
