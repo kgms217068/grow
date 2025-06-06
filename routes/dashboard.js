@@ -282,6 +282,9 @@ router.post('/level-option', async (req, res) => {
     // 즉시 처리
     if (option === 'NEXT') {
       await promisePool.query(`UPDATE user SET level = level + 1 WHERE user_id = ?`, [userId]);
+
+      // ✅ 과일 삭제도 레벨업 시점에 함께 처리
+      await promisePool.query(`DELETE FROM planted_fruit WHERE user_id = ?`, [userId]);
     } else if (option === 'RETRY') {
       const [executions] = await promisePool.query(`
         SELECT mission_execution_id FROM mission_execution me
