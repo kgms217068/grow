@@ -23,27 +23,49 @@ exports.getHomeData = async (userId) => {
       WHERE m.level = ?
     `, [userId, userId, currentLevel]);
 
-    const missionTotal = statusRows[0]?.total ?? 5;
-    const missionCompleted = statusRows[0]?.completed ?? 0;
+    const missionTotal = missionStatusRows[0]?.total ?? 5;
+    const missionCompleted = Number(missionStatusRows[0]?.completed ?? 0);
 
-    // 3. 심은 과일 확인 (삭제 없이 단순 조회만!)
-    let hasPlanted = false;
-    let fruitName = 'default';
+    // 3. 실제 심은 과일 (growth_status 기준) 조회
     const [fruitRows] = await db.promise().query(
-      'SELECT fruit_name FROM planted_fruit WHERE user_id = ?',
+      `SELECT f.fruit_name, gs.growth_rate, gs.growth_status_id
+       FROM growth_status gs
+       JOIN fruit f ON gs.fruit_id = f.fruit_id
+       WHERE gs.user_id = ? AND gs.is_harvested = false
+       ORDER BY gs.planted_at DESC
+       LIMIT 1`,
       [userId]
     );
-    if (fruitRows.length > 0) {
-      hasPlanted = true;
-      fruitName = fruitRows[0].fruit_name;
+
+    const hasPlanted = fruitRows.length > 0;
+    const fruitName = hasPlanted ? fruitRows[0].fruit_name : 'default';
+    const growthRate = hasPlanted ? fruitRows[0].growth_rate : 0;
+    const growthStatusId = hasPlanted ? fruitRows[0].growth_status_id : null;
+
+    // 4. 이미지 경로 계산
+    const treeImage = hasPlanted
+      ? `/images/tree/${fruitName}_${Math.floor(growthRate / 20)}.png`
+      : '/images/tree/default_0.png';
+
+    // 5. 자동 수확 처리
+    if (growthRate >= 100 && growthStatusId) {
+      // 수확 처리
+      await db.promise().query(`
+        UPDATE growth_status
+        SET is_harvested = true
+        WHERE growth_status_id = ? AND user_id = ?
+      `, [growthStatusId, userId]);
+
+      // 도감 등록
+      await db.promise().query(`
+        INSERT IGNORE INTO collection (user_id, fruit_id, collected_at)
+        SELECT user_id, fruit_id, NOW()
+        FROM growth_status
+        WHERE growth_status_id = ? AND user_id = ?
+      `, [growthStatusId, userId]);
     }
 
-    // 4. 이미지 경로 생성
-    const treeImage = missionCompleted === 0
-      ? `/images/tree/default_0.png`
-      : `/images/tree/${fruitName}_${missionCompleted}.png`;
-
-    // 5. 진행률
+    // 6. 진행률 계산
     const progressRate = missionTotal === 0 ? 0 : missionCompleted / missionTotal;
 
     return {
@@ -56,7 +78,7 @@ exports.getHomeData = async (userId) => {
       treeImage,
       hasPlanted
     };
-
+    
   } catch (err) {
     throw err;
   }

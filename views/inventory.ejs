@@ -94,10 +94,11 @@
   margin-top: 10px;
   display: none;
   position: relative;
-  bottom:220px;
+  bottom:210px;
   right: 10px;
   width: 275px;
-  height: 150px;
+  height: 160px;
+  z-index: 1;
   
 }
 
@@ -176,24 +177,24 @@
     <button class="tab-btn" onclick="filterItems('gold')">황금</button>
   </div>
 
-  <div class="item-grid" id="itemGrid">
-    <% for (let i = 0; i <= 20; i++) {
-         const item = items[i];
-    %>
-      <div class=" item-slot <%= item ? '' : 'empty' %>" data-type="<%= item && item.category ? item.category : 'none' %>"
+ <div class="item-grid" id="itemGrid">
+  <% items.slice(0, 20).forEach((item, index) => { %>
+    <div class="item-slot" 
+         data-type="<%= item.category %>" 
+         onclick="selectItem(<%= item.item_id %>)" 
+         data-idx="<%= index %>">
+      <img style="max-width: 80px; max-height: 80px;" 
+           src="/img/<%= item.image_path %>" 
+           alt="<%= item.item_name %>">
+      <div class="item-count"><%= item.item_count %></div>
+    </div>
+  <% }); %>
 
-           onclick="selectItem(<%= i %>)" data-idx="<%= i %>">
-        <% if (item) { %>
-          <img style="max-width: 80px; max-height: 80px;" src="/img/<%= item.image_path %>" alt="<%= item.item_name %>">
-          <div class="item-count"><%= item.item_count %></div>
-        
-          <% } %>
-      </div>
-   
-    <% } %>
+  <% for (let i = items.length; i < 20; i++) { %>
+    <div class="item-slot empty" data-type="none"></div>
+  <% } %>
+</div>
 
-    
-  </div>
 
 
 
@@ -212,30 +213,47 @@
     <!-- 가운데: 구분선 -->
     <div class="info-divider"></div>
 
-    <!-- 오른쪽: 텍스트 -->
-    <div class="info-right">
-      <strong id="infoName" class="info-title"></strong>
-      <p id="infoDesc" class="info-desc"></p>
-     <div class="item-info-bottom" style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
-  <div class="item-count-text">개수: <span id="infoCount"></span>개</div>
-  <form method="POST" action="/inventory/plant">
-    <input type="hidden" name="itemId" id="plantItemId" />
-    <button type="submit" class="plant-btn">씨앗 심기</button>
-  </form>
+   <!-- 오른쪽: 텍스트 -->
+<div class="info-right">
+  <strong id="infoName" class="info-title"></strong>
+  <p id="infoDesc" class="info-desc"></p>
+  
+  <div class="item-info-bottom" style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
+    <div class="item-count-text">개수: <span id="infoCount"></span>개</div>
+    <!-- ✅ 비료 전용 폼 -->
+<form id="fertilizerForm" action="/dashboard/use-fertilizer" method="POST">
+  <button type="submit" class="plant-btn">사용하기</button>
+</form>
+
+
+<!-- ✅ 씨앗 전용 폼 -->
+<form id="plantForm" method="POST" action="/inventory/plant" style="display: none;">
+  <input type="hidden" name="itemId" id="plantItemId" />
+  <input type="hidden" name="fruitName" id="plantFruitName" />
+  <button type="submit" class="plant-btn">씨앗 심기</button>
+</form>
+
+<p id="plantStatus" style="display: none; margin-left: 10px; color: green;"></p>
+
+
+    <p id="plantStatus" style="display: none; margin-left: 10px; color: green;"></p>
+  </div>
 </div>
 
-    </div>
+
   </div>
 </div>
 </div>
 
 <script>
+  const hasPlanted = <%= hasPlanted ? 'true' : 'false' %>;
+  let currentCategory = 'basic';
  const allItems = <%- JSON.stringify(items) %>;
 
 function filterItems(category) {
-  currentCategory = category;
+ // ✅ 전역 변수로 선언
   currentVisibleItems = [];
-
+currentCategory = category;
   document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
   document.querySelector(`.tab-btn[onclick*="${category}"]`).classList.add('active');
 
@@ -245,10 +263,12 @@ function filterItems(category) {
     slot.style.display = 'block';
   });
 
-  // ✅ 수량 0인 아이템 제외
-  let filteredItems = allItems.filter(item =>
-    item && item.category === category && item.item_count > 0
-  );
+const actualCategory = category === 'basic' ? ['씨앗', 'basic'] : [category];
+
+// 수량 0 제외, 씨앗 포함
+let filteredItems = allItems.filter(item =>
+  item && actualCategory.includes(item.category) && item.item_count > 0
+);
 
   for (let i = 0; i < 20; i++) {
     const slot = slots[i];
@@ -257,7 +277,7 @@ function filterItems(category) {
     if (item) {
       currentVisibleItems.push(i);
       slot.innerHTML = `
-        <div class="item-img" onclick="selectItem(${item.item_id})">
+        <div class="item-img" data-id="${item.item_id}">
           <img src="/img/${item.image_path}" />
           <div class="item-count">${item.item_count}</div>
         </div>
@@ -266,6 +286,8 @@ function filterItems(category) {
       slot.innerHTML = '';
     }
   }
+// ✅ "기본" 탭일 때 씨앗도 포함되도록 카테고리 변환
+
 
   document.getElementById('itemInfo').style.display = 'none';
 }
@@ -273,13 +295,27 @@ function filterItems(category) {
 
 
  function selectItem(itemId) {
+   console.log('🧩 selectItem 호출됨:', itemId);
+console.log('📦 currentCategory:', currentCategory);
+
+const selectedItem = allItems.find(item => Number(item.item_id) === Number(itemId));
+console.log('🔎 찾은 아이템:', selectedItem);
   const item = allItems.find(i => i.item_id === itemId);
-  if (!item || item.category !== currentCategory) return;
+  if (!item) return;
+
 
   document.querySelectorAll('.item-slot').forEach(s => s.classList.remove('selected'));
-document.getElementById('plantItemId').value = item.item_id;
 
 
+console.log('🧪 item_count:', item.item_count);
+// 클릭 이벤트 위임
+document.getElementById('itemGrid').addEventListener('click', function (e) {
+  const target = e.target.closest('.item-img');
+  if (target) {
+    const id = Number(target.dataset.id);
+    selectItem(id);
+  }
+});
 
   // 선택된 슬롯 찾아서 표시
   const slots = document.querySelectorAll('.item-slot');
@@ -289,13 +325,58 @@ document.getElementById('plantItemId').value = item.item_id;
       break;
     }
   }
+ const form = document.getElementById("plantForm");
 
+ 
+    const itemIdInput = document.getElementById("plantItemId");
+    const fruitNameInput = document.getElementById("plantFruitName");
+    const plantStatus = document.getElementById("plantStatus");
+
+
+    console.log("🌱 심기 요청 데이터:", {
+  item_id: document.getElementById("plantItemId").value,
+  fruit_name: document.getElementById("plantFruitName").value
+});
+const plantForm = document.getElementById("plantForm");
+const fertilizerForm = document.getElementById("fertilizerForm");
+
+
+if (item.category === 'basic') {
+  plantForm.style.display = "none";
+  plantStatus.style.display = "none";
+  fertilizerForm.style.display = "block";
+} else if (item.category === '씨앗') {
+  fertilizerForm.style.display = "none";
+
+  if (!hasPlanted && item.item_count > 0) {
+    plantForm.style.display = "block";
+    plantStatus.style.display = "none";
+  } else {
+    plantForm.style.display = "none";
+    plantStatus.style.display = "inline";
+    if (hasPlanted) {
+      plantStatus.textContent = "🌱 이미 씨앗을 심었습니다";
+    } else {
+      plantStatus.textContent = "❌ 씨앗 수량이 부족합니다";
+    }
+  }
+} else {
+  plantForm.style.display = "none";
+  fertilizerForm.style.display = "none";
+  plantStatus.style.display = "none";
+}
+
+    
   // 상세정보 업데이트
-  document.getElementById('itemInfo').style.display = 'block';
+ 
+  console.log('🪄 설명창 열림 시도!');
   document.getElementById('infoImg').src = '/img/' + item.image_path;
   document.getElementById('infoName').innerText = item.item_name;
   document.getElementById('infoDesc').innerText = item.description || '설명이 없습니다.';
   document.getElementById('infoCount').innerText = item.item_count;
+  document.getElementById('plantItemId').value = item.item_id;
+  document.getElementById('plantFruitName').value=  item.item_name;
+   document.getElementById('itemInfo').style.display = 'block';
 }
 
 

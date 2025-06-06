@@ -1,55 +1,90 @@
 const bcrypt = require('bcrypt');
 const validator = require('validator');
 const User = require('../models/user');
+const { promisePool } = require('../db/db');
 
 const userService = {
-    register: async (userData) => {
-        const { nickname, email, password, passwordConfirm } = userData;
+  register: async (userData) => {
+    const { nickname, email, password, passwordConfirm } = userData;
 
-        // 모든 필수 입력값 확인
-        if (!nickname || !email || !password || !passwordConfirm) {
-            throw new Error('닉네임, 이메일, 비밀번호, 비밀번호 확인을 모두 입력해주세요.');
-        }
+    if (!nickname || !email || !password || !passwordConfirm) {
+      throw new Error('닉네임, 이메일, 비밀번호, 비밀번호 확인을 모두 입력해주세요.');
+    }
+    if (password !== passwordConfirm) {
+      throw new Error('비밀번호가 일치하지 않습니다.');
+    }
+    if (!validator.isEmail(email)) {
+      throw new Error('올바른 이메일 형식을 입력해주세요.');
+    }
+    if (!validator.isLength(password, { min: 8 })) {
+      throw new Error('비밀번호는 8자 이상이어야 합니다.');
+    }
 
-        // 비밀번호 일치 여부 검사
-        if (password !== passwordConfirm) {
-            throw new Error('비밀번호가 일치하지 않습니다.');
-        }
+    const existingNickname = await User.findByNickname(nickname);
+    if (existingNickname) {
+      throw new Error('이미 사용 중인 닉네임입니다.');
+    }
 
-        // 이메일 형식 확인
-        if (!validator.isEmail(email)) {
-            throw new Error('올바른 이메일 형식을 입력해주세요.');
-        }
+    const existingUser = await User.findByEmail(email);
+    if (existingUser) {
+      throw new Error('이미 사용 중인 이메일입니다.');
+    }
 
-        // 비밀번호 길이 검사
-        if (!validator.isLength(password, { min: 8 })) {
-            throw new Error('비밀번호는 8자 이상이어야 합니다.');
-        }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const conn = await promisePool.getConnection();
 
-        // 닉네임 중복 검사
-        const existingNickname = await User.findByNickname(nickname);
-        if (existingNickname) {
-            throw new Error('이미 사용 중인 닉네임입니다.');
-        }
+    try {
+      await conn.beginTransaction();
 
-        // 이메일 중복 검사
-        const existingUser = await User.findByEmail(email);
-        if (existingUser) {
-            throw new Error('이미 사용 중인 이메일입니다.');
-        }
+      // 1. 유저 생성
+      const [userResult] = await conn.query(
+        'INSERT INTO user (email, password, nickname) VALUES (?, ?, ?)',
+        [email, hashedPassword, nickname]
+      );
+      const userId = userResult.insertId;
 
-        // 비밀번호 해싱
-        const hashedPassword = await bcrypt.hash(password, 10);
+      // 2. 인벤토리 생성
+      await conn.query(
+        'INSERT INTO inventory (user_id) VALUES (?)',
+        [userId]
+      );
 
-        // 사용자 생성
-        // return await User.create({
-        //     email,
-        //     password: hashedPassword,
-	    // nickname,
-        // });
-        const { user_id } = await User.create({ email, password: hashedPassword, nickname });
-        return user_id;
-    },
+      // 3. 사과 씨앗 지급
+      const [[appleType]] = await conn.query(
+        `SELECT item_type_id FROM item_type WHERE item_name = 'apple'`
+      );
+      if (!appleType) throw new Error('❌ 사과 아이템이 존재하지 않습니다.');
+
+      const [[inventoryRow]] = await conn.query(
+        `SELECT inventory_id FROM inventory WHERE user_id = ?`,
+        [userId]
+      );
+
+      await conn.query(
+        `INSERT INTO item (inventory_id, item_type_id, item_count, category)
+         VALUES (?, ?, 1, '씨앗')`,
+        [inventoryRow.inventory_id, appleType.item_type_id]
+      );
+
+      // (선택) 4. 초기 미션 부여
+      await conn.query(`
+        INSERT INTO mission_execution (user_id, mission_id, completed_or_not)
+        SELECT ?, mission_id, 0 FROM mission LIMIT 3
+      `, [userId]);
+
+      await conn.commit();
+      conn.release();
+
+      return userId;
+
+    } catch (err) {
+      await conn.rollback();
+      conn.release();
+      console.error('❌ 트랜잭션 실패:', err.message);
+      throw new Error('회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
+  },
+
 
     login: async (email, password) => {
         // Validate input
