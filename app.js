@@ -77,12 +77,6 @@ const adminRouter = require('./routes/admin');
 const inventoryRouter = require('./routes/inventory');
 const lastCompleteRouter = require('./routes/last-complete');
 
-app.use(session({
-  secret: 'your-dev-secret', // 진짜 배포 시엔 환경변수로
-  resave: false,
-  saveUninitialized: false
-}));
-
 
 app.use('/', authRouter);
 app.use('/dashboard', dashboardRouter);
@@ -132,7 +126,7 @@ app.listen(PORT, () => {
 });
 
 app.use((req, res, next) => {
-  console.log('🔐 req.user:', req.user);
+  // console.log('🔐 req.user:', req.user);
   console.log('🔐 req.session.user:', req.session.user);
   next();
 });

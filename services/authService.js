@@ -49,22 +49,22 @@ const userService = {
         [userId]
       );
 
-      // 3. 사과 씨앗 지급
-      const [[appleType]] = await conn.query(
-        `SELECT item_type_id FROM item_type WHERE item_name = 'apple'`
-      );
-      if (!appleType) throw new Error('❌ 사과 아이템이 존재하지 않습니다.');
+      // // 3. 사과 씨앗 지급
+      // const [[appleType]] = await conn.query(
+      //   `SELECT item_type_id FROM item_type WHERE item_name = 'apple'`
+      // );
+      // if (!appleType) throw new Error('❌ 사과 아이템이 존재하지 않습니다.');
 
-      const [[inventoryRow]] = await conn.query(
-        `SELECT inventory_id FROM inventory WHERE user_id = ?`,
-        [userId]
-      );
+      // const [[inventoryRow]] = await conn.query(
+      //   `SELECT inventory_id FROM inventory WHERE user_id = ?`,
+      //   [userId]
+      // );
 
-      await conn.query(
-        `INSERT INTO item (inventory_id, item_type_id, item_count, category)
-         VALUES (?, ?, 1, '씨앗')`,
-        [inventoryRow.inventory_id, appleType.item_type_id]
-      );
+      // await conn.query(
+      //   `INSERT INTO item (inventory_id, item_type_id, item_count, category)
+      //    VALUES (?, ?, 1, '씨앗')`,
+      //   [inventoryRow.inventory_id, appleType.item_type_id]
+      // );
 
       // (선택) 4. 초기 미션 부여
       await conn.query(`

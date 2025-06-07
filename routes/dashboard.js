@@ -237,7 +237,7 @@ console.log('🎯 등록 가능한 미션 목록:', missions)
   const randomFruit = fruits[Math.floor(Math.random() * fruits.length)];
 
   await promisePool.query(`
-    INSERT INTO planted_fruit (user_id, fruit_id, planted_at)
+    INSERT INTO planted_fruit (user_id, fruit_id, planted_date)
     VALUES (?, ?, NOW())
   `, [userId, randomFruit.fruit_id]);
 
@@ -256,6 +256,7 @@ console.log('🎯 등록 가능한 미션 목록:', missions)
     showLevelOptionModal
   });
 });
+
 exports.renderDashboard = async (req, res) => {
   const userId = req.session.user?.user_id || req.user?.user_id;
   const missions = await missionModel.getMissionsForUser(userId);
@@ -331,9 +332,9 @@ router.post('/use-fertilizer', async (req, res) => {
         SELECT item_type_id FROM item_type WHERE item_name = '비료'
       )
     `, [inventoryId]);
-    if (!fertilizerRow || fertilizerRow.item_count < 1) {
-      return res.status(400).send('비료가 없습니다.');
-    }
+    // if (!fertilizerRow || fertilizerRow.item_count < 1) {
+    //   return res.status(400).send('비료가 없습니다.');
+    // }
 
     // 3. 최근에 심은, 아직 수확되지 않은 나무 1개 가져오기
     const [[targetTree]] = await promisePool.query(`
@@ -456,26 +457,52 @@ router.post('/harvest/:growthStatusId', async (req, res) => {
 // });
 
 // ✅ GET/POST /dashboard/diary/:missionId
-router.get('/diary/:missionId',async (req, res) => {
-  const missionId = Number(req.params.missionId);
- console.log('🧩 missionId 전달됨:', missionId);
+// router.get('/diary/:missionId',async (req, res) => {
+//   const missionId = Number(req.params.missionId);
+//  console.log('🧩 missionId 전달됨:', missionId);
 
-  if (isNaN(missionId)) {
-  return res.status(400).send('올바르지 않은 미션 ID입니다.');
-}
+//   if (isNaN(missionId)) {
+//   return res.status(400).send('올바르지 않은 미션 ID입니다.');
+// }
 
-    const [[missionRow]] = await promisePool.query(`
-    SELECT description FROM mission WHERE mission_id = ?
-  `, [missionId]);
+//     const [[missionRow]] = await promisePool.query(`
+//     SELECT description FROM mission WHERE mission_id = ?
+//   `, [missionId]);
+
+//   if (!missionRow) {
+//     return res.status(404).send('미션을 찾을 수 없습니다.');
+//   }
+
+//  console.log('📦 missionRow:', missionRow);
+
+//   res.render('dashboard/diary', { missionId ,  mission: missionRow});
+// });
+
+router.get('/diary/:missionExecutionId', async (req, res) => {
+  const missionExecutionId = Number(req.params.missionExecutionId);
+  if (isNaN(missionExecutionId)) {
+    return res.status(400).send('올바르지 않은 미션 ID입니다.');
+  }
+
+  // mission_execution_id → mission_id 매핑
+  const [[missionRow]] = await promisePool.query(`
+    SELECT m.description, m.mission_id
+    FROM mission_execution me
+    JOIN mission m ON me.mission_id = m.mission_id
+    WHERE me.mission_execution_id = ?
+  `, [missionExecutionId]);
 
   if (!missionRow) {
     return res.status(404).send('미션을 찾을 수 없습니다.');
   }
 
- console.log('📦 missionRow:', missionRow);
-
-  res.render('dashboard/diary', { missionId ,  mission: missionRow});
+  res.render('dashboard/diary', {
+    missionId: missionRow.mission_id,
+    mission: missionRow,
+    missionExecutionId
+  });
 });
+
 
 router.post('/diary/:missionId', async (req, res) => {
   const userId = req.session.user?.user_id || req.user?.user_id;
