@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     options.forEach(option => {
       option.addEventListener('click', () => {
+
+        if (option.dataset.disabled === 'true') return;
+        
         const value = option.getAttribute('data-value');
         const label = option.textContent;
         hiddenInput.value = value;

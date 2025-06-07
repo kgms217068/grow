@@ -21,12 +21,16 @@ module.exports = {
       ORDER BY gm.registered_date DESC
     `),
 
-  getInventoryList: () =>
+  getInventoryList: (userId) =>
     promisePool.query(`
-      SELECT item_type_id, item_name
-      FROM item_type
-      WHERE item_name IN ('사과', '오렌지', '복숭아')
-    `),
+      SELECT i.item_type_id, it.item_name
+      FROM inventory inv
+      JOIN item i ON inv.inventory_id = i.inventory_id
+      JOIN item_type it ON i.item_type_id = it.item_type_id
+      WHERE inv.user_id = ?
+        AND i.item_count > 0
+        AND it.item_name IN ('apple', 'orange', 'peach') -- 일반 과일만 허용
+    `, [userId]),
 
   getInventoryIdByUserId: (conn, userId) =>
     conn.query(`SELECT inventory_id FROM inventory WHERE user_id = ?`, [userId]),

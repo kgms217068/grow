@@ -22,18 +22,15 @@ router.get('/certifications', async (req, res) => {
     `);
 
     const [approvedCerts] = await promisePool.query(`
-      SELECT 
-        c.certification_id, 
-        c.image_source, 
-        c.certification_date,
-        u.nickname,
-        m.description
-      FROM certification c
-      JOIN mission_execution me ON c.mission_execution_id = me.mission_execution_id
-      JOIN user u ON c.user_id = u.user_id
-      JOIN mission m ON me.mission_id = m.mission_id
-      WHERE c.checked = true
-      ORDER BY c.certification_date DESC
+      SELECT c.certification_id, u.nickname, m.description, c.certification_date, c.image_source
+FROM certification c
+JOIN mission_execution me ON c.mission_execution_id = me.mission_execution_id
+JOIN mission m ON me.mission_id = m.mission_id
+JOIN user u ON c.user_id = u.user_id
+WHERE c.checked = 1 AND c.confirmed_by_user = 1
+  AND c.certification_date >= DATE_SUB(NOW(), INTERVAL 1 DAY)
+ORDER BY c.certification_date DESC
+
     `);
 
     res.render('admin/certifications', { certs, approvedCerts });
