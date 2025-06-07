@@ -6,6 +6,8 @@ const { promisePool } = require('../db/db');
 const certModel = require('../models/certificationModel');
 const missionModel = require('../models/missionModel');
 const userModel = require('../models/userModel');
+const { createInitialInventory } = require('../models/inventoryModel');
+
 //추가: multer 관련
 const fs = require('fs');
 // ✅ 업로드 경로 상수
@@ -110,23 +112,21 @@ await promisePool.query(`
 `, [userId]);
 
 // 2. 사용자 인벤토리 ID 가져오기
-const [[inventoryRow]] = await promisePool.query(
-  'SELECT inventory_id FROM inventory WHERE user_id = ?',
-  [userId]
-);
-let inventoryId;
+await createInitialInventory(userId);
+
+// 이후 inventory_id가 필요한 경우는 별도로 가져옴
+// const [[{ inventory_id }]] = await promisePool.query(`
+//   SELECT inventory_id FROM inventory WHERE user_id = ?
+// `, [userId]);
+const [[inventoryRow]] = await promisePool.query(`
+  SELECT inventory_id FROM inventory WHERE user_id = ?
+`, [userId]);
+
 if (!inventoryRow) {
-  const [insertResult] = await promisePool.query(
-    'INSERT INTO inventory (user_id) VALUES (?)',
-    [userId]
-  );
-  inventoryId = insertResult.insertId;
-} else {
-  inventoryId = inventoryRow.inventory_id;
+  throw new Error(`❌ 인벤토리가 존재하지 않습니다: user_id=${userId}`);
 }
 
-
-//const inventoryId = inventoryRow.inventory_id;
+const inventoryId = inventoryRow.inventory_id;
 
     // 3. 비료 타입 ID 가져오기
     const [[fertilizerTypeRow]] = await promisePool.query(
@@ -143,7 +143,7 @@ if (!inventoryRow) {
     `, [fertilizerTypeId, inventoryId]);
 
     // 5. 모달 띄우기 위한 session 값 저장
-    req.session.prevConfirmedId = Number( mission_execution_id);
+    // req.session.prevConfirmedId = Number( mission_execution_id);
 
     res.redirect('/dashboard/mission');
   
@@ -153,26 +153,27 @@ if (!inventoryRow) {
 // ✅ GET /dashboard/mission
 router.get('/mission', async (req, res) => {
   const userId = req.session.user?.user_id || req.user?.user_id;
-
-  // ✅ 사용자 정보 조회 (레벨 포함)
+  // ✅ 사용자 정보 조회
   const [[userInfo]] = await promisePool.query(
     'SELECT nickname, level FROM user WHERE user_id = ?',
     [userId]
   );
   if (!userInfo) {
-  console.error('❌ 유저 정보 조회 실패: user_id =', userId);
-  return res.status(500).send('유저 정보를 불러올 수 없습니다.');
-}
- //const currentLevel = userInfo.level;
-const currentLevel = userInfo.level;
-  // ✅ 사용자 레벨에 해당하는 미션만 가져오기
+    console.error('❌ 유저 정보 조회 실패:', userId);
+    return res.status(500).send('유저 정보를 불러올 수 없습니다.');
+  }
+
+  const currentLevel = userInfo.level;
+
+  // ✅ 현재 레벨의 미션 가져오기
   const [missions] = await promisePool.query(
     'SELECT * FROM mission WHERE level = ? ORDER BY mission_id',
-    [currentLevel],
-    
+    [currentLevel]
   );
-console.log('🎯 등록 가능한 미션 목록:', missions)
-  // ✅ 인증 및 상태 조회
+
+
+
+  // ✅ 인증 상태 조회
   const [certifications] = await promisePool.query(`
     SELECT me.mission_id, c.checked, c.certification_date, c.confirmed_by_user, me.mission_execution_id
     FROM certification c
@@ -185,29 +186,87 @@ console.log('🎯 등록 가능한 미션 목록:', missions)
   let latestMissionExecutionId = null;
 
   certifications.forEach(c => {
-    const mid = c.mission_id;
-
-    certStatus[mid] = {
+    certStatus[c.mission_id] = {
       status: c.checked === 1 && c.confirmed_by_user === 1,
       date: c.certification_date,
       mission_execution_id: c.mission_execution_id,
       awaitingConfirm: c.checked === 1 && c.confirmed_by_user === 0
     };
 
-    if (c.confirmed_by_user === 1 && req.session.prevConfirmedId === c.mission_execution_id) {
-      showFertilizerModal = true;
-      latestMissionExecutionId = c.mission_execution_id;
-    }
+   if (
+  c.confirmed_by_user === 1 &&
+  req.session.prevConfirmedId === c.mission_execution_id &&
+  !req.session.fertilizerUsed // ✅ 비료 사용 여부 확인
+) {
+  showFertilizerModal = true;
+  latestMissionExecutionId = c.mission_execution_id;
+}
+
   });
 
   req.session.prevConfirmedId = null;
 
-  // 현재 단계의 미션 수 체크
-  const currentMissions = missions.filter(m => m.level === currentLevel);
-  const clearedMissions = currentMissions.filter(m => certStatus[m.mission_id]?.status);
-  const showLevelOptionModal = !showFertilizerModal && clearedMissions.length === 5;
-  // ✅ 과일 보상: 이미 보상되지 않았다면 처리
-  if (clearedMissions.length === 5 && !req.session.levelRewardGiven) {
+  // ✅ 인증 기준 완료 미션 수
+// ✅ 4. 단계 완료 여부 확인
+//const clearedMissions = currentMissions.filter(m => certStatus[m.mission_id]?.status);
+// let showLevelOptionModal = !showFertilizerModal && clearedMissions.length === 5;
+
+const currentMissions = missions.filter(m => m.level === currentLevel);
+const clearedMissions = currentMissions.filter(m => certStatus[m.mission_id]?.status);
+
+const [treeRow] = await promisePool.query(`
+  SELECT growth_rate FROM growth_status 
+  WHERE user_id = ? AND is_harvested = false
+  ORDER BY planted_at DESC
+  LIMIT 1
+`, [userId]);
+
+
+
+
+const hasFullyGrownTree = treeRow.length > 0 && treeRow[0].growth_rate >= 100;
+
+
+// ✅ 기존 조건과 통합
+let showLevelOptionModal = !showFertilizerModal && (
+  clearedMissions.length === 5 || hasFullyGrownTree
+);
+
+
+// ✅ 비료로 100% 수확했는지도 체크 (예외 처리)
+if (!showLevelOptionModal) {
+  const [latestTree] = await promisePool.query(`
+    SELECT is_harvested, growth_rate
+    FROM growth_status
+    WHERE user_id = ? 
+    ORDER BY planted_at DESC
+    LIMIT 1
+  `, [userId]);
+
+  if (latestTree.length && latestTree[0].is_harvested === 1 && latestTree[0].growth_rate === 100) {
+    showLevelOptionModal = true;
+  }
+}
+
+
+ // ✅ 성장률 기반 미션 완료 추정치
+  const [[growthRow]] = await promisePool.query(`
+    SELECT growth_rate
+    FROM growth_status
+    WHERE user_id = ? AND is_harvested = false
+    ORDER BY planted_at DESC
+    LIMIT 1
+  `, [userId]);
+
+  const growthRate = growthRow?.growth_rate || 0;
+  const inferredCompleted = Math.floor(growthRate / 20); // 예: 40% = 2개 완료 추정
+
+  // ✅ 실제 완료 개수 = 인증된 미션 vs 성장률 추정 중 최대값
+  const missionCompleted = Math.max(clearedMissions.length, inferredCompleted);
+  //const showLevelOptionModal = !showFertilizerModal && missionCompleted >= 5;
+
+  // ✅ 과일 지급 (1회만)
+  if (missionCompleted >= 5 && !req.session.levelRewardGiven) {
     const [[userRow]] = await promisePool.query(`
       SELECT u.level, i.inventory_id
       FROM user u
@@ -222,35 +281,26 @@ console.log('🎯 등록 가능한 미션 목록:', missions)
       WHERE me.user_id = ? AND m.level = ? AND me.completed_or_not = true
       ORDER BY completed_date ASC
     `, [userId, userRow.level]);
+
     if (executions.length >= 5) {
       const start = new Date(executions[0].completed_date);
       const end = new Date(executions[4].completed_date);
       const isUnderTenDays = (end - start) / (1000 * 60 * 60 * 24) <= 10;
-  
-     if (executions.length >= 5) {
-  const start = new Date(executions[0].completed_date);
-  const end = new Date(executions[4].completed_date);
-  const isUnderTenDays = (end - start) / (1000 * 60 * 60 * 24) <= 10;
 
-  // ✅ 과일 나무 지급 (랜덤으로 한 그루 심기)
- // ✅ fruit_name도 함께 조회
-const [fruits] = await promisePool.query(`SELECT fruit_id, fruit_name FROM fruit`);
-const randomFruit = fruits[Math.floor(Math.random() * fruits.length)];
+      const [fruits] = await promisePool.query(`SELECT fruit_id, fruit_name FROM fruit`);
+      const randomFruit = fruits[Math.floor(Math.random() * fruits.length)];
 
-const fruitId = randomFruit.fruit_id;
-const fruitName = randomFruit.fruit_name;
+      await promisePool.query(`
+        INSERT INTO planted_fruit (user_id, fruit_id, fruit_name)
+        VALUES (?, ?, ?)
+        ON DUPLICATE KEY UPDATE fruit_id = VALUES(fruit_id), fruit_name = VALUES(fruit_name)
+      `, [userId, randomFruit.fruit_id, randomFruit.fruit_name]);
 
-// ✅ fruit_name까지 포함해서 INSERT
-await promisePool.query(`
-  INSERT INTO planted_fruit (user_id, fruit_id, fruit_name)
-  VALUES (?, ?, ?)
-`, [userId, fruitId, fruitName]);
-
-    // ✅ 중복 지급 방지용 세션 플래그
-    req.session.levelRewardGiven = true;
+      req.session.levelRewardGiven = true;
+    }
   }
-}
-}
+
+  // ✅ 렌더링
   res.render('dashboard/mission', {
     missions,
     certStatus,
@@ -261,6 +311,7 @@ await promisePool.query(`
     showLevelOptionModal
   });
 });
+
 exports.renderDashboard = async (req, res) => {
   const userId = req.session.user?.user_id || req.user?.user_id;
   const missions = await missionModel.getMissionsForUser(userId);
@@ -442,23 +493,19 @@ router.post('/harvest/:growthStatusId', async (req, res) => {
       VALUES (?, ?, NOW())
     `, [userId, fruitId]);
 
+    // ✅ 4. fruit 테이블 등록 상태 업데이트
+    await promisePool.query(`
+      UPDATE fruit
+      SET registered = 1
+      WHERE fruit_id = ?
+    `, [fruitId]);
+
     res.redirect('/dashboard/collection');
   } catch (error) {
     console.error(error);
     res.status(500).send('수확 중 오류 발생');
   }
 });
-
-
-
-// ✅ GET /dashboard/completed (사용 안함 - 현재 모달로 대체)
-// router.get('/completed', (req, res) => {
-//   res.render('dashboard/completed', {
-//     nickname: userInfo.nickname,
-//   currentLevel: `${userInfo.level}단계`, // 🔥 실제 단계 출력
-//     missionId: req.query.missionId
-//   });
-// });
 
 // ✅ GET/POST /dashboard/diary/:missionId
 // router.get('/diary/:missionId',async (req, res) => {

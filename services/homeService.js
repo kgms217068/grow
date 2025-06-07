@@ -25,7 +25,6 @@ exports.getHomeData = async (userId) => {
     `, [userId, userId, currentLevel]);
 
     const missionTotal = missionStatusRows[0]?.total ?? 5;
-    const missionCompleted = Number(missionStatusRows[0]?.completed ?? 0);
 
     // 3. 실제 심은 과일 (growth_status 기준) 조회
     const [fruitRows] = await db.promise().query(
@@ -43,29 +42,52 @@ exports.getHomeData = async (userId) => {
     const growthRate = hasPlanted ? fruitRows[0].growth_rate : 0;
     const growthStatusId = hasPlanted ? fruitRows[0].growth_status_id : null;
 
+    // ✅ 성장률 기반으로 계산 (비료 포함된 미션 진행률)
+    const inferredCompleted = Math.floor(growthRate / 20); 
+    const missionCompleted = inferredCompleted;
+
     // 4. 이미지 경로 계산
     const treeImage = hasPlanted
       ? `/images/tree/${fruitName}_${Math.floor(growthRate / 20)}.png`
       : '/images/tree/default_0.png';
 
-    // 5. 자동 수확 처리
-    if (growthRate >= 100 && growthStatusId) {
-      // 수확 처리
-      await db.promise().query(`
-        UPDATE growth_status
-        SET is_harvested = true
-        WHERE growth_status_id = ? AND user_id = ?
-      `, [growthStatusId, userId]);
+    // 5. 자동 수확 처리0
+ if (growthRate >= 100 && growthStatusId) {
+  // 수확 처리
+  await db.promise().query(`
+    UPDATE growth_status
+    SET is_harvested = true
+    WHERE growth_status_id = ? AND user_id = ?
+  `, [growthStatusId, userId]);
 
+  // 도감 등록
+  await db.promise().query(`
+    INSERT IGNORE INTO collection (user_id, fruit_id, collected_at)
+    SELECT user_id, fruit_id, NOW()
+    FROM growth_status
+    WHERE growth_status_id = ? AND user_id = ?
+  `, [growthStatusId, userId]);
 
-      // 도감 등록
-      await db.promise().query(`
-        INSERT IGNORE INTO collection (user_id, fruit_id, collected_at)
-        SELECT user_id, fruit_id, NOW()
-        FROM growth_status
-        WHERE growth_status_id = ? AND user_id = ?
-      `, [growthStatusId, userId]);
-    }
+  // ✅ 인벤토리에 과일 추가
+  const [[itemTypeRow]] = await db.promise().query(`
+    SELECT item_type_id FROM item_type
+    WHERE item_name = ?
+  `, [fruitName]);
+
+  const [[inventoryRow]] = await db.promise().query(`
+    SELECT inventory_id FROM inventory
+    WHERE user_id = ?
+  `, [userId]);
+
+  if (itemTypeRow && inventoryRow) {
+    await db.promise().query(`
+      INSERT INTO item (inventory_id, item_type_id, item_count)
+      VALUES (?, ?, 1)
+      ON DUPLICATE KEY UPDATE item_count = item_count + 1
+    `, [inventoryRow.inventory_id, itemTypeRow.item_type_id]);
+  }
+}
+
 
     // 6. 진행률 계산
     const progressRate = missionTotal === 0 ? 0 : missionCompleted / missionTotal;

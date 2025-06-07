@@ -133,7 +133,7 @@
     </div>
 
     <div class="mission-status-box">
-      <div class="status-text">미션 <%= missionCompleted %> / <%= missionTotal %> 완료</div>
+      <div class="status-text">현재 진행 <%= missionCompleted %> / <%= missionTotal %> 완료</div>
       <button class="mission-button" 
         onclick="location.href='/dashboard/mission'"
         <%= !hasPlanted ? 'disabled style="background-color: #ccc; cursor: not-allowed;"' : '' %>>

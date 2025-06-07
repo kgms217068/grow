@@ -44,10 +44,10 @@ const userService = {
       const userId = userResult.insertId;
 
       // 2. 인벤토리 생성
-      await conn.query(
-        'INSERT INTO inventory (user_id) VALUES (?)',
-        [userId]
-      );
+      // await conn.query(
+      //   'INSERT INTO inventory (user_id) VALUES (?)',
+      //   [userId]
+      // );
 
       // // 3. 사과 씨앗 지급
       // const [[appleType]] = await conn.query(

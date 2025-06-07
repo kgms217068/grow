@@ -92,7 +92,7 @@ app.use('/scrap', scrapRouter);
 app.use('/last-complete', lastCompleteRouter);
 
 app.use((req, res, next) => {
-  console.log('[현재 로그인 유저]', req.user);
+  
   res.locals.user = req.user; // view에서도 접근 가능하도록
   next();
 });
