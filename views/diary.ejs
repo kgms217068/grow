@@ -81,13 +81,13 @@
     <p style="text-align:center; color:#999;">작성한 일기가 없습니다.</p>
   <% } else { %>
     <% diaries.forEach(d => { 
-         const isLong = d.content.length >= 70;
+      const isLong = d.content.length >= 70;
     %>
       <div class="diary-card">
     <div class="diary-date">
   <% if (d.diary_date) { 
-     const kstDate = new Date(new Date(d.diary_date).getTime() + 9 * 60 * 60 * 1000); 
-     const formattedDate = kstDate.toISOString().split('T')[0]; 
+    const kstDate = new Date(new Date(d.diary_date).getTime() + 9 * 60 * 60 * 1000); 
+    const formattedDate = kstDate.toISOString().split('T')[0]; 
 %>
   <%= formattedDate %>
 <% } else { %>

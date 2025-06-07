@@ -143,7 +143,7 @@ const inventoryId = inventoryRow.inventory_id;
     `, [fertilizerTypeId, inventoryId]);
 
     // 5. 모달 띄우기 위한 session 값 저장
-    // req.session.prevConfirmedId = Number( mission_execution_id);
+    req.session.prevConfirmedId = Number( mission_execution_id);
 
     res.redirect('/dashboard/mission');
   
@@ -317,6 +317,7 @@ exports.renderDashboard = async (req, res) => {
   const missions = await missionModel.getMissionsForUser(userId);
   res.render('dashboard', { missions });
 };
+
 router.post('/level-option', async (req, res) => {
   const userId = req.session.user?.user_id || req.user?.user_id;
   const { option } = req.body; // 'NEXT', 'RETRY', 'WAIT'
@@ -358,6 +359,8 @@ router.post('/level-option', async (req, res) => {
           DELETE FROM mission_execution WHERE mission_execution_id IN (?)
         `, [ids]);
       }
+
+      return res.redirect('/home');
     }
 
     res.redirect('/dashboard/mission');
