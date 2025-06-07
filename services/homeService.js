@@ -68,24 +68,40 @@ exports.getHomeData = async (userId) => {
     WHERE growth_status_id = ? AND user_id = ?
   `, [growthStatusId, userId]);
 
-  // ✅ 인벤토리에 과일 추가
-  const [[itemTypeRow]] = await db.promise().query(`
+ // ✅ 인벤토리에 과일 추가
+const [[itemTypeRow]] = await db.promise().query(`
+  SELECT item_type_id FROM item_type
+  WHERE item_name = ?
+`, [fruitName]);
+
+const [[inventoryRow]] = await db.promise().query(`
+  SELECT inventory_id FROM inventory
+  WHERE user_id = ?
+`, [userId]);
+
+if (itemTypeRow && inventoryRow) {
+  // 일반 과일 2개
+  await db.promise().query(`
+    INSERT INTO item (inventory_id, item_type_id, item_count)
+    VALUES (?, ?, 2)
+    ON DUPLICATE KEY UPDATE item_count = item_count + 2
+  `, [inventoryRow.inventory_id, itemTypeRow.item_type_id]);
+
+  // 황금 과일 1개
+  const [[goldItemTypeRow]] = await db.promise().query(`
     SELECT item_type_id FROM item_type
     WHERE item_name = ?
-  `, [fruitName]);
+  `, [`gold_${fruitName}`]);
 
-  const [[inventoryRow]] = await db.promise().query(`
-    SELECT inventory_id FROM inventory
-    WHERE user_id = ?
-  `, [userId]);
-
-  if (itemTypeRow && inventoryRow) {
+  if (goldItemTypeRow) {
     await db.promise().query(`
       INSERT INTO item (inventory_id, item_type_id, item_count)
       VALUES (?, ?, 1)
       ON DUPLICATE KEY UPDATE item_count = item_count + 1
-    `, [inventoryRow.inventory_id, itemTypeRow.item_type_id]);
+    `, [inventoryRow.inventory_id, goldItemTypeRow.item_type_id]);
   }
+
+}
 }
 
 
