@@ -143,7 +143,7 @@ const inventoryId = inventoryRow.inventory_id;
     `, [fertilizerTypeId, inventoryId]);
 
     // 5. 모달 띄우기 위한 session 값 저장
-    // req.session.prevConfirmedId = Number( mission_execution_id);
+    req.session.prevConfirmedId = Number( mission_execution_id);
 
     res.redirect('/dashboard/mission');
   
@@ -227,13 +227,24 @@ const [treeRow] = await promisePool.query(`
 const hasFullyGrownTree = treeRow.length > 0 && treeRow[0].growth_rate >= 100;
 
 
-// ✅ 기존 조건과 통합
+// 기존 모달 조건
 let showLevelOptionModal = !showFertilizerModal && (
   clearedMissions.length === 5 || hasFullyGrownTree
 );
 
+// ✅ 1. 이미 NEXT 옵션을 선택했는지 확인
+const [[prevOption]] = await promisePool.query(`
+  SELECT selected_option FROM level_option
+  WHERE user_id = ?
+  ORDER BY selected_date DESC
+  LIMIT 1
+`, [userId]);
 
-// ✅ 비료로 100% 수확했는지도 체크 (예외 처리)
+if (prevOption && prevOption.selected_option === 'NEXT') {
+  showLevelOptionModal = false;  // 이미 다음 단계 선택한 경우 모달 금지
+}
+
+// ✅ 2. 비료로 100% 수확했는지도 체크 (예외 처리)
 if (!showLevelOptionModal) {
   const [latestTree] = await promisePool.query(`
     SELECT is_harvested, growth_rate
@@ -243,8 +254,17 @@ if (!showLevelOptionModal) {
     LIMIT 1
   `, [userId]);
 
-  if (latestTree.length && latestTree[0].is_harvested === 1 && latestTree[0].growth_rate === 100) {
+  if (
+    latestTree.length &&
+    latestTree[0].is_harvested === 1 &&
+    latestTree[0].growth_rate === 100
+  ) {
     showLevelOptionModal = true;
+
+    // 단, NEXT를 선택한 적 있다면 다시 false
+    if (prevOption && prevOption.selected_option === 'NEXT') {
+      showLevelOptionModal = false;
+    }
   }
 }
 
@@ -341,24 +361,46 @@ router.post('/level-option', async (req, res) => {
 
       // ✅ 과일 삭제도 레벨업 시점에 함께 처리
       await promisePool.query(`DELETE FROM planted_fruit WHERE user_id = ?`, [userId]);
-    } else if (option === 'RETRY') {
-      const [executions] = await promisePool.query(`
-        SELECT mission_execution_id FROM mission_execution me
-        JOIN mission m ON me.mission_id = m.mission_id
-        WHERE me.user_id = ? AND m.level = (SELECT level FROM user WHERE user_id = ?)
-      `, [userId, userId]);
+    return res.redirect('/home');
+    
+    }  else if (option === 'RETRY') {
+  // 미션 데이터 삭제
+  const [executions] = await promisePool.query(`
+    SELECT mission_execution_id FROM mission_execution me
+    JOIN mission m ON me.mission_id = m.mission_id
+    WHERE me.user_id = ? AND m.level = (SELECT level FROM user WHERE user_id = ?)
+  `, [userId, userId]);
 
-      const ids = executions.map(e => e.mission_execution_id);
-      if (ids.length > 0) {
-        await promisePool.query(`
-          DELETE FROM certification WHERE mission_execution_id IN (?)
-        `, [ids]);
+  const ids = executions.map(e => e.mission_execution_id);
+  if (ids.length > 0) {
+    const placeholders = ids.map(() => '?').join(',');
+    await promisePool.query(`
+      DELETE FROM certification WHERE mission_execution_id IN (${placeholders})
+    `, ids);
 
-        await promisePool.query(`
-          DELETE FROM mission_execution WHERE mission_execution_id IN (?)
-        `, [ids]);
-      }
-    }
+    await promisePool.query(`
+      DELETE FROM mission_execution WHERE mission_execution_id IN (${placeholders})
+    `, ids);
+  }
+
+  // 과일 다시 지급
+  const [fruits] = await promisePool.query('SELECT fruit_id, fruit_name FROM fruit');
+  const randomFruit = fruits[Math.floor(Math.random() * fruits.length)];
+
+  await promisePool.query(`
+    INSERT INTO planted_fruit (user_id, fruit_id, fruit_name)
+    VALUES (?, ?, ?)
+    ON DUPLICATE KEY UPDATE fruit_id = VALUES(fruit_id), fruit_name = VALUES(fruit_name)
+  `, [userId, randomFruit.fruit_id, randomFruit.fruit_name]);
+
+  // 보상 플래그 초기화
+  req.session.levelRewardGiven = false;
+  req.session.prevConfirmedId = null;
+
+
+  return res.redirect('/home');
+}
+
 
     res.redirect('/dashboard/mission');
   } catch (err) {
