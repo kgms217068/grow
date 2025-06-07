@@ -25,7 +25,6 @@ exports.getHomeData = async (userId) => {
     `, [userId, userId, currentLevel]);
 
     const missionTotal = missionStatusRows[0]?.total ?? 5;
-    const missionCompleted = Number(missionStatusRows[0]?.completed ?? 0);
 
     // 3. 실제 심은 과일 (growth_status 기준) 조회
     const [fruitRows] = await db.promise().query(
@@ -42,6 +41,10 @@ exports.getHomeData = async (userId) => {
     const fruitName = hasPlanted ? fruitRows[0].fruit_name : 'default';
     const growthRate = hasPlanted ? fruitRows[0].growth_rate : 0;
     const growthStatusId = hasPlanted ? fruitRows[0].growth_status_id : null;
+
+    // ✅ 성장률 기반으로 계산 (비료 포함된 미션 진행률)
+    const inferredCompleted = Math.floor(growthRate / 20); 
+    const missionCompleted = inferredCompleted;
 
     // 4. 이미지 경로 계산
     const treeImage = hasPlanted

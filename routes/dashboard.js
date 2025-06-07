@@ -237,8 +237,8 @@ console.log('🎯 등록 가능한 미션 목록:', missions)
   const randomFruit = fruits[Math.floor(Math.random() * fruits.length)];
 
   await promisePool.query(`
-    INSERT INTO planted_fruit (user_id, fruit_id, planted_at)
-    VALUES (?, ?, NOW())
+    INSERT INTO planted_fruit (user_id, fruit_id)
+    VALUES (?, ?)
   `, [userId, randomFruit.fruit_id]);
 
     // ✅ 중복 지급 방지용 세션 플래그
@@ -436,6 +436,13 @@ router.post('/harvest/:growthStatusId', async (req, res) => {
       INSERT IGNORE INTO collection (user_id, fruit_id, collected_at)
       VALUES (?, ?, NOW())
     `, [userId, fruitId]);
+
+    // ✅ 4. fruit 테이블 등록 상태 업데이트
+    await promisePool.query(`
+      UPDATE fruit
+      SET registered = 1
+      WHERE fruit_id = ?
+    `, [fruitId]);
 
     res.redirect('/dashboard/collection');
   } catch (error) {
