@@ -1,25 +1,6 @@
 // const passport = require('../config/passport');
 // const authService = require('../services/authService');
 
-// exports.register = async (req, res) => {
-//   try {
-//     // 🔄 authService 내부에서 트랜잭션으로 user + inventory + 씨앗 지급 + 미션 부여까지 처리
-//     const userId = await authService.register(req.body);
-
-//     // ✅ 회원가입 성공 시
-//     res.status(201).render('registerSuccess', { userId });
-
-//   } catch (err) {
-//     console.error('❌ 회원가입 실패:', err.message);
-//     res.status(400).render('register', {
-//       title: '회원가입',
-//       error: [err.message],
-//       form: req.body
-//     });
-//   }
-// };
-
-
 
 // exports.login = (req, res, next) => {
 //   passport.authenticate('local', (err, user, info) => {

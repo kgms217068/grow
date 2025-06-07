@@ -301,6 +301,8 @@ console.log('슬롯 구성 테스트:', document.querySelectorAll('.item-slot').
   }
 }
 
+
+
 document.getElementById('itemGrid').addEventListener('click', (e) => {
   const slot = e.target.closest('.item-slot');
   if (!slot || slot.classList.contains('empty')) return;
@@ -354,25 +356,19 @@ console.log('🧪 item_count:', item.item_count);
 const plantForm = document.getElementById("plantForm");
 const fertilizerForm = document.getElementById("fertilizerForm");
 
-
 if (item.category === 'basic') {
   plantForm.style.display = "none";
   plantStatus.style.display = "none";
-  fertilizerForm.style.display = "block";
-} else if (item.category === '씨앗') {
   fertilizerForm.style.display = "none";
 
   if (!hasPlanted && item.item_count > 0) {
     plantForm.style.display = "block";
-    plantStatus.style.display = "none";
+  } else if (hasPlanted) {
+    fertilizerForm.style.display = "block";  // ✅ 비료만 보임
+    plantStatus.style.display = "none";      // ✅ 메시지 숨김
   } else {
-    plantForm.style.display = "none";
     plantStatus.style.display = "inline";
-    if (hasPlanted) {
-      plantStatus.textContent = "🌱 이미 씨앗을 심었습니다";
-    } else {
-      plantStatus.textContent = "❌ 씨앗 수량이 부족합니다";
-    }
+    plantStatus.textContent = "❌ 씨앗 수량이 부족합니다";
   }
 } else {
   plantForm.style.display = "none";
@@ -380,7 +376,6 @@ if (item.category === 'basic') {
   plantStatus.style.display = "none";
 }
 
-    
   // 상세정보 업데이트
  
   console.log('🪄 설명창 열림 시도!');

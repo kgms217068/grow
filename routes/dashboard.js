@@ -233,13 +233,18 @@ console.log('🎯 등록 가능한 미션 목록:', missions)
   const isUnderTenDays = (end - start) / (1000 * 60 * 60 * 24) <= 10;
 
   // ✅ 과일 나무 지급 (랜덤으로 한 그루 심기)
-  const [fruits] = await promisePool.query(`SELECT fruit_id FROM fruit`);
-  const randomFruit = fruits[Math.floor(Math.random() * fruits.length)];
+ // ✅ fruit_name도 함께 조회
+const [fruits] = await promisePool.query(`SELECT fruit_id, fruit_name FROM fruit`);
+const randomFruit = fruits[Math.floor(Math.random() * fruits.length)];
 
-  await promisePool.query(`
-    INSERT INTO planted_fruit (user_id, fruit_id, planted_date)
-    VALUES (?, ?, NOW())
-  `, [userId, randomFruit.fruit_id]);
+const fruitId = randomFruit.fruit_id;
+const fruitName = randomFruit.fruit_name;
+
+// ✅ fruit_name까지 포함해서 INSERT
+await promisePool.query(`
+  INSERT INTO planted_fruit (user_id, fruit_id, fruit_name)
+  VALUES (?, ?, ?)
+`, [userId, fruitId, fruitName]);
 
     // ✅ 중복 지급 방지용 세션 플래그
     req.session.levelRewardGiven = true;
@@ -256,7 +261,6 @@ console.log('🎯 등록 가능한 미션 목록:', missions)
     showLevelOptionModal
   });
 });
-
 exports.renderDashboard = async (req, res) => {
   const userId = req.session.user?.user_id || req.user?.user_id;
   const missions = await missionModel.getMissionsForUser(userId);
@@ -269,7 +273,7 @@ router.post('/level-option', async (req, res) => {
   try {
     // ✅ 레벨 옵션 선택할 때마다 보상 세션 초기화
     req.session.levelRewardGiven = false;
-    // 이전 옵션 삭제 (중복 방지)
+    // 이전 옵션 삭제 (중복 방지)f
     await promisePool.query(`
       DELETE FROM level_option WHERE user_id = ?
     `, [userId]);
@@ -332,9 +336,9 @@ router.post('/use-fertilizer', async (req, res) => {
         SELECT item_type_id FROM item_type WHERE item_name = '비료'
       )
     `, [inventoryId]);
-    // if (!fertilizerRow || fertilizerRow.item_count < 1) {
-    //   return res.status(400).send('비료가 없습니다.');
-    // }
+    if (!fertilizerRow || fertilizerRow.item_count < 1) {
+      return res.status(400).send('비료가 없습니다.');
+    }
 
     // 3. 최근에 심은, 아직 수확되지 않은 나무 1개 가져오기
     const [[targetTree]] = await promisePool.query(`
