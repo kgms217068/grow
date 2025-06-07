@@ -10,15 +10,22 @@
   
   <!-- 등록 폼 -->
   <form action="/market/register" method="POST" class="form">
-    <div class="custom-select-wrapper">
-      <div class="custom-select-trigger">등록할 과일종류를 선택하세요</div>
-      <div class="custom-options">
-        <% inventory.forEach(item => { %>
-          <span class="custom-option" data-value="<%= item.item_type_id %>"><%= item.item_name %></span>
-        <% }) %>
-      </div>
-      <input type="hidden" name="itemTypeId" id="selectedFruitType">
+<% if (inventory.length === 0) { %>
+  <div class="disabled-select-box">과일이 없습니다</div>
+  <input type="hidden" name="itemTypeId" id="selectedFruitType" value="">
+<% } else { %>
+  <div class="custom-select-wrapper">
+    <div class="custom-select-trigger">등록할 과일종류를 선택하세요</div>
+    <div class="custom-options">
+      <span class="custom-option" data-value="1">사과</span>
+      <span class="custom-option" data-value="2">오렌지</span>
+      <span class="custom-option" data-value="3">복숭아</span>
     </div>
+    <input type="hidden" name="itemTypeId" id="selectedFruitType">
+  </div>
+<% } %>
+
+
 
     <input type="number" name="quantity" placeholder="등록할 과일 수량을 입력해주세요" class="input" min="1" required>
     <button type="submit" class="register-btn">등록</button>
