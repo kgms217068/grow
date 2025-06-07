@@ -20,7 +20,7 @@ const User = {
         'INSERT INTO `user` (email, password, nickname) VALUES (?, ?, ?)',
         [email, password, nickname]
     );
-
+console.log('✅ 유저 insert 결과:', result);
     return { user_id: result.insertId, email, nickname };
     },
 

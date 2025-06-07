@@ -1,96 +1,129 @@
-<style>
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-  body {
-    background: #F4F4F4;
-    font-family: 'Inter', sans-serif;
-    display: flex;
-    justify-content: center;
-  }
-  .main-wrapper {
-    position: relative;
-    width: 402px;
-    height: 874px;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    overflow: hidden;
-  }
-  .header-text {
-    position: absolute;
-    top: 45px;
-    width: 100%;
-    text-align: center;
-    font-weight: 700;
-    font-size: 30px;
-    color: #000;
-  }
-  .level-text {
-    position: absolute;
-    top: 88px;
-    width: 100%;
-    text-align: center;
-    font-size: 20px;
-    color: #000;
-  }
-  .button-group {
-    position: absolute;
-    top: 125px;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-  }
-  .button-group button {
-    width: 131px;
-    height: 46px;
-    background: #FFFFFF;
-    border-radius: 10px;
-    border: 2px solid #000;
-    font-weight: 700;
-    font-size: 18px;
-    cursor: pointer;
-  }
-  .mission-status-box {
-    position: absolute;
-    top: 648px;
-    left: 42px;
-    width: 318px;
-    height: 109px;
-    background: #FFFFFF;
-    border: 1px solid #000000;
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-  .mission-status-box .status-text {
-    font-weight: 700;
-    font-size: 20px;
-    margin-bottom: 8px;
-  }
-  .mission-button {
-    width: 298px;
-    height: 42px;
-    background: #F5B600;
-    border-radius: 20px;
-    font-weight: 700;
-    font-size: 20px;
-    border: none;
-    cursor: pointer;
-  }
-</style>
-
-
-
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>정원</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: #F4F4F4;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      justify-content: center;
+    }
+    .main-wrapper {
+      position: relative;
+      width: 402px;
+      height: 874px;
+      background-image: url("<%=treeImage %>");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      overflow: hidden;
+    }
+    .header-text {
+      position: absolute;
+      top: 45px;
+      width: 100%;
+      text-align: center;
+      font-weight: 700;
+      font-size: 30px;
+      color: #000;
+    }
+    .level-text {
+      position: absolute;
+      top: 88px;
+      width: 100%;
+      text-align: center;
+      font-size: 20px;
+      color: #000;
+    }
+    .button-group {
+      position: absolute;
+      top: 125px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+    .button-group button {
+      width: 131px;
+      height: 46px;
+      background: #FFFFFF;
+      border-radius: 10px;
+      border: 2px solid #000;
+      font-weight: 700;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .mission-status-box {
+      position: absolute;
+      top: 648px;
+      left: 42px;
+      width: 318px;
+      height: 109px;
+      background: #FFFFFF;
+      border: 1px solid #000000;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .mission-status-box .status-text {
+      font-weight: 700;
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+    .mission-button {
+      width: 298px;
+      height: 42px;
+      background: #F5B600;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 20px;
+      border: none;
+      cursor: pointer;
+    }
+    /* 팝업 관련 */
+    .popup-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background-color: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+    .popup {
+      background-color: white;
+      padding: 25px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 500;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    .popup button {
+      margin-top: 12px;
+      padding: 8px 16px;
+      background-color: #F5B600;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <div class="main-wrapper" style="background-image: url('/images/tree/<%= fruitName %>_<%= missionCompleted %>.png');">
+  <div class="main-wrapper">
     <div class="header-text"><%= nickname %>님의 정원</div>
     <div class="level-text"><%= level %>단계</div>
 
@@ -100,14 +133,30 @@
     </div>
 
     <div class="mission-status-box">
-      <div class="status-text">미션 <%= missionTotal %> / 5 완료</div>
-      <button class="mission-button" onclick="location.href='/dashboard/mission'">오늘의 미션 하러 가기</button>
+      <div class="status-text">미션 <%= missionCompleted %> / <%= missionTotal %> 완료</div>
+      <button class="mission-button" 
+        onclick="location.href='/dashboard/mission'"
+        <%= !hasPlanted ? 'disabled style="background-color: #ccc; cursor: not-allowed;"' : '' %>>
+        오늘의 미션 하러 가기
+<%= treeImage %> 
+
+      </button>
     </div>
 
- 
-
-  <div class="mission-status-box">
-    <div class="status-text">미션 <%= missionCompleted %> / <%= missionTotal %> 완료</div>
-    <button class="mission-button" onclick="location.href='/dashboard/mission'">오늘의 미션 하러 가기</button>
   </div>
-</div>
+
+  <% if (!hasPlanted) { %>
+    <div class="popup-overlay">
+      <div class="popup">
+        🌱 씨앗을 먼저 심어주세요!<br><br>
+        나무가 자라려면 과일을 심는 것부터 시작해요.
+        <br><br>
+        <button onclick="location.href='/inventory'">🌰 씨앗 심으러 가기</button>
+      </div>
+    </div>
+  <% } %>
+
+
+
+</body>
+</html>

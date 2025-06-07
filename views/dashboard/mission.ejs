@@ -130,8 +130,11 @@
 <h3 style="text-align: center; margin-top: 40px;">완료 미션</h3>
 <% missions.filter(m => certStatus[m.mission_id]?.status === true).forEach(m => {
      const date = certStatus[m.mission_id]?.date;
-     const formattedDate = date ? new Date(date).toISOString().split('T')[0] : 'N/A';
+     const formattedDate = date
+       ? new Date(new Date(date).getTime() + 9 * 60 * 60 * 1000).toISOString().split('T')[0]
+       : 'N/A';
 %>
+
   <div class="mission-done-box">
     <p style="margin-left: 20px;"><%= m.description %></p>
     <p class="status-btn done-btn">완료일자<br><%= formattedDate %></p>

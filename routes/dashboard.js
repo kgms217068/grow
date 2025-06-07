@@ -6,7 +6,15 @@ const { promisePool } = require('../db/db');
 const certModel = require('../models/certificationModel');
 const missionModel = require('../models/missionModel');
 const userModel = require('../models/userModel');
+//추가: multer 관련
+const fs = require('fs');
+// ✅ 업로드 경로 상수
+const uploadPath = path.join(__dirname, '../public/uploads');
 
+// ✅ uploads 폴더가 없으면 생성
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
+}
 
 // 파일 업로드 설정
 const storage = multer.diskStorage({
@@ -92,16 +100,33 @@ await promisePool.query(`
   WHERE mission_execution_id = ?
 `, [mission_execution_id]);
 
+// ✅ 추가: growth_status 테이블에서 성장률도 올리기 (예: +20)
+await promisePool.query(`
+  UPDATE growth_status
+  SET growth_rate = LEAST(growth_rate + 20, 100)
+  WHERE user_id = ? AND is_harvested = false
+  ORDER BY planted_at DESC
+  LIMIT 1
+`, [userId]);
+
 // 2. 사용자 인벤토리 ID 가져오기
 const [[inventoryRow]] = await promisePool.query(
   'SELECT inventory_id FROM inventory WHERE user_id = ?',
   [userId]
 );
+let inventoryId;
+if (!inventoryRow) {
+  const [insertResult] = await promisePool.query(
+    'INSERT INTO inventory (user_id) VALUES (?)',
+    [userId]
+  );
+  inventoryId = insertResult.insertId;
+} else {
+  inventoryId = inventoryRow.inventory_id;
+}
 
 
-const inventoryId = inventoryRow.inventory_id;
-
-    
+//const inventoryId = inventoryRow.inventory_id;
 
     // 3. 비료 타입 ID 가져오기
     const [[fertilizerTypeRow]] = await promisePool.query(
@@ -112,10 +137,10 @@ const inventoryId = inventoryRow.inventory_id;
 
     // 4. 비료 1개 지급 (중복이면 수량 증가)
     await promisePool.query(`
-      INSERT INTO item (item_type_id, inventory_id, item_id, item_count)
-      VALUES (?, ?, ?, 1)
+      INSERT INTO item (item_type_id, inventory_id, item_count)
+      VALUES (?, ?, 1)
       ON DUPLICATE KEY UPDATE item_count = item_count + 1
-    `, [fertilizerTypeId, inventoryId, fertilizerTypeId]);
+    `, [fertilizerTypeId, inventoryId]);
 
     // 5. 모달 띄우기 위한 session 값 저장
     req.session.prevConfirmedId = Number( mission_execution_id);
@@ -202,27 +227,24 @@ console.log('🎯 등록 가능한 미션 목록:', missions)
       const end = new Date(executions[4].completed_date);
       const isUnderTenDays = (end - start) / (1000 * 60 * 60 * 24) <= 10;
   
-      const 지급 = async (itemName, amount) => {
-        await promisePool.query(`
-          INSERT INTO item (inventory_id, item_type_id, item_count)
-          SELECT ?, item_type_id, ?
-          FROM item_type
-          WHERE item_name = ?
-          ON DUPLICATE KEY UPDATE item_count = item_count + VALUES(item_count)
-        `, [userRow.inventory_id, amount, itemName]);
-    };
+     if (executions.length >= 5) {
+  const start = new Date(executions[0].completed_date);
+  const end = new Date(executions[4].completed_date);
+  const isUnderTenDays = (end - start) / (1000 * 60 * 60 * 24) <= 10;
 
-    if (isUnderTenDays) {
-    //일단 테스트 용으로 사과로 지정해 놓음 추후에 변경
-      await 지급('황금과일', 1);
-      await 지급('사과', 2);
-    } else {
-      await 지급('사과', 3);
-    } 
+  // ✅ 과일 나무 지급 (랜덤으로 한 그루 심기)
+  const [fruits] = await promisePool.query(`SELECT fruit_id FROM fruit`);
+  const randomFruit = fruits[Math.floor(Math.random() * fruits.length)];
+
+  await promisePool.query(`
+    INSERT INTO planted_fruit (user_id, fruit_id, planted_at)
+    VALUES (?, ?, NOW())
+  `, [userId, randomFruit.fruit_id]);
 
     // ✅ 중복 지급 방지용 세션 플래그
     req.session.levelRewardGiven = true;
- }
+  }
+}
 }
   res.render('dashboard/mission', {
     missions,
@@ -260,6 +282,9 @@ router.post('/level-option', async (req, res) => {
     // 즉시 처리
     if (option === 'NEXT') {
       await promisePool.query(`UPDATE user SET level = level + 1 WHERE user_id = ?`, [userId]);
+
+      // ✅ 과일 삭제도 레벨업 시점에 함께 처리
+      await promisePool.query(`DELETE FROM planted_fruit WHERE user_id = ?`, [userId]);
     } else if (option === 'RETRY') {
       const [executions] = await promisePool.query(`
         SELECT mission_execution_id FROM mission_execution me
@@ -287,14 +312,148 @@ router.post('/level-option', async (req, res) => {
 });
 
 
-// ✅ GET /dashboard/completed (사용 안함 - 현재 모달로 대체)
-router.get('/completed', (req, res) => {
-  res.render('dashboard/completed', {
-    nickname: userInfo.nickname,
-  currentLevel: `${userInfo.level}단계`, // 🔥 실제 단계 출력
-    missionId: req.query.missionId
-  });
+
+router.post('/use-fertilizer', async (req, res) => {
+  const userId = req.session.user?.user_id || req.user?.user_id;
+
+  try {
+    // 1. 유저 인벤토리 ID 확인
+    const [[inventoryRow]] = await promisePool.query(`
+      SELECT inventory_id FROM inventory WHERE user_id = ?
+    `, [userId]);
+    if (!inventoryRow) return res.status(400).send('인벤토리가 없습니다.');
+    const inventoryId = inventoryRow.inventory_id;
+
+    // 2. 비료 존재 확인
+    const [[fertilizerRow]] = await promisePool.query(`
+      SELECT item_id, item_count FROM item
+      WHERE inventory_id = ? AND item_type_id = (
+        SELECT item_type_id FROM item_type WHERE item_name = '비료'
+      )
+    `, [inventoryId]);
+    if (!fertilizerRow || fertilizerRow.item_count < 1) {
+      return res.status(400).send('비료가 없습니다.');
+    }
+
+    // 3. 최근에 심은, 아직 수확되지 않은 나무 1개 가져오기
+    const [[targetTree]] = await promisePool.query(`
+      SELECT growth_status_id FROM growth_status
+      WHERE user_id = ? AND is_harvested = false
+      ORDER BY planted_at DESC
+      LIMIT 1
+    `, [userId]);
+
+    if (!targetTree) {
+      return res.status(400).send('성장 중인 나무가 없습니다.');
+    }
+
+    const growthStatusId = targetTree.growth_status_id;
+
+    // 4. 비료 차감
+    await promisePool.query(`
+      UPDATE item SET item_count = item_count - 1
+      WHERE item_id = ?
+    `, [fertilizerRow.item_id]);
+
+   // 🌱 1. 비료 사용 → 성장률 증가
+await promisePool.query(`
+  UPDATE growth_status
+  SET growth_rate = LEAST(growth_rate + 20, 100)
+  WHERE growth_status_id = ? AND user_id = ? AND is_harvested = false
+`, [growthStatusId, userId]);
+
+// ✅ 2. 미션 완료 기록 추가
+// 현재 레벨 가져오기
+const [[userRow]] = await promisePool.query(
+  `SELECT level FROM user WHERE user_id = ?`,
+  [userId]
+);
+
+const currentLevel = userRow.level;
+
+// 완료되지 않은 미션 중 하나 찾기
+const [[availableMission]] = await promisePool.query(`
+  SELECT m.mission_id
+  FROM mission m
+  LEFT JOIN mission_execution me 
+    ON m.mission_id = me.mission_id AND me.user_id = ?
+  WHERE m.level = ? AND (me.completed_or_not IS NULL OR me.completed_or_not = 0)
+  LIMIT 1
+`, [userId, currentLevel]);
+
+if (availableMission) {
+  await promisePool.query(`
+    INSERT INTO mission_execution (mission_id, user_id, completed_or_not, completed_date)
+    VALUES (?, ?, 1, NOW())
+  `, [availableMission.mission_id, userId]);
+}
+
+    res.redirect('/home');
+  } catch (error) {
+    console.error('🔥 비료 사용 중 오류:', error);
+    res.status(500).send('비료 사용 중 오류 발생');
+  }
 });
+
+
+
+router.post('/harvest/:growthStatusId', async (req, res) => {
+  const userId = req.session.user?.user_id || req.user?.user_id;
+  const growthStatusId = parseInt(req.params.growthStatusId, 10);
+
+  
+  try {
+    // 1. 수확 조건 확인
+    const [[tree]] = await promisePool.query(`
+      SELECT fruit_id, is_harvested, growth_rate
+      FROM growth_status
+      WHERE growth_status_id = ? AND user_id = ?
+    `, [growthStatusId, userId]);
+
+    if (!tree) {
+      return res.status(400).send('존재하지 않는 나무입니다.');
+    }
+
+    if (tree.is_harvested) {
+      return res.status(400).send('이미 수확한 나무입니다.');
+    }
+
+    if (tree.growth_rate < 100) {
+      return res.status(400).send('아직 수확할 수 없습니다.');
+    }
+
+    const fruitId = tree.fruit_id;
+
+    // 2. 수확 처리
+    await promisePool.query(`
+      UPDATE growth_status
+      SET is_harvested = true
+      WHERE growth_status_id = ?
+    `, [growthStatusId]);
+
+    // 3. 도감에 등록
+    await promisePool.query(`
+      INSERT IGNORE INTO collection (user_id, fruit_id, collected_at)
+      VALUES (?, ?, NOW())
+    `, [userId, fruitId]);
+
+    res.redirect('/dashboard/collection');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('수확 중 오류 발생');
+  }
+});
+
+
+
+// ✅ GET /dashboard/completed (사용 안함 - 현재 모달로 대체)
+// router.get('/completed', (req, res) => {
+//   res.render('dashboard/completed', {
+//     nickname: userInfo.nickname,
+//   currentLevel: `${userInfo.level}단계`, // 🔥 실제 단계 출력
+//     missionId: req.query.missionId
+//   });
+// });
 
 // ✅ GET/POST /dashboard/diary/:missionId
 router.get('/diary/:missionId', (req, res) => {
@@ -315,7 +474,7 @@ router.post('/diary/:missionId', async (req, res) => {
     emotions: Array.isArray(emotions) ? emotions : [emotions]
   });
 
-  res.redirect('/dashboard');
+  res.redirect('/dashboard/mission');
 });
 
 module.exports = router;

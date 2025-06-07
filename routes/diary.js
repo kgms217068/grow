@@ -20,18 +20,28 @@ router.post('/:missionExecutionId', async (req, res) => {
     const missionExecutionId = req.params.missionExecutionId;
     const { title, content, emotions } = req.body;
 
+    const emotionArray = Array.isArray(emotions) ? emotions : [emotions];
+
     await certModel.saveDiary({
       mission_execution_id: missionExecutionId,
       title,
       content,
-      emotions: Array.isArray(emotions) ? emotions : [emotions]
+      emotions: emotionArray
     });
 
-    res.redirect('/dashboard');
+    // ✅ 각 감정을 개별적으로 저장
+    for (const emotion of emotionArray) {
+      await certModel.saveEmotionTag(missionExecutionId, emotion);  // 감정 태그 저장 함수 (DB에 INSERT)
+    }
+
+ console.log('emotions:', emotions);
+   res.redirect('/dashboard/mission');
+
   } catch (err) {
     console.error(err);
     res.status(500).render('error', { message: '일기 저장 실패', error: err });
   }
 });
+
 
 module.exports = router;
