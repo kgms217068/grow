@@ -1,6 +1,13 @@
-<form action="/dashboard/diary/<%= missionId %>" method="POST" style="padding: 20px; max-width: 400px; margin: auto;">
+<form action="/dashboard/diary/<%= missionExecutionId %>" method="POST" style="padding: 20px; max-width: 400px; margin: auto;">
   <h3>오늘의 미션</h3>
-  <button disabled style="width: 100%; margin-bottom: 10px;">미션 내용</button>
+  <input
+  name="missionText"
+  
+  value="<%= mission ? mission.description : '' %>"
+  readonly
+  style="width: 100%; padding: 10px; background: hsl(122, 53%, 76%);
+  border: 0;border-radius: 10px;"
+/>
 
   <h3>오늘의 일기</h3>
   <input name="title" placeholder="제목" required style="width: 100%; padding: 8px;" />

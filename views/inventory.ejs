@@ -181,7 +181,6 @@
   <% items.slice(0, 20).forEach((item, index) => { %>
     <div class="item-slot" 
          data-type="<%= item.category %>" 
-         onclick="selectItem(<%= item.item_id %>)" 
          data-idx="<%= index %>">
       <img style="max-width: 80px; max-height: 80px;" 
            src="/img/<%= item.image_path %>" 
@@ -251,6 +250,9 @@
  const allItems = <%- JSON.stringify(items) %>;
 
 function filterItems(category) {
+   document.querySelectorAll('.item-slot.selected').forEach(el => {
+    el.classList.remove('selected');
+  });
  // ✅ 전역 변수로 선언
   currentVisibleItems = [];
 currentCategory = category;
@@ -282,16 +284,35 @@ let filteredItems = allItems.filter(item =>
           <div class="item-count">${item.item_count}</div>
         </div>
       `;
+      slot.dataset.itemId = item.item_id;
     } else {
       slot.innerHTML = '';
+         slot.removeAttribute('data-item-id');
     }
+    
   }
 // ✅ "기본" 탭일 때 씨앗도 포함되도록 카테고리 변환
 
+console.log('슬롯 구성 테스트:', document.querySelectorAll('.item-slot').length);
 
-  document.getElementById('itemInfo').style.display = 'none';
+ const itemInfo = document.getElementById('itemInfo');
+  if (itemInfo) {
+    itemInfo.style.display = 'none';
+  }
 }
 
+
+
+document.getElementById('itemGrid').addEventListener('click', (e) => {
+  const slot = e.target.closest('.item-slot');
+  if (!slot || slot.classList.contains('empty')) return;
+
+  const itemId = slot.dataset.itemId;
+  if (!itemId) return;
+
+  console.log('🖱 클릭 발생! itemId:', itemId);
+  selectItem(Number(itemId));
+});
 
 
  function selectItem(itemId) {
@@ -309,13 +330,8 @@ console.log('🔎 찾은 아이템:', selectedItem);
 
 console.log('🧪 item_count:', item.item_count);
 // 클릭 이벤트 위임
-document.getElementById('itemGrid').addEventListener('click', function (e) {
-  const target = e.target.closest('.item-img');
-  if (target) {
-    const id = Number(target.dataset.id);
-    selectItem(id);
-  }
-});
+
+
 
   // 선택된 슬롯 찾아서 표시
   const slots = document.querySelectorAll('.item-slot');
@@ -340,25 +356,19 @@ document.getElementById('itemGrid').addEventListener('click', function (e) {
 const plantForm = document.getElementById("plantForm");
 const fertilizerForm = document.getElementById("fertilizerForm");
 
-
 if (item.category === 'basic') {
   plantForm.style.display = "none";
   plantStatus.style.display = "none";
-  fertilizerForm.style.display = "block";
-} else if (item.category === '씨앗') {
   fertilizerForm.style.display = "none";
 
   if (!hasPlanted && item.item_count > 0) {
     plantForm.style.display = "block";
-    plantStatus.style.display = "none";
+  } else if (hasPlanted) {
+    fertilizerForm.style.display = "block";  // ✅ 비료만 보임
+    plantStatus.style.display = "none";      // ✅ 메시지 숨김
   } else {
-    plantForm.style.display = "none";
     plantStatus.style.display = "inline";
-    if (hasPlanted) {
-      plantStatus.textContent = "🌱 이미 씨앗을 심었습니다";
-    } else {
-      plantStatus.textContent = "❌ 씨앗 수량이 부족합니다";
-    }
+    plantStatus.textContent = "❌ 씨앗 수량이 부족합니다";
   }
 } else {
   plantForm.style.display = "none";
@@ -366,7 +376,6 @@ if (item.category === 'basic') {
   plantStatus.style.display = "none";
 }
 
-    
   // 상세정보 업데이트
  
   console.log('🪄 설명창 열림 시도!');

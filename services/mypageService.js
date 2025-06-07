@@ -15,38 +15,44 @@ exports.getMyPageData = (userId, callback) => {
     const user = userResults[0];
     const currentLevel = user.level;
 
-    // 2. 현재 단계의 미션 수행 현황 (certification 기준)
-    const missionStatusSql = `
-    SELECT 
-      COUNT(DISTINCT m.mission_id) AS total,
-      COUNT(DISTINCT c.certification_id) AS completed
-    FROM mission m
-    LEFT JOIN mission_execution me 
-      ON m.mission_id = me.mission_id AND me.user_id = ?
-    LEFT JOIN certification c 
-      ON me.mission_execution_id = c.mission_execution_id 
-        AND c.user_id = ? 
-        AND c.checked = 1 
-        AND c.confirmed_by_user = 1
-    WHERE m.level = ?
-  `;
+        // 2. 현재 단계의 미션 개수만 먼저 조회
+    const missionCountSql = `
+      SELECT COUNT(DISTINCT mission_id) AS total
+      FROM mission
+      WHERE level = ?
+    `;
 
-    db.query(missionStatusSql, [userId, userId, currentLevel], (err2, statusResults) => {
+    db.query(missionCountSql, [currentLevel], (err2, totalResults) => {
       if (err2) return callback(err2);
 
-      const completedCount = statusResults[0]?.completed ?? 0;
-      const totalCount = statusResults[0]?.total ?? 5;
+      const totalCount = totalResults[0]?.total ?? 5;
 
-      updateAndGetBadgeType(userId, (err3, badgeType) => {
+      // ✅ growth_status에서 성장률 가져와서 미션 수행 개수 추론
+      const growthSql = `
+        SELECT growth_rate
+        FROM growth_status
+        WHERE user_id = ? AND is_harvested = false
+        ORDER BY planted_at DESC
+        LIMIT 1
+      `;
+
+      db.query(growthSql, [userId], (err3, growthResults) => {
         if (err3) return callback(err3);
 
-        callback(null, {
-          userId: user.id,
-          nickname: user.nickname,
-          email: user.email,
-          level: currentLevel,
-          missionStatus: { completed: completedCount, total: totalCount },
-          badgeType
+        const growthRate = growthResults[0]?.growth_rate ?? 0;
+        const completedCount = Math.floor(growthRate / 20);
+
+        updateAndGetBadgeType(userId, (err4, badgeType) => {
+          if (err4) return callback(err4);
+
+          callback(null, {
+            userId: user.id,
+            nickname: user.nickname,
+            email: user.email,
+            level: currentLevel,
+            missionStatus: { completed: completedCount, total: totalCount },
+            badgeType
+          });
         });
       });
     });

@@ -5,20 +5,17 @@ exports.getUserCollection = (userId, category, page, limit, callback) => {
 
   // 전체 과일 개수 구하는 쿼리
   let countSql = `
-    SELECT COUNT(*) AS total
-    FROM fruit f
-    JOIN growth_status gs ON f.growth_status_id = gs.growth_status_id
-    JOIN collection c ON f.collection_id = c.collection_id
-    WHERE c.user_id = ?
-      AND f.harvested_date IS NOT NULL
-      AND gs.growth_rate = 100
-      AND f.registered = 1
-  `;
-  const countParams = [userId];
-  if (category) {
-    countSql += ' AND f.category = ?';
-    countParams.push(category);
-  }
+      SELECT COUNT(*) AS total
+      FROM fruit f
+      JOIN collection c ON f.fruit_id = c.fruit_id
+      WHERE c.user_id = ?
+    `;
+    const countParams = [userId];
+    if (category) {
+      countSql += ' AND f.category = ?';
+      countParams.push(category);
+    }
+
 
   db.query(countSql, countParams, (countErr, countResult) => {
     if (countErr) return callback(countErr);
@@ -28,15 +25,12 @@ exports.getUserCollection = (userId, category, page, limit, callback) => {
 
     // 실제 과일 조회 쿼리
     let sql = `
-      SELECT f.fruit_name, f.category, f.harvested_date
-      FROM fruit f
-      JOIN growth_status gs ON f.growth_status_id = gs.growth_status_id
-      JOIN collection c ON f.collection_id = c.collection_id
-      WHERE c.user_id = ?
-        AND f.harvested_date IS NOT NULL
-        AND gs.growth_rate = 100
-        AND f.registered = 1
-    `;
+        SELECT f.fruit_name, f.category, NOW() as harvested_date
+        FROM fruit f
+        JOIN collection c ON f.fruit_id = c.fruit_id
+        WHERE c.user_id = ?
+      `;
+
     const params = [userId];
     if (category) {
       sql += ' AND f.category = ?';

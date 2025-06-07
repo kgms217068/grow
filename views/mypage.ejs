@@ -187,8 +187,8 @@
     </div>
 
     <div class="mission-section">
-      <p class="mission-title">미션 수행 현황</p>
-      <p class="mission-progress-text" id="mission-progress">미션 0 / 0개 완료</p>
+      <p class="mission-title">현재 진행 현황</p>
+      <p class="mission-progress-text" id="mission-progress">현재 0 / 0개 완료</p>
       <div class="progress-bar">
         <div class="progress-bar-fill" id="progress-bar"></div>
       </div>
@@ -225,7 +225,7 @@
       document.getElementById('nickname').innerText = data.nickname + ' 님';
       document.getElementById('level').innerText = `${data.level}단계`;
       
-      document.getElementById('mission-progress').innerText = `미션 ${data.missionStatus.completed} / ${data.missionStatus.total}개 완료`;
+      document.getElementById('mission-progress').innerText = `현재 진행 ${data.missionStatus.completed} / ${data.missionStatus.total}개 완료`;
       
       const percent = (data.missionStatus.completed / data.missionStatus.total) * 100;
       document.getElementById('progress-bar').style.width = percent + '%';
