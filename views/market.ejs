@@ -14,8 +14,12 @@
       <div class="custom-select-trigger">등록할 과일종류를 선택하세요</div>
       <div class="custom-options">
         <% inventory.forEach(item => { %>
-          <span class="custom-option" data-value="<%= item.item_type_id %>"><%= item.item_name %></span>
-        <% }) %>
+  <% const name = item.item_name === 'apple' ? '사과' :
+                  item.item_name === 'orange' ? '오렌지' :
+                  item.item_name === 'peach' ? '복숭아' :
+                  item.item_name; %>
+  <span class="custom-option" data-value="<%= item.item_type_id %>"><%= name %></span>
+<% }) %>
       </div>
       <input type="hidden" name="itemTypeId" id="selectedFruitType">
     </div>
@@ -23,7 +27,8 @@
     <input type="number" name="quantity" placeholder="등록할 과일 수량을 입력해주세요" class="input" min="1" required>
     <button type="submit" class="register-btn">등록</button>
     <div class="notice">
-      등록 후 30일이 지나면 과일이 자동으로 삭제됩니다<br>
+      등록 후 30일이 지나면 과일이 자동으로 삭제되며,<br>
+      황금 과일은 교환이 불가능합니다<br>
       <% if (typeof remainingExchanges !== 'undefined') { %>
         오늘의 남은 교환 횟수는 <strong><%= remainingExchanges %></strong>번입니다
       <% } %>

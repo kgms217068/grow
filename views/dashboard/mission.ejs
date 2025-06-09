@@ -119,7 +119,8 @@
       <button class="status-btn waiting-btn font" disabled>확인 중</button>
     <% } else { %>
       <!-- ✅ 최초 인증 버튼 -->
-      <form action="/dashboard?missionId=<%= m.mission_id %>" method="get" style="margin: 0;">
+<form method="get" action="/dashboard" style="margin: 0;">
+        <input type="hidden" name="missionId" value="<%= m.mission_id %>">
         <button class="status-btn cert-btn font">인증</button>
       </form>
     <% } %>

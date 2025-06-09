@@ -94,7 +94,7 @@ exports.getInventoryByUser = async (userId) => {
       i.item_id,
       i.item_count,
       it.item_name,
-      it.category,
+      i.category,
       img.image_path,
       img.description
     FROM item i

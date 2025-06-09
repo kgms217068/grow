@@ -349,10 +349,6 @@ console.log('🧪 item_count:', item.item_count);
     const plantStatus = document.getElementById("plantStatus");
 
 
-    console.log("🌱 심기 요청 데이터:", {
-  item_id: document.getElementById("plantItemId").value,
-  fruit_name: document.getElementById("plantFruitName").value
-});
 const plantForm = document.getElementById("plantForm");
 const fertilizerForm = document.getElementById("fertilizerForm");
 
@@ -364,17 +360,22 @@ if (item.category === 'basic') {
   if (!hasPlanted && item.item_count > 0) {
     plantForm.style.display = "block";
   } else if (hasPlanted) {
-    fertilizerForm.style.display = "block";  // ✅ 비료만 보임
-    plantStatus.style.display = "none";      // ✅ 메시지 숨김
+    fertilizerForm.style.display = "block";
+    plantStatus.style.display = "none";
   } else {
     plantStatus.style.display = "inline";
     plantStatus.textContent = "❌ 씨앗 수량이 부족합니다";
   }
+
+} else if (item.category === 'gold') {
+  // ✅ 황금 과일용 버튼 처리
+  fertilizerForm.style.display = "block"; // ← 너희가 설정한 황금 과일용 UI
 } else {
   plantForm.style.display = "none";
   fertilizerForm.style.display = "none";
   plantStatus.style.display = "none";
 }
+
 
   // 상세정보 업데이트
  

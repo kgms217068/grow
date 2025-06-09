@@ -44,6 +44,23 @@ const user = await userModel.getUserById(userId); // ✅ 유저 정보 가져오
   const nextMission = allMissions.find(m => !completedIds.includes(m.mission_id));
   const result = certifications.find(c => c.mission_id === nextMission?.mission_id);
 
+const missionId = req.query.missionId;
+
+  let mission = null;
+
+  if (missionId) {
+    const [[selected]] = await promisePool.query(`
+      SELECT * FROM mission WHERE mission_id = ?
+    `, [missionId]);
+    mission = selected || null;
+  } else {
+    // 기존 방식대로 nextMission 사용
+    mission = nextMission || null;
+  }
+
+
+
+
   res.render('dashboard/index', {
     mission: nextMission || null,
     result: result || null,
@@ -209,7 +226,6 @@ router.get('/mission', async (req, res) => {
   // ✅ 인증 기준 완료 미션 수
 // ✅ 4. 단계 완료 여부 확인
 //const clearedMissions = currentMissions.filter(m => certStatus[m.mission_id]?.status);
-// let showLevelOptionModal = !showFertilizerModal && clearedMissions.length === 5;
 
 const currentMissions = missions.filter(m => m.level === currentLevel);
 const clearedMissions = currentMissions.filter(m => certStatus[m.mission_id]?.status);
@@ -467,8 +483,8 @@ const [[userRow]] = await promisePool.query(
   [userId]
 );
 
-const currentLevel = userRow.level;
-
+//const currentLevel = userRow.level;
+const currentLevel = 8;
 // 완료되지 않은 미션 중 하나 찾기
 const [[availableMission]] = await promisePool.query(`
   SELECT m.mission_id

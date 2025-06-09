@@ -47,20 +47,31 @@ exports.getHomeData = async (userId) => {
     const missionCompleted = inferredCompleted;
 
     // 4. 이미지 경로 계산
-    const treeImage = hasPlanted
-      ? `/images/tree/${fruitName}_${Math.floor(growthRate / 20)}.png`
-      : '/images/tree/default_0.png';
+  // 단계 계산
+const growthStage = Math.floor(growthRate / 20);
 
-    // 5. 자동 수확 처리0
- if (growthRate >= 100 && growthStatusId) {
-  // 수확 처리
+let treeImage;
+if (!hasPlanted) {
+  treeImage = '/images/tree/default_0.png';
+} else if (growthStage >= 0 && growthStage <= 3) {
+  // 0~3단계는 공통 이미지 사용 (예: stage_0.png, stage_1.png ...)
+  treeImage = `/images/tree/stage_${growthStage}.png`;
+} else {
+  // 4~5단계는 과일별 이미지 사용 (예: apple_4.png)
+  treeImage = `/images/tree/${fruitName}_${growthStage}.png`;
+}
+
+
+ // 5. 자동 수확 처리
+if (growthRate >= 100 && growthStatusId) {
+  // 1. 성장 상태 업데이트
   await db.promise().query(`
     UPDATE growth_status
     SET is_harvested = true
     WHERE growth_status_id = ? AND user_id = ?
   `, [growthStatusId, userId]);
 
-  // 도감 등록
+  // 2. 도감 등록
   await db.promise().query(`
     INSERT IGNORE INTO collection (user_id, fruit_id, collected_at)
     SELECT user_id, fruit_id, NOW()
@@ -68,41 +79,42 @@ exports.getHomeData = async (userId) => {
     WHERE growth_status_id = ? AND user_id = ?
   `, [growthStatusId, userId]);
 
- // ✅ 인벤토리에 과일 추가
-const [[itemTypeRow]] = await db.promise().query(`
-  SELECT item_type_id FROM item_type
-  WHERE item_name = ?
-`, [fruitName]);
-
-const [[inventoryRow]] = await db.promise().query(`
-  SELECT inventory_id FROM inventory
-  WHERE user_id = ?
-`, [userId]);
-
-if (itemTypeRow && inventoryRow) {
-  // 일반 과일 2개
-  await db.promise().query(`
-    INSERT INTO item (inventory_id, item_type_id, item_count)
-    VALUES (?, ?, 2)
-    ON DUPLICATE KEY UPDATE item_count = item_count + 2
-  `, [inventoryRow.inventory_id, itemTypeRow.item_type_id]);
-
-  // 황금 과일 1개
-  const [[goldItemTypeRow]] = await db.promise().query(`
+  // 3. 인벤토리 등록을 위한 데이터 조회
+  const [[itemTypeRow]] = await db.promise().query(`
     SELECT item_type_id FROM item_type
     WHERE item_name = ?
-  `, [`gold_${fruitName}`]);
+  `, [fruitName]);
 
-  if (goldItemTypeRow) {
+  const [[inventoryRow]] = await db.promise().query(`
+    SELECT inventory_id FROM inventory
+    WHERE user_id = ?
+  `, [userId]);
+
+  if (itemTypeRow && inventoryRow) {
+    // ✅ 일반 과일 (category: 'basic')
     await db.promise().query(`
-      INSERT INTO item (inventory_id, item_type_id, item_count)
-      VALUES (?, ?, 1)
-      ON DUPLICATE KEY UPDATE item_count = item_count + 1
-    `, [inventoryRow.inventory_id, goldItemTypeRow.item_type_id]);
-  }
+      INSERT INTO item (inventory_id, item_type_id, item_count, category)
+      VALUES (?, ?, 2, 'basic')
+      ON DUPLICATE KEY UPDATE item_count = item_count + 2
+    `, [inventoryRow.inventory_id, itemTypeRow.item_type_id]);
 
+    // ✅ 황금 과일 (category: 'gold')
+    const goldItemName = `gold_${fruitName}`;
+    const [[goldItemTypeRow]] = await db.promise().query(`
+      SELECT item_type_id FROM item_type
+      WHERE item_name = ?
+    `, [goldItemName]);
+
+    if (goldItemTypeRow) {
+      await db.promise().query(`
+        INSERT INTO item (inventory_id, item_type_id, item_count, category)
+        VALUES (?, ?, 1, 'gold')
+        ON DUPLICATE KEY UPDATE item_count = item_count + 1
+      `, [inventoryRow.inventory_id, goldItemTypeRow.item_type_id]);
+    }
+  }
 }
-}
+
 
 
     // 6. 진행률 계산

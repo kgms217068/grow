@@ -21,7 +21,7 @@ module.exports = {
   getMarketMainData: async (userId) => {
     await marketModel.deleteOldItems();
     const [fruits] = await marketModel.getMarketItems();
-    const [inventory] = await marketModel.getInventoryList();
+    const [inventory] = await marketModel.getInventoryList(userId);
 
     const conn = await promisePool.getConnection();
     const [[{ count: exchangeCount }]] = await marketModel.getTodayExchangeCount(conn, userId);
