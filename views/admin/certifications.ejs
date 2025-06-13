@@ -27,7 +27,6 @@
   <div class="cert-box">
     <p><strong>사용자:</strong> <%= cert.nickname %></p>
     <p><strong>미션:</strong> <%= cert.description %></p>
-    <p><strong>메모:</strong> <%= cert.memo || '없음' %></p>
     <img src="/uploads/<%= cert.image_source %>" alt="인증 사진" />
     <form action="/admin/certifications/<%= cert.certification_id %>/approve" method="POST">
       <button type="submit" class="approve-btn">승인하기 ✅</button>

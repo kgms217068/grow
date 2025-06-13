@@ -1,6 +1,5 @@
 const { promisePool } = require('../db/db');
 
-
 exports.createInitialInventory = async (userId) => {
   // 1. 이미 인벤토리가 있는지 확인
   const [[existing]] = await promisePool.query(`
@@ -102,8 +101,6 @@ exports.getInventoryByUser = async (userId) => {
     LEFT JOIN item_image img ON it.item_name = img.item_name
     WHERE i.inventory_id = ?
   `, [inventoryId]);
-  
-  //console.log("🔍 인벤토리 조회 결과:", rows);
 
   return rows;
 };

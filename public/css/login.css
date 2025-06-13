@@ -13,7 +13,6 @@ body {
   flex-direction: column;
   min-height: 100vh;
   background-color: #f7f7f7;
-  font-family: 'Noto Sans KR', sans-serif;
 }
 
 .container {

@@ -5,14 +5,7 @@
   <link rel="stylesheet" href="/css/style.css" />
   <style>
 
-  @font-face 
-  {
-    font-family: 'neon';
-    src: url('../../NanumSquareNeo-bRg.ttf') format('ttf');
-  }
-  body {
-  font-family: 'neon';
-  }
+
   .mission-box 
   {
   display: flex;
@@ -110,15 +103,12 @@
     <p style="margin: 0;" class="font"><%= m.description %></p>
 
     <% if (statusObj && statusObj.awaitingConfirm) { %>
-      <!-- ✅ 사용자 확정용 완료 버튼 -->
       <form action="/dashboard/confirm/<%= statusObj.mission_execution_id %>" method="POST">
         <button class="status-btn cert-btn font">완료</button>
       </form>
     <% } else if (statusObj && statusObj.status === false) { %>
-      <!-- ✅ 관리자 승인 전: 확인 중 -->
       <button class="status-btn waiting-btn font" disabled>확인 중</button>
     <% } else { %>
-      <!-- ✅ 최초 인증 버튼 -->
 <form method="get" action="/dashboard" style="margin: 0;">
         <input type="hidden" name="missionId" value="<%= m.mission_id %>">
         <button class="status-btn cert-btn font">인증</button>

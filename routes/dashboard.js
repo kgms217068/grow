@@ -58,11 +58,9 @@ const missionId = req.query.missionId;
     mission = nextMission || null;
   }
 
-
-
-
   res.render('dashboard/index', {
-    mission: nextMission || null,
+   mission,
+   // nextMission || null,
     result: result || null,
     title: 'dashboard',
     currentPath: req.path
@@ -130,11 +128,6 @@ await promisePool.query(`
 
 // 2. 사용자 인벤토리 ID 가져오기
 await createInitialInventory(userId);
-
-// 이후 inventory_id가 필요한 경우는 별도로 가져옴
-// const [[{ inventory_id }]] = await promisePool.query(`
-//   SELECT inventory_id FROM inventory WHERE user_id = ?
-// `, [userId]);
 const [[inventoryRow]] = await promisePool.query(`
   SELECT inventory_id FROM inventory WHERE user_id = ?
 `, [userId]);
@@ -223,10 +216,6 @@ router.get('/mission', async (req, res) => {
 
   req.session.prevConfirmedId = null;
 
-  // ✅ 인증 기준 완료 미션 수
-// ✅ 4. 단계 완료 여부 확인
-//const clearedMissions = currentMissions.filter(m => certStatus[m.mission_id]?.status);
-
 const currentMissions = missions.filter(m => m.level === currentLevel);
 const clearedMissions = currentMissions.filter(m => certStatus[m.mission_id]?.status);
 
@@ -276,11 +265,6 @@ if (!showLevelOptionModal) {
     latestTree[0].growth_rate === 100
   ) {
     showLevelOptionModal = true;
-
-    // 단, NEXT를 선택한 적 있다면 다시 false
-    if (prevOption && prevOption.selected_option === 'NEXT') {
-      showLevelOptionModal = false;
-    }
   }
 }
 
@@ -353,14 +337,15 @@ exports.renderDashboard = async (req, res) => {
   const missions = await missionModel.getMissionsForUser(userId);
   res.render('dashboard', { missions });
 };
+
 router.post('/level-option', async (req, res) => {
   const userId = req.session.user?.user_id || req.user?.user_id;
-  const { option } = req.body; // 'NEXT', 'RETRY', 'WAIT'
+  const { option } = req.body; // 'NEXT', 'RETRY'
 
   try {
     // ✅ 레벨 옵션 선택할 때마다 보상 세션 초기화
     req.session.levelRewardGiven = false;
-    // 이전 옵션 삭제 (중복 방지)f
+    // 이전 옵션 삭제 (중복 방지)
     await promisePool.query(`
       DELETE FROM level_option WHERE user_id = ?
     `, [userId]);
@@ -372,14 +357,28 @@ router.post('/level-option', async (req, res) => {
     `, [userId, option]);
 
     // 즉시 처리
-    if (option === 'NEXT') {
-      await promisePool.query(`UPDATE user SET level = level + 1 WHERE user_id = ?`, [userId]);
+   if (option === 'NEXT') {
+  const [[{ level }]] = await promisePool.query(`
+    SELECT level FROM user WHERE user_id = ?
+  `, [userId]);
 
-      // ✅ 과일 삭제도 레벨업 시점에 함께 처리
-      await promisePool.query(`DELETE FROM planted_fruit WHERE user_id = ?`, [userId]);
-    return res.redirect('/home');
-    
-    }  else if (option === 'RETRY') {
+  if (level === 8) {
+    // 마지막 단계 → 레벨업 없이 바로 완료 페이지
+    return res.redirect('/last-complete');
+  }
+
+  // 8단계가 아니면 → 레벨업 + 과일 제거 + 홈 이동
+  await promisePool.query(`UPDATE user SET level = level + 1 WHERE user_id = ?`, [userId]);
+
+  await promisePool.query(`DELETE FROM planted_fruit WHERE user_id = ?`, [userId]);
+
+  // 보상 플래그 초기화
+  req.session.levelRewardGiven = false;
+  req.session.prevConfirmedId = null;
+
+  return res.redirect('/home');
+}
+ else if (option === 'RETRY') {
   // 미션 데이터 삭제
   const [executions] = await promisePool.query(`
     SELECT mission_execution_id FROM mission_execution me
@@ -412,9 +411,7 @@ router.post('/level-option', async (req, res) => {
   // 보상 플래그 초기화
   req.session.levelRewardGiven = false;
   req.session.prevConfirmedId = null;
-
-
-  return res.redirect('/home');
+ 
 }
 
 
@@ -483,8 +480,7 @@ const [[userRow]] = await promisePool.query(
   [userId]
 );
 
-//const currentLevel = userRow.level;
-const currentLevel = 8;
+const currentLevel = userRow.level;
 // 완료되지 않은 미션 중 하나 찾기
 const [[availableMission]] = await promisePool.query(`
   SELECT m.mission_id
@@ -564,28 +560,6 @@ router.post('/harvest/:growthStatusId', async (req, res) => {
     res.status(500).send('수확 중 오류 발생');
   }
 });
-
-// ✅ GET/POST /dashboard/diary/:missionId
-// router.get('/diary/:missionId',async (req, res) => {
-//   const missionId = Number(req.params.missionId);
-//  console.log('🧩 missionId 전달됨:', missionId);
-
-//   if (isNaN(missionId)) {
-//   return res.status(400).send('올바르지 않은 미션 ID입니다.');
-// }
-
-//     const [[missionRow]] = await promisePool.query(`
-//     SELECT description FROM mission WHERE mission_id = ?
-//   `, [missionId]);
-
-//   if (!missionRow) {
-//     return res.status(404).send('미션을 찾을 수 없습니다.');
-//   }
-
-//  console.log('📦 missionRow:', missionRow);
-
-//   res.render('dashboard/diary', { missionId ,  mission: missionRow});
-// });
 
 router.get('/diary/:missionExecutionId', async (req, res) => {
   const missionExecutionId = Number(req.params.missionExecutionId);

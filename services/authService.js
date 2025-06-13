@@ -42,30 +42,7 @@ const userService = {
         [email, hashedPassword, nickname]
       );
       const userId = userResult.insertId;
-
-      // 2. 인벤토리 생성
-      // await conn.query(
-      //   'INSERT INTO inventory (user_id) VALUES (?)',
-      //   [userId]
-      // );
-
-      // // 3. 사과 씨앗 지급
-      // const [[appleType]] = await conn.query(
-      //   `SELECT item_type_id FROM item_type WHERE item_name = 'apple'`
-      // );
-      // if (!appleType) throw new Error('❌ 사과 아이템이 존재하지 않습니다.');
-
-      // const [[inventoryRow]] = await conn.query(
-      //   `SELECT inventory_id FROM inventory WHERE user_id = ?`,
-      //   [userId]
-      // );
-
-      // await conn.query(
-      //   `INSERT INTO item (inventory_id, item_type_id, item_count, category)
-      //    VALUES (?, ?, 1, '씨앗')`,
-      //   [inventoryRow.inventory_id, appleType.item_type_id]
-      // );
-
+      
       // (선택) 4. 초기 미션 부여
       await conn.query(`
         INSERT INTO mission_execution (user_id, mission_id, completed_or_not)
@@ -142,7 +119,6 @@ const userService = {
 
    deleteAccount: async (userId) => {
   const pool = require('../db/db').promisePool;
-  console.log('[DEBUG] 서비스 deleteAccount userId:', userId);
 
   try {
     // 💣 이게 없으면 계속 오류 발생

@@ -12,8 +12,7 @@
     padding: 48px 32px 40px 32px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     text-align: left;
-    font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', Arial, sans-serif;
-}
+    }
 
 /* Centered for success page */
 .success-container {

@@ -114,9 +114,6 @@ if (growthRate >= 100 && growthStatusId) {
     }
   }
 }
-
-
-
     // 6. 진행률 계산
     const progressRate = missionTotal === 0 ? 0 : missionCompleted / missionTotal;
 

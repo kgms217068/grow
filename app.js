@@ -1,4 +1,3 @@
-// app.js
 const express = require('express');
 const path = require('path');
 
@@ -24,9 +23,11 @@ const db = require('./db/db'); // db.js에서 mysql2/promise로 connection 풀 �
 const sessionStore = new MySQLStore({}, db.promisePool);
 
 app.use(session({
+  key: 'user_sid',
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: true,
+  store: sessionStore
 }));
 
 
@@ -41,14 +42,6 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-
-app.use(session({
-  key: 'user_sid',
-  secret: process.env.SESSION_SECRET || 'secret-key',
-  resave: false,
-  saveUninitialized: false,
-  store: sessionStore
-}));
 app.use(flash());
 app.use((req, res, next) => {
     res.locals.error = req.flash('error');
@@ -70,7 +63,6 @@ const collectionRouter = require('./routes/collection');
 const communityRouter = require('./routes/community');
 const marketRouter = require('./routes/market');
 const mypageRouter = require('./routes/mypage');
-
 const homeRouter = require('./routes/home');
 const scrapRouter = require('./routes/scrap');
 const adminRouter = require('./routes/admin');
@@ -118,15 +110,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-
-
-
 app.listen(PORT, () => {
   console.log(`🚀 서버 실행 중: http://localhost:${PORT}`);
 });
 
 app.use((req, res, next) => {
-  // console.log('🔐 req.user:', req.user);
   console.log('🔐 req.session.user:', req.session.user);
   next();
 });

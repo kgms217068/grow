@@ -1,6 +1,12 @@
+@font-face 
+  {
+    font-family: 'NanumSquareNeo';
+    src: url('../../fonts/NanumSquareNeo-bRg.ttf') format('ttf');
+  }
+
 body { 
   margin: 0;
-  font-family: 'Pretendard', sans-serif;
+  font-family: 'NanumSquareNeo';
   background-color: #f0fff0;
   overflow-y: auto;
 }
@@ -64,8 +70,6 @@ ul {
   width: 100%;
   max-width: 430px;
   height: 60px;
-  background-color: #71A304;
-
   display: flex;
   justify-content: space-around;
   align-items: center;
